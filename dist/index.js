@@ -1958,6 +1958,7 @@ function handleIssue(option, client, loginUser, result) {
                     targetCommentId = null;
                     targetCommentBody = null;
                     core.info("found comments: " + result.comments.length);
+                    core.info("login user: " + loginUser);
                     for (_i = 0, _b = result.comments; _i < _b.length; _i++) {
                         comment = _b[_i];
                         if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
@@ -2014,6 +2015,7 @@ function handlePullRequest(option, client, loginUser, result) {
                     targetCommentId = null;
                     targetCommentBody = null;
                     core.info("found comments: " + result.comments.length);
+                    core.info("login user: " + loginUser);
                     for (_i = 0, _b = result.comments; _i < _b.length; _i++) {
                         comment = _b[_i];
                         if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
