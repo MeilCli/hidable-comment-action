@@ -13,6 +13,7 @@ async function handleIssue(
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
     core.info(`found comments: ${result.comments.length}`);
+    core.info(`login user: ${loginUser}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
@@ -57,6 +58,7 @@ async function handlePullRequest(
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
     core.info(`found comments: ${result.comments.length}`);
+    core.info(`login user: ${loginUser}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
