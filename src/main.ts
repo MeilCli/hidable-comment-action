@@ -12,10 +12,12 @@ async function handleIssue(
 ) {
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
+    core.info(`found comments: ${result.comments.length}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
         }
+        core.info(`check comment: ${comment.body}`);
         if (isHidableComment(comment.body, option.id)) {
             targetCommentId = comment.id;
             targetCommentBody = comment.body;
@@ -54,10 +56,12 @@ async function handlePullRequest(
 ) {
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
+    core.info(`found comments: ${result.comments.length}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
         }
+        core.info(`check comment: ${comment.body}`);
         if (isHidableComment(comment.body, option.id)) {
             targetCommentId = comment.id;
             targetCommentBody = comment.body;
