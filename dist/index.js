@@ -1871,7 +1871,7 @@ function hidableCommentIdentifier(id) {
     return "<!-- hidable-coment-action: " + id + " -->";
 }
 function isHidableComment(body, id) {
-    return body.startsWith(hidableCommentIdentifier(hidableCommentIdentifier(id)));
+    return body.startsWith(hidableCommentIdentifier(id));
 }
 exports.isHidableComment = isHidableComment;
 function createHidableComment(body, id) {
