@@ -5,24 +5,18 @@ import {
     AddComment,
     AddCommentMutation,
     AddCommentMutationVariables,
-    DeleteIssueComment,
-    DeleteIssueCommentMutation,
-    DeleteIssueCommentMutationVariables,
-    DeletePullRequestComment,
-    DeletePullRequestCommentMutation,
-    DeletePullRequestCommentMutationVariables,
+    DeleteComment,
+    DeleteCommentMutation,
+    DeleteCommentMutationVariables,
     GetIssueOrPullRequestComment,
     GetIssueOrPullRequestCommentQuery,
     GetIssueOrPullRequestCommentQueryVariables,
     GetLoginUser,
     GetLoginUserQuery,
     GetLoginUserQueryVariables,
-    UpdateIssueComment,
-    UpdateIssueCommentMutation,
-    UpdateIssueCommentMutationVariables,
-    UpdatePullRequestComment,
-    UpdatePullRequestCommentMutation,
-    UpdatePullRequestCommentMutationVariables,
+    UpdateComment,
+    UpdateCommentMutation,
+    UpdateCommentMutationVariables,
 } from "../graphql/graphql";
 
 export function githubClient(option: Option): GitHubClient {
@@ -49,21 +43,9 @@ export class GitHubClient {
         return result.data;
     }
 
-    async deleteIssuComment(
-        variables: DeleteIssueCommentMutationVariables
-    ): Promise<DeleteIssueCommentMutation | null | undefined> {
-        const result = await this.client.mutate<DeleteIssueCommentMutation>({
-            mutation: DeleteIssueComment,
-            variables: variables,
-        });
-        return result.data;
-    }
-
-    async deletePullRequestComment(
-        variables: DeletePullRequestCommentMutationVariables
-    ): Promise<DeletePullRequestCommentMutation | null | undefined> {
-        const result = await this.client.mutate<DeletePullRequestCommentMutation>({
-            mutation: DeletePullRequestComment,
+    async deleteComment(variables: DeleteCommentMutationVariables): Promise<DeleteCommentMutation | null | undefined> {
+        const result = await this.client.mutate<DeleteCommentMutation>({
+            mutation: DeleteComment,
             variables: variables,
         });
         return result.data;
@@ -87,21 +69,9 @@ export class GitHubClient {
         return result.data;
     }
 
-    async updateIssueComment(
-        variables: UpdateIssueCommentMutationVariables
-    ): Promise<UpdateIssueCommentMutation | null | undefined> {
-        const result = await this.client.mutate<UpdateIssueCommentMutation>({
-            mutation: UpdateIssueComment,
-            variables: variables,
-        });
-        return result.data;
-    }
-
-    async updatePullRequestComment(
-        variables: UpdatePullRequestCommentMutationVariables
-    ): Promise<UpdatePullRequestCommentMutation | null | undefined> {
-        const result = await this.client.mutate<UpdatePullRequestCommentMutation>({
-            mutation: UpdatePullRequestComment,
+    async updateComment(variables: UpdateCommentMutationVariables): Promise<UpdateCommentMutation | null | undefined> {
+        const result = await this.client.mutate<UpdateCommentMutation>({
+            mutation: UpdateComment,
             variables: variables,
         });
         return result.data;

@@ -29271,16 +29271,9 @@ export const AddComment = gql`
   }
 }
     `;
-export const DeleteIssueComment = gql`
-    mutation DeleteIssueComment($id: ID!) {
+export const DeleteComment = gql`
+    mutation DeleteComment($id: ID!) {
   deleteIssueComment(input: {id: $id}) {
-    clientMutationId
-  }
-}
-    `;
-export const DeletePullRequestComment = gql`
-    mutation DeletePullRequestComment($id: ID!) {
-  deletePullRequestReviewComment(input: {id: $id}) {
     clientMutationId
   }
 }
@@ -29333,18 +29326,9 @@ export const GetLoginUser = gql`
   }
 }
     `;
-export const UpdateIssueComment = gql`
-    mutation UpdateIssueComment($id: ID!, $body: String!) {
+export const UpdateComment = gql`
+    mutation UpdateComment($id: ID!, $body: String!) {
   updateIssueComment(input: {id: $id, body: $body}) {
-    clientMutationId
-  }
-}
-    `;
-export const UpdatePullRequestComment = gql`
-    mutation UpdatePullRequestComment($id: ID!, $body: String!) {
-  updatePullRequestReviewComment(
-    input: {pullRequestReviewCommentId: $id, body: $body}
-  ) {
     clientMutationId
   }
 }
@@ -29363,29 +29347,16 @@ export type AddCommentMutation = (
   )> }
 );
 
-export type DeleteIssueCommentMutationVariables = Exact<{
+export type DeleteCommentMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type DeleteIssueCommentMutation = (
+export type DeleteCommentMutation = (
   { __typename?: 'Mutation' }
   & { deleteIssueComment?: Maybe<(
     { __typename?: 'DeleteIssueCommentPayload' }
     & Pick<DeleteIssueCommentPayload, 'clientMutationId'>
-  )> }
-);
-
-export type DeletePullRequestCommentMutationVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type DeletePullRequestCommentMutation = (
-  { __typename?: 'Mutation' }
-  & { deletePullRequestReviewComment?: Maybe<(
-    { __typename?: 'DeletePullRequestReviewCommentPayload' }
-    & Pick<DeletePullRequestReviewCommentPayload, 'clientMutationId'>
   )> }
 );
 
@@ -29474,30 +29445,16 @@ export type GetLoginUserQuery = (
   ) }
 );
 
-export type UpdateIssueCommentMutationVariables = Exact<{
+export type UpdateCommentMutationVariables = Exact<{
   id: Scalars['ID'];
   body: Scalars['String'];
 }>;
 
 
-export type UpdateIssueCommentMutation = (
+export type UpdateCommentMutation = (
   { __typename?: 'Mutation' }
   & { updateIssueComment?: Maybe<(
     { __typename?: 'UpdateIssueCommentPayload' }
     & Pick<UpdateIssueCommentPayload, 'clientMutationId'>
-  )> }
-);
-
-export type UpdatePullRequestCommentMutationVariables = Exact<{
-  id: Scalars['ID'];
-  body: Scalars['String'];
-}>;
-
-
-export type UpdatePullRequestCommentMutation = (
-  { __typename?: 'Mutation' }
-  & { updatePullRequestReviewComment?: Maybe<(
-    { __typename?: 'UpdatePullRequestReviewCommentPayload' }
-    & Pick<UpdatePullRequestReviewCommentPayload, 'clientMutationId'>
   )> }
 );

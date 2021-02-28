@@ -1,92 +1,8 @@
 import * as core from "@actions/core";
-import { getOption, Option } from "./option";
-import { githubClient, GitHubClient } from "./client";
-import { getIssueOrPullRequestCommentWithPaging, IssueOrPullRequestWithPagingResult } from "./paging";
+import { getOption } from "./option";
+import { githubClient } from "./client";
+import { getIssueOrPullRequestCommentWithPaging } from "./paging";
 import { isHidableComment, createHidableComment } from "./comment";
-
-async function handleIssue(
-    option: Option,
-    client: GitHubClient,
-    loginUser: string,
-    result: IssueOrPullRequestWithPagingResult
-) {
-    let targetCommentId: string | null = null;
-    let targetCommentBody: string | null = null;
-    for (const comment of result.comments) {
-        if (comment.author?.login != loginUser) {
-            continue;
-        }
-        if (isHidableComment(comment.body, option.id)) {
-            targetCommentId = comment.id;
-            targetCommentBody = comment.body;
-            break;
-        }
-    }
-
-    if (targetCommentId == null) {
-        if (option.show) {
-            await client.addComment({ id: result.id, body: createHidableComment(option.body, option.id) });
-            core.info(`added comment to ${result.id}`);
-        } else {
-            core.info(`not found comment`);
-        }
-    } else {
-        if (option.show) {
-            const expectBody = createHidableComment(option.body, option.id);
-            if (expectBody != targetCommentBody) {
-                await client.updateIssueComment({ id: targetCommentId, body: expectBody });
-                core.info(`updated comment at ${targetCommentId}`);
-            } else {
-                core.info(`not updated comment at ${targetCommentId}`);
-            }
-        } else {
-            await client.deleteIssuComment({ id: targetCommentId });
-            core.info(`deleted comment at ${targetCommentId}`);
-        }
-    }
-}
-
-async function handlePullRequest(
-    option: Option,
-    client: GitHubClient,
-    loginUser: string,
-    result: IssueOrPullRequestWithPagingResult
-) {
-    let targetCommentId: string | null = null;
-    let targetCommentBody: string | null = null;
-    for (const comment of result.comments) {
-        if (comment.author?.login != loginUser) {
-            continue;
-        }
-        if (isHidableComment(comment.body, option.id)) {
-            targetCommentId = comment.id;
-            targetCommentBody = comment.body;
-            break;
-        }
-    }
-
-    if (targetCommentId == null) {
-        if (option.show) {
-            await client.addComment({ id: result.id, body: createHidableComment(option.body, option.id) });
-            core.info(`added comment to ${result.id}`);
-        } else {
-            core.info(`not found comment`);
-        }
-    } else {
-        if (option.show) {
-            const expectBody = createHidableComment(option.body, option.id);
-            if (expectBody != targetCommentBody) {
-                await client.updatePullRequestComment({ id: targetCommentId, body: expectBody });
-                core.info(`updated comment at ${targetCommentId}`);
-            } else {
-                core.info(`not updated comment at ${targetCommentId}`);
-            }
-        } else {
-            await client.deletePullRequestComment({ id: targetCommentId });
-            core.info(`deleted comment at ${targetCommentId}`);
-        }
-    }
-}
 
 async function run() {
     try {
@@ -104,10 +20,43 @@ async function run() {
             name,
             number: option.number,
         });
-        if (issueOrPullRequest.__typename == "Issue") {
-            await handleIssue(option, client, loginUser, issueOrPullRequest);
+
+        let targetCommentId: string | null = null;
+        let targetCommentBody: string | null = null;
+        for (const comment of issueOrPullRequest.comments) {
+            if (comment.author?.login != loginUser) {
+                continue;
+            }
+            if (isHidableComment(comment.body, option.id)) {
+                targetCommentId = comment.id;
+                targetCommentBody = comment.body;
+                break;
+            }
+        }
+
+        if (targetCommentId == null) {
+            if (option.show) {
+                await client.addComment({
+                    id: issueOrPullRequest.id,
+                    body: createHidableComment(option.body, option.id),
+                });
+                core.info(`added comment to ${issueOrPullRequest.id}`);
+            } else {
+                core.info(`not found comment`);
+            }
         } else {
-            await handlePullRequest(option, client, loginUser, issueOrPullRequest);
+            if (option.show) {
+                const expectBody = createHidableComment(option.body, option.id);
+                if (expectBody != targetCommentBody) {
+                    await client.updateComment({ id: targetCommentId, body: expectBody });
+                    core.info(`updated comment at ${targetCommentId}`);
+                } else {
+                    core.info(`not updated comment at ${targetCommentId}`);
+                }
+            } else {
+                await client.deleteComment({ id: targetCommentId });
+                core.info(`deleted comment at ${targetCommentId}`);
+            }
         }
     } catch (error) {
         core.setFailed(error.message);

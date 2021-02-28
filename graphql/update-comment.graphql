@@ -1,4 +1,4 @@
-mutation UpdateIssueComment($id: ID!, $body: String!) {
+mutation UpdateComment($id: ID!, $body: String!) {
     updateIssueComment(input: { id: $id, body: $body }) {
         clientMutationId
     }

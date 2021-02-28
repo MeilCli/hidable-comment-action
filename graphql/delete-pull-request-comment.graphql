@@ -1,5 +1,0 @@
-mutation DeletePullRequestComment($id: ID!) {
-    deletePullRequestReviewComment(input: { id: $id }) {
-        clientMutationId
-    }
-}
