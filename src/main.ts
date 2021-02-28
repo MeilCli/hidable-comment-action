@@ -26,15 +26,22 @@ async function handleIssue(
     if (targetCommentId == null) {
         if (option.show) {
             await client.addComment({ id: result.id, body: createHidableComment(option.body, option.id) });
+            core.info(`added comment to ${result.id}`);
+        } else {
+            core.info(`not found comment`);
         }
     } else {
         if (option.show) {
             const expectBody = createHidableComment(option.body, option.id);
             if (expectBody != targetCommentBody) {
                 await client.updateIssueComment({ id: targetCommentId, body: expectBody });
+                core.info(`updated comment at ${targetCommentId}`);
+            } else {
+                core.info(`not updated comment at ${targetCommentId}`);
             }
         } else {
             await client.deleteIssuComment({ id: targetCommentId });
+            core.info(`deleted comment at ${targetCommentId}`);
         }
     }
 }
@@ -61,15 +68,22 @@ async function handlePullRequest(
     if (targetCommentId == null) {
         if (option.show) {
             await client.addComment({ id: result.id, body: createHidableComment(option.body, option.id) });
+            core.info(`added comment to ${result.id}`);
+        } else {
+            core.info(`not found comment`);
         }
     } else {
         if (option.show) {
             const expectBody = createHidableComment(option.body, option.id);
             if (expectBody != targetCommentBody) {
                 await client.updatePullRequestComment({ id: targetCommentId, body: expectBody });
+                core.info(`updated comment at ${targetCommentId}`);
+            } else {
+                core.info(`not updated comment at ${targetCommentId}`);
             }
         } else {
             await client.deletePullRequestComment({ id: targetCommentId });
+            core.info(`deleted comment at ${targetCommentId}`);
         }
     }
 }
