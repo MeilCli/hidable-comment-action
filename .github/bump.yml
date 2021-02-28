@@ -1,6 +1,6 @@
 release:
   title-prefix: 'v'
-  initial-version: '0.0.1'
+  initial-version: '1.0.0'
   tag-prefix: 'v'
   commit-note-replacers:
     - replace-prefix: 'breaking: '

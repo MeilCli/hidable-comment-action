@@ -10,7 +10,7 @@ inputs:
     required: true
     default: ${{ github.token }}
   repository:
-    description: 'execute repository name. for example, MeilCli/hidable-comment-action'
+    description: 'executed repository name. for example, MeilCli/hidable-comment-action'
     required: true
     default: ${{ github.repository }}
   number:
