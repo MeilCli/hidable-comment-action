@@ -1968,27 +1968,36 @@ function handleIssue(option, client, loginUser, result) {
                             break;
                         }
                     }
-                    if (!(targetCommentId == null)) return [3 /*break*/, 3];
+                    if (!(targetCommentId == null)) return [3 /*break*/, 4];
                     if (!option.show) return [3 /*break*/, 2];
                     return [4 /*yield*/, client.addComment({ id: result.id, body: comment_1.createHidableComment(option.body, option.id) })];
                 case 1:
                     _c.sent();
-                    _c.label = 2;
-                case 2: return [3 /*break*/, 8];
-                case 3:
-                    if (!option.show) return [3 /*break*/, 6];
-                    expectBody = comment_1.createHidableComment(option.body, option.id);
-                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 5];
-                    return [4 /*yield*/, client.updateIssueComment({ id: targetCommentId, body: expectBody })];
+                    core.info("added comment to " + result.id);
+                    return [3 /*break*/, 3];
+                case 2:
+                    core.info("not found comment");
+                    _c.label = 3;
+                case 3: return [3 /*break*/, 10];
                 case 4:
+                    if (!option.show) return [3 /*break*/, 8];
+                    expectBody = comment_1.createHidableComment(option.body, option.id);
+                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, client.updateIssueComment({ id: targetCommentId, body: expectBody })];
+                case 5:
                     _c.sent();
-                    _c.label = 5;
-                case 5: return [3 /*break*/, 8];
-                case 6: return [4 /*yield*/, client.deleteIssuComment({ id: targetCommentId })];
-                case 7:
+                    core.info("updated comment at " + targetCommentId);
+                    return [3 /*break*/, 7];
+                case 6:
+                    core.info("not updated comment at " + targetCommentId);
+                    _c.label = 7;
+                case 7: return [3 /*break*/, 10];
+                case 8: return [4 /*yield*/, client.deleteIssuComment({ id: targetCommentId })];
+                case 9:
                     _c.sent();
-                    _c.label = 8;
-                case 8: return [2 /*return*/];
+                    core.info("deleted comment at " + targetCommentId);
+                    _c.label = 10;
+                case 10: return [2 /*return*/];
             }
         });
     });
@@ -2013,27 +2022,36 @@ function handlePullRequest(option, client, loginUser, result) {
                             break;
                         }
                     }
-                    if (!(targetCommentId == null)) return [3 /*break*/, 3];
+                    if (!(targetCommentId == null)) return [3 /*break*/, 4];
                     if (!option.show) return [3 /*break*/, 2];
                     return [4 /*yield*/, client.addComment({ id: result.id, body: comment_1.createHidableComment(option.body, option.id) })];
                 case 1:
                     _c.sent();
-                    _c.label = 2;
-                case 2: return [3 /*break*/, 8];
-                case 3:
-                    if (!option.show) return [3 /*break*/, 6];
-                    expectBody = comment_1.createHidableComment(option.body, option.id);
-                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 5];
-                    return [4 /*yield*/, client.updatePullRequestComment({ id: targetCommentId, body: expectBody })];
+                    core.info("added comment to " + result.id);
+                    return [3 /*break*/, 3];
+                case 2:
+                    core.info("not found comment");
+                    _c.label = 3;
+                case 3: return [3 /*break*/, 10];
                 case 4:
+                    if (!option.show) return [3 /*break*/, 8];
+                    expectBody = comment_1.createHidableComment(option.body, option.id);
+                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, client.updatePullRequestComment({ id: targetCommentId, body: expectBody })];
+                case 5:
                     _c.sent();
-                    _c.label = 5;
-                case 5: return [3 /*break*/, 8];
-                case 6: return [4 /*yield*/, client.deletePullRequestComment({ id: targetCommentId })];
-                case 7:
+                    core.info("updated comment at " + targetCommentId);
+                    return [3 /*break*/, 7];
+                case 6:
+                    core.info("not updated comment at " + targetCommentId);
+                    _c.label = 7;
+                case 7: return [3 /*break*/, 10];
+                case 8: return [4 /*yield*/, client.deletePullRequestComment({ id: targetCommentId })];
+                case 9:
                     _c.sent();
-                    _c.label = 8;
-                case 8: return [2 /*return*/];
+                    core.info("deleted comment at " + targetCommentId);
+                    _c.label = 10;
+                case 10: return [2 /*return*/];
             }
         });
     });
