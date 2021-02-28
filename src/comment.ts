@@ -3,7 +3,7 @@ function hidableCommentIdentifier(id: string): string {
 }
 
 export function isHidableComment(body: string, id: string): boolean {
-    return body.startsWith(hidableCommentIdentifier(hidableCommentIdentifier(id)));
+    return body.startsWith(hidableCommentIdentifier(id));
 }
 
 export function createHidableComment(body: string, id: string): string {
