@@ -17,7 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OauthApplicationCreateAuditEntryState = exports.NotificationRestrictionSettingValue = exports.MilestoneState = exports.MilestoneOrderField = exports.MergeableState = exports.LockReason = exports.LanguageOrderField = exports.LabelOrderField = exports.IssueTimelineItemsItemType = exports.IssueState = exports.IssueOrderField = exports.IssueCommentOrderField = exports.IpAllowListEntryOrderField = exports.IpAllowListEnabledSettingValue = exports.IdentityProviderConfigurationState = exports.GitSignatureState = exports.GistPrivacy = exports.GistOrderField = exports.FundingPlatform = exports.FileViewedState = exports.EnterpriseUserDeployment = exports.EnterpriseUserAccountMembershipRole = exports.EnterpriseServerUserAccountsUploadSyncState = exports.EnterpriseServerUserAccountsUploadOrderField = exports.EnterpriseServerUserAccountOrderField = exports.EnterpriseServerUserAccountEmailOrderField = exports.EnterpriseServerInstallationOrderField = exports.EnterpriseMembersCanMakePurchasesSettingValue = exports.EnterpriseMembersCanCreateRepositoriesSettingValue = exports.EnterpriseMemberOrderField = exports.EnterpriseEnabledSettingValue = exports.EnterpriseEnabledDisabledSettingValue = exports.EnterpriseDefaultRepositoryPermissionSettingValue = exports.EnterpriseAdministratorRole = exports.EnterpriseAdministratorInvitationOrderField = exports.DiffSide = exports.DeploymentStatusState = exports.DeploymentState = exports.DeploymentOrderField = exports.DefaultRepositoryPermissionField = exports.ContributionLevel = exports.CommitContributionOrderField = exports.CommentCannotUpdateReason = exports.CommentAuthorAssociation = exports.CollaboratorAffiliation = exports.CheckStatusState = exports.CheckRunType = exports.CheckConclusionState = exports.CheckAnnotationLevel = exports.AuditLogOrderField = void 0;
 exports.RepositoryAffiliation = exports.ReportedContentClassifiers = exports.RepoRemoveMemberAuditEntryVisibility = exports.RepoDestroyAuditEntryVisibility = exports.RepoCreateAuditEntryVisibility = exports.RepoChangeMergeSettingAuditEntryMergeType = exports.RepoArchivedAuditEntryVisibility = exports.RepoAddMemberAuditEntryVisibility = exports.RepoAccessAuditEntryVisibility = exports.ReleaseOrderField = exports.RefOrderField = exports.ReactionOrderField = exports.ReactionContent = exports.PullRequestUpdateState = exports.PullRequestTimelineItemsItemType = exports.PullRequestState = exports.PullRequestReviewState = exports.PullRequestReviewEvent = exports.PullRequestReviewDecision = exports.PullRequestReviewCommentState = exports.PullRequestOrderField = exports.PullRequestMergeMethod = exports.ProjectTemplate = exports.ProjectState = exports.ProjectOrderField = exports.ProjectColumnPurpose = exports.ProjectCardState = exports.ProjectCardArchivedState = exports.PinnableItemType = exports.PackageVersionOrderField = exports.PackageType = exports.PackageOrderField = exports.PackageFileOrderField = exports.OrganizationOrderField = exports.OrganizationMembersCanCreateRepositoriesSettingValue = exports.OrganizationMemberRole = exports.OrganizationInvitationType = exports.OrganizationInvitationRole = exports.OrgUpdateMemberRepositoryCreationPermissionAuditEntryVisibility = exports.OrgUpdateMemberAuditEntryPermission = exports.OrgUpdateDefaultRepositoryPermissionAuditEntryPermission = exports.OrgRemoveOutsideCollaboratorAuditEntryReason = exports.OrgRemoveOutsideCollaboratorAuditEntryMembershipType = exports.OrgRemoveMemberAuditEntryReason = exports.OrgRemoveMemberAuditEntryMembershipType = exports.OrgRemoveBillingManagerAuditEntryReason = exports.OrgCreateAuditEntryBillingPlan = exports.OrgAddMemberAuditEntryPermission = exports.OrderDirection = exports.OperationType = void 0;
-exports.UpdatePullRequestComment = exports.UpdateIssueComment = exports.GetLoginUser = exports.GetIssueOrPullRequestComment = exports.DeletePullRequestComment = exports.DeleteIssueComment = exports.AddComment = exports.VerifiableDomainOrderField = exports.UserStatusOrderField = exports.UserBlockDuration = exports.TopicSuggestionDeclineReason = exports.TeamRole = exports.TeamRepositoryOrderField = exports.TeamPrivacy = exports.TeamOrderField = exports.TeamMembershipType = exports.TeamMemberRole = exports.TeamMemberOrderField = exports.TeamDiscussionOrderField = exports.TeamDiscussionCommentOrderField = exports.SubscriptionState = exports.StatusState = exports.StarOrderField = exports.SponsorshipPrivacy = exports.SponsorshipOrderField = exports.SponsorsTierOrderField = exports.SponsorsGoalKind = exports.SponsorableOrderField = exports.SecurityVulnerabilityOrderField = exports.SecurityAdvisorySeverity = exports.SecurityAdvisoryOrderField = exports.SecurityAdvisoryIdentifierType = exports.SecurityAdvisoryEcosystem = exports.SearchType = exports.SavedReplyOrderField = exports.SamlSignatureAlgorithm = exports.SamlDigestAlgorithm = exports.RequestableCheckStatusState = exports.RepositoryVisibility = exports.RepositoryPrivacy = exports.RepositoryPermission = exports.RepositoryOrderField = exports.RepositoryLockReason = exports.RepositoryInvitationOrderField = exports.RepositoryInteractionLimitOrigin = exports.RepositoryInteractionLimitExpiry = exports.RepositoryInteractionLimit = exports.RepositoryContributionType = void 0;
+exports.UpdateComment = exports.GetLoginUser = exports.GetIssueOrPullRequestComment = exports.DeleteComment = exports.AddComment = exports.VerifiableDomainOrderField = exports.UserStatusOrderField = exports.UserBlockDuration = exports.TopicSuggestionDeclineReason = exports.TeamRole = exports.TeamRepositoryOrderField = exports.TeamPrivacy = exports.TeamOrderField = exports.TeamMembershipType = exports.TeamMemberRole = exports.TeamMemberOrderField = exports.TeamDiscussionOrderField = exports.TeamDiscussionCommentOrderField = exports.SubscriptionState = exports.StatusState = exports.StarOrderField = exports.SponsorshipPrivacy = exports.SponsorshipOrderField = exports.SponsorsTierOrderField = exports.SponsorsGoalKind = exports.SponsorableOrderField = exports.SecurityVulnerabilityOrderField = exports.SecurityAdvisorySeverity = exports.SecurityAdvisoryOrderField = exports.SecurityAdvisoryIdentifierType = exports.SecurityAdvisoryEcosystem = exports.SearchType = exports.SavedReplyOrderField = exports.SamlSignatureAlgorithm = exports.SamlDigestAlgorithm = exports.RequestableCheckStatusState = exports.RepositoryVisibility = exports.RepositoryPrivacy = exports.RepositoryPermission = exports.RepositoryOrderField = exports.RepositoryLockReason = exports.RepositoryInvitationOrderField = exports.RepositoryInteractionLimitOrigin = exports.RepositoryInteractionLimitExpiry = exports.RepositoryInteractionLimit = exports.RepositoryContributionType = void 0;
 var graphql_tag_1 = __importDefault(__nccwpck_require__(8435));
 /** Properties by which Audit Log connections can be ordered. */
 var AuditLogOrderField;
@@ -1666,13 +1666,11 @@ var VerifiableDomainOrderField;
     VerifiableDomainOrderField["Domain"] = "DOMAIN";
 })(VerifiableDomainOrderField = exports.VerifiableDomainOrderField || (exports.VerifiableDomainOrderField = {}));
 exports.AddComment = graphql_tag_1.default(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.DeleteIssueComment = graphql_tag_1.default(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n    mutation DeleteIssueComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation DeleteIssueComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.DeletePullRequestComment = graphql_tag_1.default(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n    mutation DeletePullRequestComment($id: ID!) {\n  deletePullRequestReviewComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation DeletePullRequestComment($id: ID!) {\n  deletePullRequestReviewComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.GetIssueOrPullRequestComment = graphql_tag_1.default(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "], ["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "])));
-exports.GetLoginUser = graphql_tag_1.default(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "], ["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "])));
-exports.UpdateIssueComment = graphql_tag_1.default(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\n    mutation UpdateIssueComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation UpdateIssueComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.UpdatePullRequestComment = graphql_tag_1.default(templateObject_7 || (templateObject_7 = __makeTemplateObject(["\n    mutation UpdatePullRequestComment($id: ID!, $body: String!) {\n  updatePullRequestReviewComment(\n    input: {pullRequestReviewCommentId: $id, body: $body}\n  ) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation UpdatePullRequestComment($id: ID!, $body: String!) {\n  updatePullRequestReviewComment(\n    input: {pullRequestReviewCommentId: $id, body: $body}\n  ) {\n    clientMutationId\n  }\n}\n    "])));
-var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5, templateObject_6, templateObject_7;
+exports.DeleteComment = graphql_tag_1.default(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "])));
+exports.GetIssueOrPullRequestComment = graphql_tag_1.default(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "], ["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "])));
+exports.GetLoginUser = graphql_tag_1.default(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "], ["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "])));
+exports.UpdateComment = graphql_tag_1.default(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\n    mutation UpdateComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation UpdateComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
+var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5;
 
 
 /***/ }),
@@ -1757,29 +1755,13 @@ var GitHubClient = /** @class */ (function () {
             });
         });
     };
-    GitHubClient.prototype.deleteIssuComment = function (variables) {
+    GitHubClient.prototype.deleteComment = function (variables) {
         return __awaiter(this, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.DeleteIssueComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
-        });
-    };
-    GitHubClient.prototype.deletePullRequestComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.DeletePullRequestComment,
+                            mutation: graphql_1.DeleteComment,
                             variables: variables,
                         })];
                     case 1:
@@ -1821,29 +1803,13 @@ var GitHubClient = /** @class */ (function () {
             });
         });
     };
-    GitHubClient.prototype.updateIssueComment = function (variables) {
+    GitHubClient.prototype.updateComment = function (variables) {
         return __awaiter(this, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.UpdateIssueComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
-        });
-    };
-    GitHubClient.prototype.updatePullRequestComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.UpdatePullRequestComment,
+                            mutation: graphql_1.UpdateComment,
                             variables: variables,
                         })];
                     case 1:
@@ -1948,121 +1914,14 @@ var option_1 = __nccwpck_require__(4714);
 var client_1 = __nccwpck_require__(1038);
 var paging_1 = __nccwpck_require__(6238);
 var comment_1 = __nccwpck_require__(3592);
-function handleIssue(option, client, loginUser, result) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function () {
-        var targetCommentId, targetCommentBody, _i, _b, comment, expectBody;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    targetCommentId = null;
-                    targetCommentBody = null;
-                    for (_i = 0, _b = result.comments; _i < _b.length; _i++) {
-                        comment = _b[_i];
-                        if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
-                            continue;
-                        }
-                        if (comment_1.isHidableComment(comment.body, option.id)) {
-                            targetCommentId = comment.id;
-                            targetCommentBody = comment.body;
-                            break;
-                        }
-                    }
-                    if (!(targetCommentId == null)) return [3 /*break*/, 4];
-                    if (!option.show) return [3 /*break*/, 2];
-                    return [4 /*yield*/, client.addComment({ id: result.id, body: comment_1.createHidableComment(option.body, option.id) })];
-                case 1:
-                    _c.sent();
-                    core.info("added comment to " + result.id);
-                    return [3 /*break*/, 3];
-                case 2:
-                    core.info("not found comment");
-                    _c.label = 3;
-                case 3: return [3 /*break*/, 10];
-                case 4:
-                    if (!option.show) return [3 /*break*/, 8];
-                    expectBody = comment_1.createHidableComment(option.body, option.id);
-                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 6];
-                    return [4 /*yield*/, client.updateIssueComment({ id: targetCommentId, body: expectBody })];
-                case 5:
-                    _c.sent();
-                    core.info("updated comment at " + targetCommentId);
-                    return [3 /*break*/, 7];
-                case 6:
-                    core.info("not updated comment at " + targetCommentId);
-                    _c.label = 7;
-                case 7: return [3 /*break*/, 10];
-                case 8: return [4 /*yield*/, client.deleteIssuComment({ id: targetCommentId })];
-                case 9:
-                    _c.sent();
-                    core.info("deleted comment at " + targetCommentId);
-                    _c.label = 10;
-                case 10: return [2 /*return*/];
-            }
-        });
-    });
-}
-function handlePullRequest(option, client, loginUser, result) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function () {
-        var targetCommentId, targetCommentBody, _i, _b, comment, expectBody;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    targetCommentId = null;
-                    targetCommentBody = null;
-                    for (_i = 0, _b = result.comments; _i < _b.length; _i++) {
-                        comment = _b[_i];
-                        if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
-                            continue;
-                        }
-                        if (comment_1.isHidableComment(comment.body, option.id)) {
-                            targetCommentId = comment.id;
-                            targetCommentBody = comment.body;
-                            break;
-                        }
-                    }
-                    if (!(targetCommentId == null)) return [3 /*break*/, 4];
-                    if (!option.show) return [3 /*break*/, 2];
-                    return [4 /*yield*/, client.addComment({ id: result.id, body: comment_1.createHidableComment(option.body, option.id) })];
-                case 1:
-                    _c.sent();
-                    core.info("added comment to " + result.id);
-                    return [3 /*break*/, 3];
-                case 2:
-                    core.info("not found comment");
-                    _c.label = 3;
-                case 3: return [3 /*break*/, 10];
-                case 4:
-                    if (!option.show) return [3 /*break*/, 8];
-                    expectBody = comment_1.createHidableComment(option.body, option.id);
-                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 6];
-                    return [4 /*yield*/, client.updatePullRequestComment({ id: targetCommentId, body: expectBody })];
-                case 5:
-                    _c.sent();
-                    core.info("updated comment at " + targetCommentId);
-                    return [3 /*break*/, 7];
-                case 6:
-                    core.info("not updated comment at " + targetCommentId);
-                    _c.label = 7;
-                case 7: return [3 /*break*/, 10];
-                case 8: return [4 /*yield*/, client.deletePullRequestComment({ id: targetCommentId })];
-                case 9:
-                    _c.sent();
-                    core.info("deleted comment at " + targetCommentId);
-                    _c.label = 10;
-                case 10: return [2 /*return*/];
-            }
-        });
-    });
-}
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var option, client, owner, name_1, loginUser, issueOrPullRequest, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var option, client, owner, name_1, loginUser, issueOrPullRequest, targetCommentId, targetCommentBody, _i, _b, comment, expectBody, error_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    _a.trys.push([0, 7, , 8]);
+                    _c.trys.push([0, 13, , 14]);
                     option = option_1.getOption();
                     client = client_1.githubClient(option);
                     if (option.repository.includes("/") == false) {
@@ -2072,29 +1931,65 @@ function run() {
                     name_1 = option.repository.split("/")[1];
                     return [4 /*yield*/, client.getLoginUser({})];
                 case 1:
-                    loginUser = (_a.sent()).viewer.login.split("[")[0];
+                    loginUser = (_c.sent()).viewer.login.split("[")[0];
                     return [4 /*yield*/, paging_1.getIssueOrPullRequestCommentWithPaging(client, {
                             owner: owner,
                             name: name_1,
                             number: option.number,
                         })];
                 case 2:
-                    issueOrPullRequest = _a.sent();
-                    if (!(issueOrPullRequest.__typename == "Issue")) return [3 /*break*/, 4];
-                    return [4 /*yield*/, handleIssue(option, client, loginUser, issueOrPullRequest)];
+                    issueOrPullRequest = _c.sent();
+                    targetCommentId = null;
+                    targetCommentBody = null;
+                    for (_i = 0, _b = issueOrPullRequest.comments; _i < _b.length; _i++) {
+                        comment = _b[_i];
+                        if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
+                            continue;
+                        }
+                        if (comment_1.isHidableComment(comment.body, option.id)) {
+                            targetCommentId = comment.id;
+                            targetCommentBody = comment.body;
+                            break;
+                        }
+                    }
+                    if (!(targetCommentId == null)) return [3 /*break*/, 6];
+                    if (!option.show) return [3 /*break*/, 4];
+                    return [4 /*yield*/, client.addComment({
+                            id: issueOrPullRequest.id,
+                            body: comment_1.createHidableComment(option.body, option.id),
+                        })];
                 case 3:
-                    _a.sent();
-                    return [3 /*break*/, 6];
-                case 4: return [4 /*yield*/, handlePullRequest(option, client, loginUser, issueOrPullRequest)];
-                case 5:
-                    _a.sent();
-                    _a.label = 6;
-                case 6: return [3 /*break*/, 8];
+                    _c.sent();
+                    core.info("added comment to " + issueOrPullRequest.id);
+                    return [3 /*break*/, 5];
+                case 4:
+                    core.info("not found comment");
+                    _c.label = 5;
+                case 5: return [3 /*break*/, 12];
+                case 6:
+                    if (!option.show) return [3 /*break*/, 10];
+                    expectBody = comment_1.createHidableComment(option.body, option.id);
+                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, client.updateComment({ id: targetCommentId, body: expectBody })];
                 case 7:
-                    error_1 = _a.sent();
+                    _c.sent();
+                    core.info("updated comment at " + targetCommentId);
+                    return [3 /*break*/, 9];
+                case 8:
+                    core.info("not updated comment at " + targetCommentId);
+                    _c.label = 9;
+                case 9: return [3 /*break*/, 12];
+                case 10: return [4 /*yield*/, client.deleteComment({ id: targetCommentId })];
+                case 11:
+                    _c.sent();
+                    core.info("deleted comment at " + targetCommentId);
+                    _c.label = 12;
+                case 12: return [3 /*break*/, 14];
+                case 13:
+                    error_1 = _c.sent();
                     core.setFailed(error_1.message);
-                    return [3 /*break*/, 8];
-                case 8: return [2 /*return*/];
+                    return [3 /*break*/, 14];
+                case 14: return [2 /*return*/];
             }
         });
     });
