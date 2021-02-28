@@ -1,3 +1,4 @@
+import fetch from "cross-fetch";
 import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from "@apollo/client";
 import { Option } from "./option";
 import {
@@ -30,6 +31,7 @@ export function githubClient(option: Option): GitHubClient {
             link: new HttpLink({
                 uri: "https://api.github.com/graphql",
                 headers: { authorization: `token ${option.githubToken}` },
+                fetch,
             }),
             cache: new InMemoryCache(),
         })
