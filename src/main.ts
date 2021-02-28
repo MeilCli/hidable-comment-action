@@ -12,13 +12,10 @@ async function handleIssue(
 ) {
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
-    core.info(`found comments: ${result.comments.length}`);
-    core.info(`login user: ${loginUser}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
         }
-        core.info(`check comment: ${comment.body}`);
         if (isHidableComment(comment.body, option.id)) {
             targetCommentId = comment.id;
             targetCommentBody = comment.body;
@@ -57,13 +54,10 @@ async function handlePullRequest(
 ) {
     let targetCommentId: string | null = null;
     let targetCommentBody: string | null = null;
-    core.info(`found comments: ${result.comments.length}`);
-    core.info(`login user: ${loginUser}`);
     for (const comment of result.comments) {
         if (comment.author?.login != loginUser) {
             continue;
         }
-        core.info(`check comment: ${comment.body}`);
         if (isHidableComment(comment.body, option.id)) {
             targetCommentId = comment.id;
             targetCommentBody = comment.body;
@@ -103,7 +97,8 @@ async function run() {
         }
         const owner = option.repository.split("/")[0];
         const name = option.repository.split("/")[1];
-        const loginUser = (await client.getLoginUser({})).viewer.login;
+        // if bot account, including '[bot]'. but author.login will not include it
+        const loginUser = (await client.getLoginUser({})).viewer.login.split("[")[0];
         const issueOrPullRequest = await getIssueOrPullRequestCommentWithPaging(client, {
             owner,
             name,
