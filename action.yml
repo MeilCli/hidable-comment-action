@@ -1,9 +1,32 @@
-name: 'template name'
-description: 'template description'
+name: 'hidable comment action'
+description: 'create, update or delete comment by action argument'
 author: 'MeilCli'
 branding:
-  icon: package
-  color: gray-dark
+  icon: message-square
+  color: white
+inputs:
+  github_token:
+    description: 'github token, using to read repository'
+    required: true
+    default: ${{ github.token }}
+  repository:
+    description: 'execute repository name. for example, MeilCli/hidable-comment-action'
+    required: true
+    default: ${{ github.repository }}
+  number:
+    description: 'issue or pull request number'
+    required: true
+  id:
+    description: 'Id for identify multiple hidable-comment-action'
+    required: true
+    default: 'hidable-comment'
+  show:
+    description: 'flag of show comment, values are true/false. if set the false, hide comment'
+    required: true
+    default: 'true'
+  body:
+    description: 'comment body'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

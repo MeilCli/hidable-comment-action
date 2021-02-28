@@ -1,0 +1,39 @@
+query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {
+    repository(owner: $owner, name: $name) {
+        issueOrPullRequest(number: $number) {
+            __typename
+            ... on PullRequest {
+                id
+                comments(first: 100, after: $after) {
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                    nodes {
+                        author {
+                            login
+                        }
+                        id
+                        body
+                    }
+                }
+            }
+            ... on Issue {
+                id
+                comments(first: 100, after: $after) {
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                    nodes {
+                        author {
+                            login
+                        }
+                        id
+                        body
+                    }
+                }
+            }
+        }
+    }
+}

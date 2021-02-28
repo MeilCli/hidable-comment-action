@@ -1,0 +1,5 @@
+mutation UpdatePullRequestComment($id: ID!, $body: String!) {
+    updatePullRequestReviewComment(input: { pullRequestReviewCommentId: $id, body: $body }) {
+        clientMutationId
+    }
+}

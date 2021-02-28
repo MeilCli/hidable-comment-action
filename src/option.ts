@@ -1,25 +1,25 @@
 import * as core from "@actions/core";
 
 export interface Option {
-    test: string;
-    testOrNull: string | null;
+    githubToken: string;
+    repository: string;
+    number: number;
+    id: string;
+    show: boolean;
+    body: string;
 }
 
 export function getOption(): Option {
     return {
-        test: getInput("test"),
-        testOrNull: getInputOrNull("test_or_null"),
+        githubToken: getInput("github_token"),
+        repository: getInput("repository"),
+        number: parseInt(getInput("number")),
+        id: getInput("id"),
+        show: getInput("show") == "true",
+        body: getInput("body"),
     };
 }
 
 function getInput(key: string): string {
     return core.getInput(key, { required: true });
-}
-
-function getInputOrNull(key: string): string | null {
-    const result = core.getInput(key, { required: false });
-    if (result.length == 0) {
-        return null;
-    }
-    return result;
 }
