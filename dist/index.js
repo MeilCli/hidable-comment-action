@@ -1664,6 +1664,8 @@ var VerifiableDomainOrderField;
 (function (VerifiableDomainOrderField) {
     /** Order verifiable domains by the domain name. */
     VerifiableDomainOrderField["Domain"] = "DOMAIN";
+    /** Order verifiable domains by their creation date. */
+    VerifiableDomainOrderField["CreatedAt"] = "CREATED_AT";
 })(VerifiableDomainOrderField = exports.VerifiableDomainOrderField || (exports.VerifiableDomainOrderField = {}));
 exports.AddComment = graphql_tag_1.default(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
 exports.DeleteComment = graphql_tag_1.default(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "])));
