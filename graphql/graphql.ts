@@ -19492,6 +19492,8 @@ export enum UserStatusOrderField {
 /** A domain that can be verified for an organization or an enterprise. */
 export type VerifiableDomain = Node & {
   __typename?: 'VerifiableDomain';
+  /** Identifies the date and time when the object was created. */
+  createdAt: Scalars['DateTime'];
   /** Identifies the primary key from the database. */
   databaseId?: Maybe<Scalars['Int']>;
   /** The DNS host name that should be used for verification. */
@@ -19513,6 +19515,8 @@ export type VerifiableDomain = Node & {
   punycodeEncodedDomain: Scalars['URI'];
   /** The time that the current verification token will expire. */
   tokenExpirationTime?: Maybe<Scalars['DateTime']>;
+  /** Identifies the date and time when the object was last updated. */
+  updatedAt: Scalars['DateTime'];
   /** The current verification token for the domain. */
   verificationToken?: Maybe<Scalars['String']>;
 };
@@ -19550,7 +19554,9 @@ export type VerifiableDomainOrder = {
 /** Properties by which verifiable domain connections can be ordered. */
 export enum VerifiableDomainOrderField {
   /** Order verifiable domains by the domain name. */
-  Domain = 'DOMAIN'
+  Domain = 'DOMAIN',
+  /** Order verifiable domains by their creation date. */
+  CreatedAt = 'CREATED_AT'
 }
 
 /** Types that can own a verifiable domain. */
@@ -28696,6 +28702,7 @@ export type UserStatusEdgeResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type VerifiableDomainResolvers<ContextType = any, ParentType extends ResolversParentTypes['VerifiableDomain'] = ResolversParentTypes['VerifiableDomain']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   databaseId?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   dnsHostName?: Resolver<Maybe<ResolversTypes['URI']>, ParentType, ContextType>;
   domain?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
@@ -28707,6 +28714,7 @@ export type VerifiableDomainResolvers<ContextType = any, ParentType extends Reso
   owner?: Resolver<ResolversTypes['VerifiableDomainOwner'], ParentType, ContextType>;
   punycodeEncodedDomain?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   tokenExpirationTime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   verificationToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
