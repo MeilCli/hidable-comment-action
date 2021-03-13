@@ -9674,7 +9674,7 @@ export type Organization = Node & Actor & PackageOwner & ProjectOwner & Reposito
   isSponsoredBy: Scalars['Boolean'];
   /** True if the viewer is sponsored by this user/organization. */
   isSponsoringViewer: Scalars['Boolean'];
-  /** Whether the organization has verified its profile email and website, always false on Enterprise. */
+  /** Whether the organization has verified its profile email and website. */
   isVerified: Scalars['Boolean'];
   /** Showcases a selection of repositories and gists that the profile owner has either curated or that have been selected automatically based on popularity. */
   itemShowcase: ProfileItemShowcase;
