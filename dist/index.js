@@ -35986,7 +35986,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(9994);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.5.6';
+var version = '3.5.7';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -38806,8 +38806,8 @@ var react = __nccwpck_require__(8444);
 var context = __nccwpck_require__(3673);
 var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(9969);
-var errors = __nccwpck_require__(1621);
 var core = __nccwpck_require__(1402);
+var errors = __nccwpck_require__(1621);
 var parser = __nccwpck_require__(5043);
 
 function useApolloClient(override) {
@@ -38823,9 +38823,10 @@ function useQuery(query, options) {
     var _a;
     var context$1 = react.useContext(context.getApolloContext());
     var client = useApolloClient(options === null || options === void 0 ? void 0 : options.client);
+    var defaultWatchQueryOptions = client.defaultOptions.watchQuery;
     parser.verifyDocumentType(query, parser.DocumentType.Query);
     var _b = react.useState(function () {
-        var watchQueryOptions = createWatchQueryOptions(query, options);
+        var watchQueryOptions = createWatchQueryOptions(query, options, defaultWatchQueryOptions);
         var obsQuery = null;
         if (context$1.renderPromises) {
             obsQuery = context$1.renderPromises.getSSRObservable(watchQueryOptions);
@@ -38841,7 +38842,7 @@ function useQuery(query, options) {
             !(options === null || options === void 0 ? void 0 : options.skip) &&
             obsQuery.getCurrentResult().loading) {
             context$1.renderPromises.addQueryPromise({
-                getOptions: function () { return createWatchQueryOptions(query, options); },
+                getOptions: function () { return createWatchQueryOptions(query, options, defaultWatchQueryOptions); },
                 fetchData: function () { return new Promise(function (resolve) {
                     var sub = obsQuery.subscribe({
                         next: function (result) {
@@ -38882,11 +38883,11 @@ function useQuery(query, options) {
         options: options,
         result: result,
         previousData: void 0,
-        watchQueryOptions: createWatchQueryOptions(query, options),
+        watchQueryOptions: createWatchQueryOptions(query, options, defaultWatchQueryOptions),
     });
     react.useEffect(function () {
         var _a, _b;
-        var watchQueryOptions = createWatchQueryOptions(query, options);
+        var watchQueryOptions = createWatchQueryOptions(query, options, defaultWatchQueryOptions);
         var nextResult;
         if (ref.current.client !== client || !equality.equal(ref.current.query, query)) {
             var obsQuery_1 = client.watchQuery(watchQueryOptions);
@@ -38905,13 +38906,11 @@ function useQuery(query, options) {
             }
             setResult(ref.current.result = nextResult);
             if (!nextResult.loading && options) {
-                if (!result.loading) {
-                    if (result.error) {
-                        (_a = options.onError) === null || _a === void 0 ? void 0 : _a.call(options, result.error);
-                    }
-                    else if (result.data) {
-                        (_b = options.onCompleted) === null || _b === void 0 ? void 0 : _b.call(options, result.data);
-                    }
+                if (nextResult.error) {
+                    (_a = options.onError) === null || _a === void 0 ? void 0 : _a.call(options, nextResult.error);
+                }
+                else if (nextResult.data) {
+                    (_b = options.onCompleted) === null || _b === void 0 ? void 0 : _b.call(options, nextResult.data);
                 }
             }
         }
@@ -38983,7 +38982,7 @@ function useQuery(query, options) {
             (options === null || options === void 0 ? void 0 : options.ssr) !== false &&
             !(options === null || options === void 0 ? void 0 : options.skip) &&
             result.loading) {
-            obsQuery.setOptions(createWatchQueryOptions(query, options)).catch(function () { });
+            obsQuery.setOptions(createWatchQueryOptions(query, options, defaultWatchQueryOptions)).catch(function () { });
         }
         Object.assign(ref.current, { options: options });
     }
@@ -39015,12 +39014,16 @@ function useQuery(query, options) {
         stopPolling: obsQuery.stopPolling.bind(obsQuery),
         subscribeToMore: obsQuery.subscribeToMore.bind(obsQuery),
     }); }, [obsQuery]);
-    return tslib.__assign(tslib.__assign(tslib.__assign({}, obsQueryFields), { variables: createWatchQueryOptions(query, options).variables, client: client, called: true, previousData: ref.current.previousData }), result);
+    return tslib.__assign(tslib.__assign(tslib.__assign({}, obsQueryFields), { variables: createWatchQueryOptions(query, options, defaultWatchQueryOptions).variables, client: client, called: true, previousData: ref.current.previousData }), result);
 }
-function createWatchQueryOptions(query, options) {
+function createWatchQueryOptions(query, options, defaultOptions) {
     var _a;
     if (options === void 0) { options = {}; }
-    var skip = options.skip; options.ssr; options.onCompleted; options.onError; options.displayName; var watchQueryOptions = tslib.__rest(options, ["skip", "ssr", "onCompleted", "onError", "displayName"]);
+    var skip = options.skip; options.ssr; options.onCompleted; options.onError; options.displayName; var otherOptions = tslib.__rest(options, ["skip", "ssr", "onCompleted", "onError", "displayName"]);
+    var watchQueryOptions = tslib.__assign({ query: query }, otherOptions);
+    if (defaultOptions) {
+        watchQueryOptions = core.mergeOptions(defaultOptions, watchQueryOptions);
+    }
     if (skip) {
         watchQueryOptions.fetchPolicy = 'standby';
     }
@@ -39035,7 +39038,7 @@ function createWatchQueryOptions(query, options) {
     if (!watchQueryOptions.variables) {
         watchQueryOptions.variables = {};
     }
-    return tslib.__assign({ query: query }, watchQueryOptions);
+    return watchQueryOptions;
 }
 
 var EAGER_METHODS = [
