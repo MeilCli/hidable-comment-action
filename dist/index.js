@@ -38204,7 +38204,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(9994);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.5.7';
+var version = '3.5.8';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -38367,7 +38367,7 @@ var ObservableQuery = (function (_super) {
             pollInterval: 0,
         };
         var fetchPolicy = this.options.fetchPolicy;
-        if (fetchPolicy === 'standby' || fetchPolicy === 'cache-and-network') {
+        if (fetchPolicy === 'cache-and-network') {
             reobserveOptions.fetchPolicy = fetchPolicy;
         }
         else if (fetchPolicy === 'no-cache') {
@@ -41032,8 +41032,8 @@ function useApolloClient(override) {
     var context$1 = react.useContext(context.getApolloContext());
     var client = override || context$1.client;
     __DEV__ ? globals.invariant(!!client, 'Could not find "client" in the context or passed in as an option. ' +
-        'Wrap the root component in an <ApolloProvider>, or pass an ApolloClient' +
-        'ApolloClient instance in via options.') : globals.invariant(!!client, 29);
+        'Wrap the root component in an <ApolloProvider>, or pass an ApolloClient ' +
+        'instance in via options.') : globals.invariant(!!client, 29);
     return client;
 }
 
@@ -41269,36 +41269,16 @@ var EAGER_METHODS = [
 function useLazyQuery(query, options) {
     var _a = react.useState({
         called: false,
-        resolves: [],
     }), execution = _a[0], setExecution = _a[1];
-    var execute = react.useCallback(function (executeOptions) {
-        var resolve;
-        var promise = new Promise(function (resolve1) { return (resolve = resolve1); });
-        setExecution(function (execution) {
-            if (execution.called) {
-                result && result.refetch(executeOptions === null || executeOptions === void 0 ? void 0 : executeOptions.variables);
-            }
-            return {
-                called: true,
-                resolves: tslib.__spreadArray(tslib.__spreadArray([], execution.resolves, true), [resolve], false),
-                options: executeOptions,
-            };
-        });
-        return promise;
-    }, []);
     var result = useQuery(query, tslib.__assign(tslib.__assign(tslib.__assign({}, options), execution.options), { fetchPolicy: execution.called ? options === null || options === void 0 ? void 0 : options.fetchPolicy : 'standby', skip: undefined }));
-    react.useEffect(function () {
-        var resolves = execution.resolves;
-        if (!result.loading && resolves.length) {
-            setExecution(function (execution) { return (tslib.__assign(tslib.__assign({}, execution), { resolves: [] })); });
-            resolves.forEach(function (resolve) { return resolve(result); });
-        }
-    }, [result, execution]);
     if (!execution.called) {
         result = tslib.__assign(tslib.__assign({}, result), { loading: false, data: void 0, error: void 0, called: false });
+    }
+    var eagerMethods = react.useMemo(function () {
+        var eagerMethods = {};
         var _loop_1 = function (key) {
             var method = result[key];
-            result[key] = function () {
+            eagerMethods[key] = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
@@ -41311,7 +41291,18 @@ function useLazyQuery(query, options) {
             var key = EAGER_METHODS_1[_i];
             _loop_1(key);
         }
-    }
+        return eagerMethods;
+    }, []);
+    result.error = result.error || void 0;
+    Object.assign(result, eagerMethods);
+    var execute = react.useCallback(function (executeOptions) {
+        setExecution({ called: true, options: executeOptions });
+        return result.refetch(executeOptions === null || executeOptions === void 0 ? void 0 : executeOptions.variables).then(function (result1) {
+            var result2 = tslib.__assign(tslib.__assign({}, result), { data: result1.data, error: result1.error, called: true, loading: false });
+            Object.assign(result2, eagerMethods);
+            return result2;
+        });
+    }, []);
     return [execute, result];
 }
 
