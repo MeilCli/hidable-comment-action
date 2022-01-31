@@ -32820,14 +32820,14 @@ export type AddCommentMutationVariables = Exact<{
 }>;
 
 
-export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'AddCommentPayload', clientMutationId?: string | null | undefined } | null | undefined };
+export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'AddCommentPayload', clientMutationId?: string | null } | null };
 
 export type DeleteCommentMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type DeleteCommentMutation = { __typename?: 'Mutation', deleteIssueComment?: { __typename?: 'DeleteIssueCommentPayload', clientMutationId?: string | null | undefined } | null | undefined };
+export type DeleteCommentMutation = { __typename?: 'Mutation', deleteIssueComment?: { __typename?: 'DeleteIssueCommentPayload', clientMutationId?: string | null } | null };
 
 export type GetIssueOrPullRequestCommentQueryVariables = Exact<{
   owner: Scalars['String'];
@@ -32837,7 +32837,7 @@ export type GetIssueOrPullRequestCommentQueryVariables = Exact<{
 }>;
 
 
-export type GetIssueOrPullRequestCommentQuery = { __typename?: 'Query', repository?: { __typename?: 'Repository', issueOrPullRequest?: { __typename: 'Issue', id: string, comments: { __typename?: 'IssueCommentConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null | undefined }, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, author?: { __typename?: 'Bot', login: string } | { __typename?: 'EnterpriseUserAccount', login: string } | { __typename?: 'Mannequin', login: string } | { __typename?: 'Organization', login: string } | { __typename?: 'User', login: string } | null | undefined } | null | undefined> | null | undefined } } | { __typename: 'PullRequest', id: string, comments: { __typename?: 'IssueCommentConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null | undefined }, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, author?: { __typename?: 'Bot', login: string } | { __typename?: 'EnterpriseUserAccount', login: string } | { __typename?: 'Mannequin', login: string } | { __typename?: 'Organization', login: string } | { __typename?: 'User', login: string } | null | undefined } | null | undefined> | null | undefined } } | null | undefined } | null | undefined };
+export type GetIssueOrPullRequestCommentQuery = { __typename?: 'Query', repository?: { __typename?: 'Repository', issueOrPullRequest?: { __typename: 'Issue', id: string, comments: { __typename?: 'IssueCommentConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, author?: { __typename?: 'Bot', login: string } | { __typename?: 'EnterpriseUserAccount', login: string } | { __typename?: 'Mannequin', login: string } | { __typename?: 'Organization', login: string } | { __typename?: 'User', login: string } | null } | null> | null } } | { __typename: 'PullRequest', id: string, comments: { __typename?: 'IssueCommentConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, author?: { __typename?: 'Bot', login: string } | { __typename?: 'EnterpriseUserAccount', login: string } | { __typename?: 'Mannequin', login: string } | { __typename?: 'Organization', login: string } | { __typename?: 'User', login: string } | null } | null> | null } } | null } | null };
 
 export type GetLoginUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -32850,4 +32850,4 @@ export type UpdateCommentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateCommentMutation = { __typename?: 'Mutation', updateIssueComment?: { __typename?: 'UpdateIssueCommentPayload', clientMutationId?: string | null | undefined } | null | undefined };
+export type UpdateCommentMutation = { __typename?: 'Mutation', updateIssueComment?: { __typename?: 'UpdateIssueCommentPayload', clientMutationId?: string | null } | null };
