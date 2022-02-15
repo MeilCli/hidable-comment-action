@@ -36111,7 +36111,7 @@ function fieldNameFromStoreName(storeFieldName) {
 }
 function selectionSetMatchesResult(selectionSet, result, variables) {
     if (utilities.isNonNullObject(result)) {
-        return Array.isArray(result)
+        return isArray(result)
             ? result.every(function (item) { return selectionSetMatchesResult(selectionSet, item, variables); })
             : selectionSet.selections.every(function (field) {
                 if (utilities.isField(field) && utilities.shouldInclude(field, variables)) {
@@ -36128,11 +36128,12 @@ function selectionSetMatchesResult(selectionSet, result, variables) {
 function storeValueIsStoreObject(value) {
     return utilities.isNonNullObject(value) &&
         !utilities.isReference(value) &&
-        !Array.isArray(value);
+        !isArray(value);
 }
 function makeProcessedFieldsMerger() {
     return new utilities.DeepMerger;
 }
+var isArray = function (a) { return Array.isArray(a); };
 
 var DELETE = Object.create(null);
 var delModifier = function () { return DELETE; };
@@ -36595,7 +36596,7 @@ function supportsResultCaching(store) {
 
 function shallowCopy(value) {
     if (utilities.isNonNullObject(value)) {
-        return Array.isArray(value)
+        return isArray(value)
             ? value.slice(0)
             : tslib.__assign({ __proto__: Object.getPrototypeOf(value) }, value);
     }
@@ -36858,7 +36859,7 @@ var StoreReader = (function () {
                             _a));
                     }
                 }
-                else if (Array.isArray(fieldValue)) {
+                else if (isArray(fieldValue)) {
                     fieldValue = handleMissing(_this.executeSubSelectedArray({
                         field: selection,
                         array: fieldValue,
@@ -36917,7 +36918,7 @@ var StoreReader = (function () {
             if (item === null) {
                 return null;
             }
-            if (Array.isArray(item)) {
+            if (isArray(item)) {
                 return handleMissing(_this.executeSubSelectedArray({
                     field: field,
                     array: item,
@@ -37111,13 +37112,13 @@ function getSpecifierPaths(spec) {
         var paths_1 = info.paths = [];
         var currentPath_1 = [];
         spec.forEach(function (s, i) {
-            if (Array.isArray(s)) {
+            if (isArray(s)) {
                 getSpecifierPaths(s).forEach(function (p) { return paths_1.push(currentPath_1.concat(p)); });
                 currentPath_1.length = 0;
             }
             else {
                 currentPath_1.push(s);
-                if (!Array.isArray(spec[i + 1])) {
+                if (!isArray(spec[i + 1])) {
                     paths_1.push(currentPath_1.slice(0));
                     currentPath_1.length = 0;
                 }
@@ -37132,14 +37133,14 @@ function extractKey(object, key) {
 function extractKeyPath(object, path, extract) {
     extract = extract || extractKey;
     return normalize(path.reduce(function reducer(obj, key) {
-        return Array.isArray(obj)
+        return isArray(obj)
             ? obj.map(function (child) { return reducer(child, key); })
             : obj && extract(obj, key);
     }, object));
 }
 function normalize(value) {
     if (utilities.isNonNullObject(value)) {
-        if (Array.isArray(value)) {
+        if (isArray(value)) {
             return value.map(normalize);
         }
         return collectSpecifierPaths(Object.keys(value).sort(), function (path) { return extractKeyPath(value, path); });
@@ -37202,7 +37203,7 @@ var Policies = (function () {
         var keyFn = policy && policy.keyFn || this.config.dataIdFromObject;
         while (keyFn) {
             var specifierOrId = keyFn(object, context);
-            if (Array.isArray(specifierOrId)) {
+            if (isArray(specifierOrId)) {
                 keyFn = keyFieldsFnFromSpecifier(specifierOrId);
             }
             else {
@@ -37245,7 +37246,7 @@ var Policies = (function () {
         setMerge(existing, incoming.merge);
         existing.keyFn =
             keyFields === false ? nullKeyFieldsFn :
-                Array.isArray(keyFields) ? keyFieldsFnFromSpecifier(keyFields) :
+                isArray(keyFields) ? keyFieldsFnFromSpecifier(keyFields) :
                     typeof keyFields === "function" ? keyFields :
                         existing.keyFn;
         if (fields) {
@@ -37259,7 +37260,7 @@ var Policies = (function () {
                     var keyArgs = incoming.keyArgs, read = incoming.read, merge = incoming.merge;
                     existing.keyFn =
                         keyArgs === false ? simpleKeyArgsFn :
-                            Array.isArray(keyArgs) ? keyArgsFnFromSpecifier(keyArgs) :
+                            isArray(keyArgs) ? keyArgsFnFromSpecifier(keyArgs) :
                                 typeof keyArgs === "function" ? keyArgs :
                                     existing.keyFn;
                     if (typeof read === "function") {
@@ -37404,7 +37405,7 @@ var Policies = (function () {
             var args = argsFromFieldSpecifier(fieldSpec);
             while (keyFn) {
                 var specifierOrString = keyFn(args, context);
-                if (Array.isArray(specifierOrString)) {
+                if (isArray(specifierOrString)) {
                     keyFn = keyArgsFnFromSpecifier(specifierOrString);
                 }
                 else {
@@ -37525,7 +37526,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
 }
 function makeMergeObjectsFunction(store) {
     return function mergeObjects(existing, incoming) {
-        if (Array.isArray(existing) || Array.isArray(incoming)) {
+        if (isArray(existing) || isArray(incoming)) {
             throw __DEV__ ? new globals.InvariantError("Cannot automatically merge arrays") : new globals.InvariantError(4);
         }
         if (utilities.isNonNullObject(existing) &&
@@ -37754,7 +37755,7 @@ var StoreWriter = (function () {
         if (!field.selectionSet || value === null) {
             return __DEV__ ? utilities.cloneDeep(value) : value;
         }
-        if (Array.isArray(value)) {
+        if (isArray(value)) {
             return value.map(function (item, i) {
                 var value = _this.processFieldValue(item, field, context, getChildMergeTree(mergeTree, i));
                 maybeRecycleChildMergeTree(mergeTree, i);
@@ -37819,7 +37820,7 @@ var StoreWriter = (function () {
         var _a;
         var _this = this;
         if (mergeTree.map.size && !utilities.isReference(incoming)) {
-            var e_1 = (!Array.isArray(incoming) &&
+            var e_1 = (!isArray(incoming) &&
                 (utilities.isReference(existing) || storeValueIsStoreObject(existing))) ? existing : void 0;
             var i_1 = incoming;
             if (e_1 && !getStorageArgs) {
@@ -37827,7 +37828,7 @@ var StoreWriter = (function () {
             }
             var changedFields_1;
             var getValue_1 = function (from, name) {
-                return Array.isArray(from)
+                return isArray(from)
                     ? (typeof name === "number" ? from[name] : void 0)
                     : context.store.getFieldValue(from, String(name));
             };
@@ -37849,7 +37850,7 @@ var StoreWriter = (function () {
                 }
             });
             if (changedFields_1) {
-                incoming = (Array.isArray(i_1) ? i_1.slice(0) : tslib.__assign({}, i_1));
+                incoming = (isArray(i_1) ? i_1.slice(0) : tslib.__assign({}, i_1));
                 changedFields_1.forEach(function (value, name) {
                     incoming[name] = value;
                 });
@@ -37930,8 +37931,8 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
         return;
     warnings.add(typeDotName);
     var childTypenames = [];
-    if (!Array.isArray(existing) &&
-        !Array.isArray(incoming)) {
+    if (!isArray(existing) &&
+        !isArray(incoming)) {
         [existing, incoming].forEach(function (child) {
             var typename = store.getFieldValue(child, "__typename");
             if (typeof typename === "string" &&
@@ -38275,7 +38276,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(9994);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.5.8';
+var version = '3.5.9';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -38678,8 +38679,11 @@ var ObservableQuery = (function (_super) {
         this.reportResult(this.getCurrentResult(false), this.variables);
     };
     ObservableQuery.prototype.reportResult = function (result, variables) {
-        if (this.getLastError() || this.isDifferentFromLastResult(result)) {
-            this.updateLastResult(result, variables);
+        var lastError = this.getLastError();
+        if (lastError || this.isDifferentFromLastResult(result)) {
+            if (lastError || !result.partial || this.options.returnPartialData) {
+                this.updateLastResult(result, variables);
+            }
             utilities.iterateObserversSafely(this.observers, 'next', result);
         }
     };
@@ -41368,11 +41372,13 @@ function useLazyQuery(query, options) {
     Object.assign(result, eagerMethods);
     var execute = react.useCallback(function (executeOptions) {
         setExecution({ called: true, options: executeOptions });
-        return result.refetch(executeOptions === null || executeOptions === void 0 ? void 0 : executeOptions.variables).then(function (result1) {
+        var promise = result.refetch(executeOptions === null || executeOptions === void 0 ? void 0 : executeOptions.variables).then(function (result1) {
             var result2 = tslib.__assign(tslib.__assign({}, result), { data: result1.data, error: result1.error, called: true, loading: false });
             Object.assign(result2, eagerMethods);
             return result2;
         });
+        promise.catch(function () { });
+        return promise;
     }, []);
     return [execute, result];
 }
@@ -41492,14 +41498,16 @@ function useSubscription(subscription, options) {
         if (typeof shouldResubscribe === 'function') {
             shouldResubscribe = !!shouldResubscribe(options);
         }
-        if ((options === null || options === void 0 ? void 0 : options.skip) && !(options === null || options === void 0 ? void 0 : options.skip) !== !((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.skip)) {
-            setResult({
-                loading: false,
-                data: void 0,
-                error: void 0,
-                variables: options === null || options === void 0 ? void 0 : options.variables,
-            });
-            setObservable(null);
+        if (options === null || options === void 0 ? void 0 : options.skip) {
+            if (!(options === null || options === void 0 ? void 0 : options.skip) !== !((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.skip)) {
+                setResult({
+                    loading: false,
+                    data: void 0,
+                    error: void 0,
+                    variables: options === null || options === void 0 ? void 0 : options.variables,
+                });
+                setObservable(null);
+            }
         }
         else if (shouldResubscribe !== false && (client !== ref.current.client ||
             subscription !== ref.current.subscription ||
