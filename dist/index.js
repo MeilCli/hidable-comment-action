@@ -6,10 +6,6 @@
 
 "use strict";
 
-var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
-    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
-    return cooked;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,7 +14,7 @@ exports.MergeableState = exports.LockReason = exports.LanguageOrderField = expor
 exports.RepoArchivedAuditEntryVisibility = exports.RepoAddMemberAuditEntryVisibility = exports.RepoAccessAuditEntryVisibility = exports.ReleaseOrderField = exports.RefOrderField = exports.ReactionOrderField = exports.ReactionContent = exports.PullRequestUpdateState = exports.PullRequestTimelineItemsItemType = exports.PullRequestState = exports.PullRequestReviewState = exports.PullRequestReviewEvent = exports.PullRequestReviewDecision = exports.PullRequestReviewCommentState = exports.PullRequestOrderField = exports.PullRequestMergeMethod = exports.ProjectTemplate = exports.ProjectState = exports.ProjectOrderField = exports.ProjectColumnPurpose = exports.ProjectCardState = exports.ProjectCardArchivedState = exports.PinnedDiscussionPattern = exports.PinnedDiscussionGradient = exports.PinnableItemType = exports.PackageVersionOrderField = exports.PackageType = exports.PackageOrderField = exports.PackageFileOrderField = exports.OrganizationOrderField = exports.OrganizationMembersCanCreateRepositoriesSettingValue = exports.OrganizationMemberRole = exports.OrganizationInvitationType = exports.OrganizationInvitationRole = exports.OrgUpdateMemberRepositoryCreationPermissionAuditEntryVisibility = exports.OrgUpdateMemberAuditEntryPermission = exports.OrgUpdateDefaultRepositoryPermissionAuditEntryPermission = exports.OrgRemoveOutsideCollaboratorAuditEntryReason = exports.OrgRemoveOutsideCollaboratorAuditEntryMembershipType = exports.OrgRemoveMemberAuditEntryReason = exports.OrgRemoveMemberAuditEntryMembershipType = exports.OrgRemoveBillingManagerAuditEntryReason = exports.OrgCreateAuditEntryBillingPlan = exports.OrgAddMemberAuditEntryPermission = exports.OrderDirection = exports.OperationType = exports.OauthApplicationCreateAuditEntryState = exports.NotificationRestrictionSettingValue = exports.MilestoneState = exports.MilestoneOrderField = void 0;
 exports.UserBlockDuration = exports.TopicSuggestionDeclineReason = exports.TeamRole = exports.TeamRepositoryOrderField = exports.TeamPrivacy = exports.TeamOrderField = exports.TeamMembershipType = exports.TeamMemberRole = exports.TeamMemberOrderField = exports.TeamDiscussionOrderField = exports.TeamDiscussionCommentOrderField = exports.SubscriptionState = exports.StatusState = exports.StarOrderField = exports.SponsorshipPrivacy = exports.SponsorshipOrderField = exports.SponsorshipNewsletterOrderField = exports.SponsorsTierOrderField = exports.SponsorsGoalKind = exports.SponsorsActivityPeriod = exports.SponsorsActivityOrderField = exports.SponsorsActivityAction = exports.SponsorableOrderField = exports.SponsorOrderField = exports.SecurityVulnerabilityOrderField = exports.SecurityAdvisorySeverity = exports.SecurityAdvisoryOrderField = exports.SecurityAdvisoryIdentifierType = exports.SecurityAdvisoryEcosystem = exports.SearchType = exports.SavedReplyOrderField = exports.SamlSignatureAlgorithm = exports.SamlDigestAlgorithm = exports.RequestableCheckStatusState = exports.RepositoryVisibility = exports.RepositoryPrivacy = exports.RepositoryPermission = exports.RepositoryOrderField = exports.RepositoryLockReason = exports.RepositoryInvitationOrderField = exports.RepositoryInteractionLimitOrigin = exports.RepositoryInteractionLimitExpiry = exports.RepositoryInteractionLimit = exports.RepositoryContributionType = exports.RepositoryAffiliation = exports.ReportedContentClassifiers = exports.RepoRemoveMemberAuditEntryVisibility = exports.RepoDestroyAuditEntryVisibility = exports.RepoCreateAuditEntryVisibility = exports.RepoChangeMergeSettingAuditEntryMergeType = void 0;
 exports.UpdateComment = exports.GetLoginUser = exports.GetIssueOrPullRequestComment = exports.DeleteComment = exports.AddComment = exports.VerifiableDomainOrderField = exports.UserStatusOrderField = void 0;
-var graphql_tag_1 = __importDefault(__nccwpck_require__(8435));
+const graphql_tag_1 = __importDefault(__nccwpck_require__(8435));
 /** Properties by which Audit Log connections can be ordered. */
 var AuditLogOrderField;
 (function (AuditLogOrderField) {
@@ -1789,12 +1785,75 @@ var VerifiableDomainOrderField;
     /** Order verifiable domains by the domain name. */
     VerifiableDomainOrderField["Domain"] = "DOMAIN";
 })(VerifiableDomainOrderField = exports.VerifiableDomainOrderField || (exports.VerifiableDomainOrderField = {}));
-exports.AddComment = (0, graphql_tag_1.default)(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation AddComment($id: ID!, $body: String!) {\n  addComment(input: {subjectId: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.DeleteComment = (0, graphql_tag_1.default)(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation DeleteComment($id: ID!) {\n  deleteIssueComment(input: {id: $id}) {\n    clientMutationId\n  }\n}\n    "])));
-exports.GetIssueOrPullRequestComment = (0, graphql_tag_1.default)(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "], ["\n    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {\n  repository(owner: $owner, name: $name) {\n    issueOrPullRequest(number: $number) {\n      __typename\n      ... on PullRequest {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n      ... on Issue {\n        id\n        comments(first: 100, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          nodes {\n            author {\n              login\n            }\n            id\n            body\n          }\n        }\n      }\n    }\n  }\n}\n    "])));
-exports.GetLoginUser = (0, graphql_tag_1.default)(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "], ["\n    query GetLoginUser {\n  viewer {\n    login\n  }\n}\n    "])));
-exports.UpdateComment = (0, graphql_tag_1.default)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\n    mutation UpdateComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "], ["\n    mutation UpdateComment($id: ID!, $body: String!) {\n  updateIssueComment(input: {id: $id, body: $body}) {\n    clientMutationId\n  }\n}\n    "])));
-var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5;
+exports.AddComment = (0, graphql_tag_1.default) `
+    mutation AddComment($id: ID!, $body: String!) {
+  addComment(input: {subjectId: $id, body: $body}) {
+    clientMutationId
+  }
+}
+    `;
+exports.DeleteComment = (0, graphql_tag_1.default) `
+    mutation DeleteComment($id: ID!) {
+  deleteIssueComment(input: {id: $id}) {
+    clientMutationId
+  }
+}
+    `;
+exports.GetIssueOrPullRequestComment = (0, graphql_tag_1.default) `
+    query GetIssueOrPullRequestComment($owner: String!, $name: String!, $number: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    issueOrPullRequest(number: $number) {
+      __typename
+      ... on PullRequest {
+        id
+        comments(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            author {
+              login
+            }
+            id
+            body
+          }
+        }
+      }
+      ... on Issue {
+        id
+        comments(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            author {
+              login
+            }
+            id
+            body
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+exports.GetLoginUser = (0, graphql_tag_1.default) `
+    query GetLoginUser {
+  viewer {
+    login
+  }
+}
+    `;
+exports.UpdateComment = (0, graphql_tag_1.default) `
+    mutation UpdateComment($id: ID!, $body: String!) {
+  updateIssueComment(input: {id: $id, body: $body}) {
+    clientMutationId
+  }
+}
+    `;
 
 
 /***/ }),
@@ -1804,147 +1863,65 @@ var templateObject_1, templateObject_2, templateObject_3, templateObject_4, temp
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GitHubClient = exports.githubClient = void 0;
-var cross_fetch_1 = __importDefault(__nccwpck_require__(9805));
-var client_1 = __nccwpck_require__(7856);
-var graphql_1 = __nccwpck_require__(3089);
+const cross_fetch_1 = __importDefault(__nccwpck_require__(9805));
+const client_1 = __nccwpck_require__(7856);
+const graphql_1 = __nccwpck_require__(3089);
 function githubClient(option) {
     return new GitHubClient(new client_1.ApolloClient({
         link: new client_1.HttpLink({
             uri: "https://api.github.com/graphql",
-            headers: { authorization: "token ".concat(option.githubToken) },
+            headers: { authorization: `token ${option.githubToken}` },
             fetch: cross_fetch_1.default,
         }),
         cache: new client_1.InMemoryCache(),
     }));
 }
 exports.githubClient = githubClient;
-var GitHubClient = /** @class */ (function () {
-    function GitHubClient(client) {
+class GitHubClient {
+    constructor(client) {
         this.client = client;
     }
-    GitHubClient.prototype.addComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.AddComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
+    async addComment(variables) {
+        const result = await this.client.mutate({
+            mutation: graphql_1.AddComment,
+            variables: variables,
         });
-    };
-    GitHubClient.prototype.deleteComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.DeleteComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
+        return result.data;
+    }
+    async deleteComment(variables) {
+        const result = await this.client.mutate({
+            mutation: graphql_1.DeleteComment,
+            variables: variables,
         });
-    };
-    GitHubClient.prototype.getIssueOrPullRequestComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.query({
-                            query: graphql_1.GetIssueOrPullRequestComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
+        return result.data;
+    }
+    async getIssueOrPullRequestComment(variables) {
+        const result = await this.client.query({
+            query: graphql_1.GetIssueOrPullRequestComment,
+            variables: variables,
         });
-    };
-    GitHubClient.prototype.getLoginUser = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.query({
-                            query: graphql_1.GetLoginUser,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
+        return result.data;
+    }
+    async getLoginUser(variables) {
+        const result = await this.client.query({
+            query: graphql_1.GetLoginUser,
+            variables: variables,
         });
-    };
-    GitHubClient.prototype.updateComment = function (variables) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.client.mutate({
-                            mutation: graphql_1.UpdateComment,
-                            variables: variables,
-                        })];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result.data];
-                }
-            });
+        return result.data;
+    }
+    async updateComment(variables) {
+        const result = await this.client.mutate({
+            mutation: graphql_1.UpdateComment,
+            variables: variables,
         });
-    };
-    return GitHubClient;
-}());
+        return result.data;
+    }
+}
 exports.GitHubClient = GitHubClient;
 
 
@@ -1958,14 +1935,14 @@ exports.GitHubClient = GitHubClient;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createHidableComment = exports.isHidableComment = void 0;
 function hidableCommentIdentifier(id) {
-    return "<!-- hidable-coment-action: ".concat(id, " -->");
+    return `<!-- hidable-coment-action: ${id} -->`;
 }
 function isHidableComment(body, id) {
     return body.startsWith(hidableCommentIdentifier(id));
 }
 exports.isHidableComment = isHidableComment;
 function createHidableComment(body, id) {
-    return "".concat(hidableCommentIdentifier(id), "  ").concat(body);
+    return `${hidableCommentIdentifier(id)}  ${body}`;
 }
 exports.createHidableComment = createHidableComment;
 
@@ -2000,129 +1977,74 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-var core = __importStar(__nccwpck_require__(2186));
-var option_1 = __nccwpck_require__(4714);
-var client_1 = __nccwpck_require__(1038);
-var paging_1 = __nccwpck_require__(6238);
-var comment_1 = __nccwpck_require__(3592);
-function run() {
-    var _a;
-    return __awaiter(this, void 0, void 0, function () {
-        var option, client, owner, name_1, loginUser, issueOrPullRequest, targetCommentId, targetCommentBody, _i, _b, comment, expectBody, error_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    _c.trys.push([0, 13, , 14]);
-                    option = (0, option_1.getOption)();
-                    client = (0, client_1.githubClient)(option);
-                    if (option.repository.includes("/") == false) {
-                        throw Error("invalid repository value");
-                    }
-                    owner = option.repository.split("/")[0];
-                    name_1 = option.repository.split("/")[1];
-                    return [4 /*yield*/, client.getLoginUser({})];
-                case 1:
-                    loginUser = (_c.sent()).viewer.login.split("[")[0];
-                    return [4 /*yield*/, (0, paging_1.getIssueOrPullRequestCommentWithPaging)(client, {
-                            owner: owner,
-                            name: name_1,
-                            number: option.number,
-                        })];
-                case 2:
-                    issueOrPullRequest = _c.sent();
-                    targetCommentId = null;
-                    targetCommentBody = null;
-                    for (_i = 0, _b = issueOrPullRequest.comments; _i < _b.length; _i++) {
-                        comment = _b[_i];
-                        if (((_a = comment.author) === null || _a === void 0 ? void 0 : _a.login) != loginUser) {
-                            continue;
-                        }
-                        if ((0, comment_1.isHidableComment)(comment.body, option.id)) {
-                            targetCommentId = comment.id;
-                            targetCommentBody = comment.body;
-                            break;
-                        }
-                    }
-                    if (!(targetCommentId == null)) return [3 /*break*/, 6];
-                    if (!option.show) return [3 /*break*/, 4];
-                    return [4 /*yield*/, client.addComment({
-                            id: issueOrPullRequest.id,
-                            body: (0, comment_1.createHidableComment)(option.body, option.id),
-                        })];
-                case 3:
-                    _c.sent();
-                    core.info("added comment to ".concat(issueOrPullRequest.id));
-                    return [3 /*break*/, 5];
-                case 4:
-                    core.info("not found comment");
-                    _c.label = 5;
-                case 5: return [3 /*break*/, 12];
-                case 6:
-                    if (!option.show) return [3 /*break*/, 10];
-                    expectBody = (0, comment_1.createHidableComment)(option.body, option.id);
-                    if (!(expectBody != targetCommentBody)) return [3 /*break*/, 8];
-                    return [4 /*yield*/, client.updateComment({ id: targetCommentId, body: expectBody })];
-                case 7:
-                    _c.sent();
-                    core.info("updated comment at ".concat(targetCommentId));
-                    return [3 /*break*/, 9];
-                case 8:
-                    core.info("not updated comment at ".concat(targetCommentId));
-                    _c.label = 9;
-                case 9: return [3 /*break*/, 12];
-                case 10: return [4 /*yield*/, client.deleteComment({ id: targetCommentId })];
-                case 11:
-                    _c.sent();
-                    core.info("deleted comment at ".concat(targetCommentId));
-                    _c.label = 12;
-                case 12: return [3 /*break*/, 14];
-                case 13:
-                    error_1 = _c.sent();
-                    if (error_1 instanceof Error) {
-                        core.setFailed(error_1.message);
-                    }
-                    return [3 /*break*/, 14];
-                case 14: return [2 /*return*/];
-            }
+const core = __importStar(__nccwpck_require__(2186));
+const option_1 = __nccwpck_require__(4714);
+const client_1 = __nccwpck_require__(1038);
+const paging_1 = __nccwpck_require__(6238);
+const comment_1 = __nccwpck_require__(3592);
+async function run() {
+    try {
+        const option = (0, option_1.getOption)();
+        const client = (0, client_1.githubClient)(option);
+        if (option.repository.includes("/") == false) {
+            throw Error("invalid repository value");
+        }
+        const owner = option.repository.split("/")[0];
+        const name = option.repository.split("/")[1];
+        // if bot account, including '[bot]'. but author.login will not include it
+        const loginUser = (await client.getLoginUser({})).viewer.login.split("[")[0];
+        const issueOrPullRequest = await (0, paging_1.getIssueOrPullRequestCommentWithPaging)(client, {
+            owner,
+            name,
+            number: option.number,
         });
-    });
+        let targetCommentId = null;
+        let targetCommentBody = null;
+        for (const comment of issueOrPullRequest.comments) {
+            if (comment.author?.login != loginUser) {
+                continue;
+            }
+            if ((0, comment_1.isHidableComment)(comment.body, option.id)) {
+                targetCommentId = comment.id;
+                targetCommentBody = comment.body;
+                break;
+            }
+        }
+        if (targetCommentId == null) {
+            if (option.show) {
+                await client.addComment({
+                    id: issueOrPullRequest.id,
+                    body: (0, comment_1.createHidableComment)(option.body, option.id),
+                });
+                core.info(`added comment to ${issueOrPullRequest.id}`);
+            }
+            else {
+                core.info(`not found comment`);
+            }
+        }
+        else {
+            if (option.show) {
+                const expectBody = (0, comment_1.createHidableComment)(option.body, option.id);
+                if (expectBody != targetCommentBody) {
+                    await client.updateComment({ id: targetCommentId, body: expectBody });
+                    core.info(`updated comment at ${targetCommentId}`);
+                }
+                else {
+                    core.info(`not updated comment at ${targetCommentId}`);
+                }
+            }
+            else {
+                await client.deleteComment({ id: targetCommentId });
+                core.info(`deleted comment at ${targetCommentId}`);
+            }
+        }
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            core.setFailed(error.message);
+        }
+    }
 }
 run();
 
@@ -2159,7 +2081,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOption = void 0;
-var core = __importStar(__nccwpck_require__(2186));
+const core = __importStar(__nccwpck_require__(2186));
 function getOption() {
     return {
         githubToken: getInput("github_token"),
@@ -2179,141 +2101,76 @@ function getInput(key) {
 /***/ }),
 
 /***/ 6238:
-/***/ (function(__unused_webpack_module, exports) {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getIssueOrPullRequestCommentWithPaging = void 0;
 // guard for infinity loop
-var maxLoop = 100;
-function getIssueOrPullRequestCommentWithPaging(client, variables) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
-    return __awaiter(this, void 0, void 0, function () {
-        var comments, response, pageInfo, _i, _2, node, loopCount, _3, _4, node;
-        return __generator(this, function (_5) {
-            switch (_5.label) {
-                case 0:
-                    comments = [];
-                    return [4 /*yield*/, client.getIssueOrPullRequestComment(variables)];
-                case 1:
-                    response = _5.sent();
-                    pageInfo = (_b = (_a = response.repository) === null || _a === void 0 ? void 0 : _a.issueOrPullRequest) === null || _b === void 0 ? void 0 : _b.comments.pageInfo;
-                    if (((_d = (_c = response.repository) === null || _c === void 0 ? void 0 : _c.issueOrPullRequest) === null || _d === void 0 ? void 0 : _d.comments.nodes) == null ||
-                        response.repository.issueOrPullRequest.comments.nodes == undefined) {
-                        if (((_f = (_e = response.repository) === null || _e === void 0 ? void 0 : _e.issueOrPullRequest) === null || _f === void 0 ? void 0 : _f.__typename) == undefined ||
-                            response.repository.issueOrPullRequest.id == undefined) {
-                            throw Error("__typename or id is invalid response");
-                        }
-                        return [2 /*return*/, {
-                                __typename: (_h = (_g = response.repository) === null || _g === void 0 ? void 0 : _g.issueOrPullRequest) === null || _h === void 0 ? void 0 : _h.__typename,
-                                id: (_k = (_j = response.repository) === null || _j === void 0 ? void 0 : _j.issueOrPullRequest) === null || _k === void 0 ? void 0 : _k.id,
-                                comments: comments,
-                            }];
-                    }
-                    for (_i = 0, _2 = response.repository.issueOrPullRequest.comments.nodes; _i < _2.length; _i++) {
-                        node = _2[_i];
-                        if (node == null || node == undefined) {
-                            continue;
-                        }
-                        comments.push(node);
-                    }
-                    loopCount = 0;
-                    _5.label = 2;
-                case 2:
-                    if (!(pageInfo != null &&
-                        pageInfo != undefined &&
-                        pageInfo.hasNextPage &&
-                        pageInfo.endCursor != null &&
-                        pageInfo.endCursor != undefined)) return [3 /*break*/, 4];
-                    loopCount += 1;
-                    return [4 /*yield*/, client.getIssueOrPullRequestComment(__assign(__assign({}, variables), { after: pageInfo.endCursor }))];
-                case 3:
-                    response = _5.sent();
-                    pageInfo = (_m = (_l = response.repository) === null || _l === void 0 ? void 0 : _l.issueOrPullRequest) === null || _m === void 0 ? void 0 : _m.comments.pageInfo;
-                    if (((_p = (_o = response.repository) === null || _o === void 0 ? void 0 : _o.issueOrPullRequest) === null || _p === void 0 ? void 0 : _p.comments.nodes) == null ||
-                        response.repository.issueOrPullRequest.comments.nodes == undefined) {
-                        if (((_r = (_q = response.repository) === null || _q === void 0 ? void 0 : _q.issueOrPullRequest) === null || _r === void 0 ? void 0 : _r.__typename) == undefined ||
-                            response.repository.issueOrPullRequest.id == undefined) {
-                            throw Error("__typename or id is invalid response");
-                        }
-                        return [2 /*return*/, {
-                                __typename: (_t = (_s = response.repository) === null || _s === void 0 ? void 0 : _s.issueOrPullRequest) === null || _t === void 0 ? void 0 : _t.__typename,
-                                id: (_v = (_u = response.repository) === null || _u === void 0 ? void 0 : _u.issueOrPullRequest) === null || _v === void 0 ? void 0 : _v.id,
-                                comments: comments,
-                            }];
-                    }
-                    for (_3 = 0, _4 = response.repository.issueOrPullRequest.comments.nodes; _3 < _4.length; _3++) {
-                        node = _4[_3];
-                        if (node == null || node == undefined) {
-                            continue;
-                        }
-                        comments.push(node);
-                    }
-                    if (maxLoop <= loopCount) {
-                        throw Error("infinity loop detected");
-                    }
-                    return [3 /*break*/, 2];
-                case 4:
-                    if (((_x = (_w = response.repository) === null || _w === void 0 ? void 0 : _w.issueOrPullRequest) === null || _x === void 0 ? void 0 : _x.__typename) == undefined ||
-                        response.repository.issueOrPullRequest.id == undefined) {
-                        throw Error("__typename or id is invalid response");
-                    }
-                    return [2 /*return*/, {
-                            __typename: (_z = (_y = response.repository) === null || _y === void 0 ? void 0 : _y.issueOrPullRequest) === null || _z === void 0 ? void 0 : _z.__typename,
-                            id: (_1 = (_0 = response.repository) === null || _0 === void 0 ? void 0 : _0.issueOrPullRequest) === null || _1 === void 0 ? void 0 : _1.id,
-                            comments: comments,
-                        }];
+const maxLoop = 100;
+async function getIssueOrPullRequestCommentWithPaging(client, variables) {
+    const comments = [];
+    let response = await client.getIssueOrPullRequestComment(variables);
+    let pageInfo = response.repository?.issueOrPullRequest?.comments.pageInfo;
+    if (response.repository?.issueOrPullRequest?.comments.nodes == null ||
+        response.repository.issueOrPullRequest.comments.nodes == undefined) {
+        if (response.repository?.issueOrPullRequest?.__typename == undefined ||
+            response.repository.issueOrPullRequest.id == undefined) {
+            throw Error("__typename or id is invalid response");
+        }
+        return {
+            __typename: response.repository?.issueOrPullRequest?.__typename,
+            id: response.repository?.issueOrPullRequest?.id,
+            comments: comments,
+        };
+    }
+    for (const node of response.repository.issueOrPullRequest.comments.nodes) {
+        if (node == null || node == undefined) {
+            continue;
+        }
+        comments.push(node);
+    }
+    let loopCount = 0;
+    while (pageInfo != null &&
+        pageInfo != undefined &&
+        pageInfo.hasNextPage &&
+        pageInfo.endCursor != null &&
+        pageInfo.endCursor != undefined) {
+        loopCount += 1;
+        response = await client.getIssueOrPullRequestComment({ ...variables, after: pageInfo.endCursor });
+        pageInfo = response.repository?.issueOrPullRequest?.comments.pageInfo;
+        if (response.repository?.issueOrPullRequest?.comments.nodes == null ||
+            response.repository.issueOrPullRequest.comments.nodes == undefined) {
+            if (response.repository?.issueOrPullRequest?.__typename == undefined ||
+                response.repository.issueOrPullRequest.id == undefined) {
+                throw Error("__typename or id is invalid response");
             }
-        });
-    });
+            return {
+                __typename: response.repository?.issueOrPullRequest?.__typename,
+                id: response.repository?.issueOrPullRequest?.id,
+                comments: comments,
+            };
+        }
+        for (const node of response.repository.issueOrPullRequest.comments.nodes) {
+            if (node == null || node == undefined) {
+                continue;
+            }
+            comments.push(node);
+        }
+        if (maxLoop <= loopCount) {
+            throw Error("infinity loop detected");
+        }
+    }
+    if (response.repository?.issueOrPullRequest?.__typename == undefined ||
+        response.repository.issueOrPullRequest.id == undefined) {
+        throw Error("__typename or id is invalid response");
+    }
+    return {
+        __typename: response.repository?.issueOrPullRequest?.__typename,
+        id: response.repository?.issueOrPullRequest?.id,
+        comments: comments,
+    };
 }
 exports.getIssueOrPullRequestCommentWithPaging = getIssueOrPullRequestCommentWithPaging;
 
