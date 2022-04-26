@@ -2591,6 +2591,11 @@ function getIDToken(aud) {
     });
 }
 exports.getIDToken = getIDToken;
+/**
+ * Markdown summary exports
+ */
+var markdown_summary_1 = __nccwpck_require__(8042);
+Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return markdown_summary_1.markdownSummary; } }));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -2644,6 +2649,292 @@ exports.issueCommand = issueCommand;
 
 /***/ }),
 
+/***/ 8042:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
+const os_1 = __nccwpck_require__(2037);
+const fs_1 = __nccwpck_require__(7147);
+const { access, appendFile, writeFile } = fs_1.promises;
+exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
+exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-markdown-summary';
+class MarkdownSummary {
+    constructor() {
+        this._buffer = '';
+    }
+    /**
+     * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
+     * Also checks r/w permissions.
+     *
+     * @returns step summary file path
+     */
+    filePath() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._filePath) {
+                return this._filePath;
+            }
+            const pathFromEnv = process.env[exports.SUMMARY_ENV_VAR];
+            if (!pathFromEnv) {
+                throw new Error(`Unable to find environment variable for $${exports.SUMMARY_ENV_VAR}. Check if your runtime environment supports markdown summaries.`);
+            }
+            try {
+                yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
+            }
+            catch (_a) {
+                throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
+            }
+            this._filePath = pathFromEnv;
+            return this._filePath;
+        });
+    }
+    /**
+     * Wraps content in an HTML tag, adding any HTML attributes
+     *
+     * @param {string} tag HTML tag to wrap
+     * @param {string | null} content content within the tag
+     * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
+     *
+     * @returns {string} content wrapped in HTML element
+     */
+    wrap(tag, content, attrs = {}) {
+        const htmlAttrs = Object.entries(attrs)
+            .map(([key, value]) => ` ${key}="${value}"`)
+            .join('');
+        if (!content) {
+            return `<${tag}${htmlAttrs}>`;
+        }
+        return `<${tag}${htmlAttrs}>${content}</${tag}>`;
+    }
+    /**
+     * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
+     *
+     * @param {SummaryWriteOptions} [options] (optional) options for write operation
+     *
+     * @returns {Promise<MarkdownSummary>} markdown summary instance
+     */
+    write(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
+            const filePath = yield this.filePath();
+            const writeFunc = overwrite ? writeFile : appendFile;
+            yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
+            return this.emptyBuffer();
+        });
+    }
+    /**
+     * Clears the summary buffer and wipes the summary file
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    clear() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.emptyBuffer().write({ overwrite: true });
+        });
+    }
+    /**
+     * Returns the current summary buffer as a string
+     *
+     * @returns {string} string of summary buffer
+     */
+    stringify() {
+        return this._buffer;
+    }
+    /**
+     * If the summary buffer is empty
+     *
+     * @returns {boolen} true if the buffer is empty
+     */
+    isEmptyBuffer() {
+        return this._buffer.length === 0;
+    }
+    /**
+     * Resets the summary buffer without writing to summary file
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    emptyBuffer() {
+        this._buffer = '';
+        return this;
+    }
+    /**
+     * Adds raw text to the summary buffer
+     *
+     * @param {string} text content to add
+     * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addRaw(text, addEOL = false) {
+        this._buffer += text;
+        return addEOL ? this.addEOL() : this;
+    }
+    /**
+     * Adds the operating system-specific end-of-line marker to the buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addEOL() {
+        return this.addRaw(os_1.EOL);
+    }
+    /**
+     * Adds an HTML codeblock to the summary buffer
+     *
+     * @param {string} code content to render within fenced code block
+     * @param {string} lang (optional) language to syntax highlight code
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addCodeBlock(code, lang) {
+        const attrs = Object.assign({}, (lang && { lang }));
+        const element = this.wrap('pre', this.wrap('code', code), attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML list to the summary buffer
+     *
+     * @param {string[]} items list of items to render
+     * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addList(items, ordered = false) {
+        const tag = ordered ? 'ol' : 'ul';
+        const listItems = items.map(item => this.wrap('li', item)).join('');
+        const element = this.wrap(tag, listItems);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML table to the summary buffer
+     *
+     * @param {SummaryTableCell[]} rows table rows
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addTable(rows) {
+        const tableBody = rows
+            .map(row => {
+            const cells = row
+                .map(cell => {
+                if (typeof cell === 'string') {
+                    return this.wrap('td', cell);
+                }
+                const { header, data, colspan, rowspan } = cell;
+                const tag = header ? 'th' : 'td';
+                const attrs = Object.assign(Object.assign({}, (colspan && { colspan })), (rowspan && { rowspan }));
+                return this.wrap(tag, data, attrs);
+            })
+                .join('');
+            return this.wrap('tr', cells);
+        })
+            .join('');
+        const element = this.wrap('table', tableBody);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds a collapsable HTML details element to the summary buffer
+     *
+     * @param {string} label text for the closed state
+     * @param {string} content collapsable content
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addDetails(label, content) {
+        const element = this.wrap('details', this.wrap('summary', label) + content);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML image tag to the summary buffer
+     *
+     * @param {string} src path to the image you to embed
+     * @param {string} alt text description of the image
+     * @param {SummaryImageOptions} options (optional) addition image attributes
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addImage(src, alt, options) {
+        const { width, height } = options || {};
+        const attrs = Object.assign(Object.assign({}, (width && { width })), (height && { height }));
+        const element = this.wrap('img', null, Object.assign({ src, alt }, attrs));
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML section heading element
+     *
+     * @param {string} text heading text
+     * @param {number | string} [level=1] (optional) the heading level, default: 1
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addHeading(text, level) {
+        const tag = `h${level}`;
+        const allowedTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)
+            ? tag
+            : 'h1';
+        const element = this.wrap(allowedTag, text);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML thematic break (<hr>) to the summary buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addSeparator() {
+        const element = this.wrap('hr', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML line break (<br>) to the summary buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addBreak() {
+        const element = this.wrap('br', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML blockquote to the summary buffer
+     *
+     * @param {string} text quote text
+     * @param {string} cite (optional) citation url
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addQuote(text, cite) {
+        const attrs = Object.assign({}, (cite && { cite }));
+        const element = this.wrap('blockquote', text, attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML anchor tag to the summary buffer
+     *
+     * @param {string} text link text/content
+     * @param {string} href hyperlink
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addLink(text, href) {
+        const element = this.wrap('a', text, { href });
+        return this.addRaw(element).addEOL();
+    }
+}
+// singleton export
+exports.markdownSummary = new MarkdownSummary();
+//# sourceMappingURL=markdown-summary.js.map
+
+/***/ }),
+
 /***/ 8041:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -2660,8 +2951,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OidcClient = void 0;
-const http_client_1 = __nccwpck_require__(3059);
-const auth_1 = __nccwpck_require__(2402);
+const http_client_1 = __nccwpck_require__(9925);
+const auth_1 = __nccwpck_require__(3702);
 const core_1 = __nccwpck_require__(2186);
 class OidcClient {
     static createHttpClient(allowRetry = true, maxRetry = 10) {
@@ -2775,7 +3066,7 @@ exports.toCommandProperties = toCommandProperties;
 
 /***/ }),
 
-/***/ 2402:
+/***/ 3702:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -2841,7 +3132,7 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 
 /***/ }),
 
-/***/ 3059:
+/***/ 9925:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -2849,7 +3140,7 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const http = __nccwpck_require__(3685);
 const https = __nccwpck_require__(5687);
-const pm = __nccwpck_require__(4437);
+const pm = __nccwpck_require__(6443);
 let tunnel;
 var HttpCodes;
 (function (HttpCodes) {
@@ -3386,7 +3677,7 @@ exports.HttpClient = HttpClient;
 
 /***/ }),
 
-/***/ 4437:
+/***/ 6443:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -4387,7 +4678,7 @@ function printError(error) {
  * Given a GraphQLError, format it according to the rules described by the
  * Response Format, Errors section of the GraphQL Specification.
  *
- * @deprecated Please use `error.toString` instead. Will be removed in v17
+ * @deprecated Please use `error.toJSON` instead. Will be removed in v17
  */
 
 function formatError(error) {
@@ -4475,16 +4766,16 @@ function locatedError(rawOriginalError, nodes, path) {
     return originalError;
   }
 
-  return new _GraphQLError.GraphQLError(
-    originalError.message,
-    (_nodes = originalError.nodes) !== null && _nodes !== void 0
-      ? _nodes
-      : nodes,
-    originalError.source,
-    originalError.positions,
+  return new _GraphQLError.GraphQLError(originalError.message, {
+    nodes:
+      (_nodes = originalError.nodes) !== null && _nodes !== void 0
+        ? _nodes
+        : nodes,
+    source: originalError.source,
+    positions: originalError.positions,
     path,
     originalError,
-  );
+  });
 }
 
 function isLocatedGraphQLError(error) {
@@ -4512,12 +4803,10 @@ var _GraphQLError = __nccwpck_require__(4797);
  * descriptive information about the syntax error's position in the source.
  */
 function syntaxError(source, position, description) {
-  return new _GraphQLError.GraphQLError(
-    `Syntax Error: ${description}`,
-    undefined,
+  return new _GraphQLError.GraphQLError(`Syntax Error: ${description}`, {
     source,
-    [position],
-  );
+    positions: [position],
+  });
 }
 
 
@@ -5090,7 +5379,9 @@ function executeOperation(exeContext, operation, rootValue) {
   if (rootType == null) {
     throw new _GraphQLError.GraphQLError(
       `Schema is not configured to execute ${operation.operation} operation.`,
-      operation,
+      {
+        nodes: operation,
+      },
     );
   }
 
@@ -5608,21 +5899,27 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new _GraphQLError.GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
     throw new _GraphQLError.GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new _GraphQLError.GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
@@ -5676,7 +5973,9 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
   return new _GraphQLError.GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${(0,
     _inspect.inspect)(result)}.`,
-    fieldNodes,
+    {
+      nodes: fieldNodes,
+    },
   );
 }
 /**
@@ -5821,6 +6120,12 @@ Object.defineProperty(exports, "executeSync", ({
   enumerable: true,
   get: function () {
     return _execute.executeSync;
+  },
+}));
+Object.defineProperty(exports, "getArgumentValues", ({
+  enumerable: true,
+  get: function () {
+    return _values.getArgumentValues;
   },
 }));
 Object.defineProperty(exports, "getDirectiveValues", ({
@@ -6131,7 +6436,9 @@ async function executeSubscription(exeContext) {
   if (rootType == null) {
     throw new _GraphQLError.GraphQLError(
       'Schema is not configured to execute subscription operation.',
-      operation,
+      {
+        nodes: operation,
+      },
     );
   }
 
@@ -6149,7 +6456,9 @@ async function executeSubscription(exeContext) {
     const fieldName = fieldNodes[0].name.value;
     throw new _GraphQLError.GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
@@ -6295,7 +6604,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       onError(
         new _GraphQLError.GraphQLError(
           `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
-          varDefNode.type,
+          {
+            nodes: varDefNode.type,
+          },
         ),
       );
       continue;
@@ -6312,7 +6623,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         onError(
           new _GraphQLError.GraphQLError(
             `Variable "$${varName}" of required type "${varTypeStr}" was not provided.`,
-            varDefNode,
+            {
+              nodes: varDefNode,
+            },
           ),
         );
       }
@@ -6327,7 +6640,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       onError(
         new _GraphQLError.GraphQLError(
           `Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`,
-          varDefNode,
+          {
+            nodes: varDefNode,
+          },
         ),
       );
       continue;
@@ -6348,14 +6663,10 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         }
 
         onError(
-          new _GraphQLError.GraphQLError(
-            prefix + '; ' + error.message,
-            varDefNode,
-            undefined,
-            undefined,
-            undefined,
-            error.originalError,
-          ),
+          new _GraphQLError.GraphQLError(prefix + '; ' + error.message, {
+            nodes: varDefNode,
+            originalError: error.originalError,
+          }),
         );
       },
     );
@@ -6370,8 +6681,6 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
- *
- * @internal
  */
 
 function getArgumentValues(def, node, variableValues) {
@@ -6403,7 +6712,9 @@ function getArgumentValues(def, node, variableValues) {
           `Argument "${name}" of required type "${(0, _inspect.inspect)(
             argType,
           )}" ` + 'was not provided.',
-          node,
+          {
+            nodes: node,
+          },
         );
       }
 
@@ -6428,7 +6739,9 @@ function getArgumentValues(def, node, variableValues) {
               argType,
             )}" ` +
               `was provided the variable "$${variableName}" which was not provided a runtime value.`,
-            valueNode,
+            {
+              nodes: valueNode,
+            },
           );
         }
 
@@ -6443,7 +6756,9 @@ function getArgumentValues(def, node, variableValues) {
         `Argument "${name}" of non-null type "${(0, _inspect.inspect)(
           argType,
         )}" ` + 'must not be null.',
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -6461,7 +6776,9 @@ function getArgumentValues(def, node, variableValues) {
         `Argument "${name}" has invalid value ${(0, _printer.print)(
           valueNode,
         )}.`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -7355,6 +7672,12 @@ Object.defineProperty(exports, "formatError", ({
     return _index5.formatError;
   },
 }));
+Object.defineProperty(exports, "getArgumentValues", ({
+  enumerable: true,
+  get: function () {
+    return _index3.getArgumentValues;
+  },
+}));
 Object.defineProperty(exports, "getDirectiveValues", ({
   enumerable: true,
   get: function () {
@@ -8192,8 +8515,9 @@ var _inspect = __nccwpck_require__(102);
  * See: https://webpack.js.org/guides/production/
  */
 const instanceOf =
-  /* c8 ignore next 5 */
+  /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
+  // eslint-disable-next-line no-undef
   process.env.NODE_ENV === 'production'
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
@@ -14276,10 +14600,9 @@ function resolveObjMapThunk(thunk) {
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
- * If a type's serialize function does not return a value (i.e. it returns
- * `undefined`) then an error will be raised and a `null` value will be returned
- * in the response. If the serialize function returns `null`, then no error will
- * be included in the response.
+ * If a type's serialize function returns `null` or does not return a value
+ * (i.e. it returns `undefined`) then an error will be raised and a `null`
+ * value will be returned in the response. It is always better to validate
  *
  * Example:
  *
@@ -14287,9 +14610,16 @@ function resolveObjMapThunk(thunk) {
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize(value) {
- *     if (value % 2 === 1) {
- *       return value;
+ *     if (!Number.isFinite(value)) {
+ *       throw new Error(
+ *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *       );
  *     }
+ *
+ *     if (value % 2 === 0) {
+ *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *     }
+ *     return value;
  *   }
  * });
  * ```
@@ -14890,7 +15220,9 @@ class GraphQLEnumType {
       throw new _GraphQLError.GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -14901,7 +15233,9 @@ class GraphQLEnumType {
       throw new _GraphQLError.GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -16604,7 +16938,9 @@ const GraphQLInt = new _definition.GraphQLScalarType({
         `Int cannot represent non-integer value: ${(0, _printer.print)(
           valueNode,
         )}`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -16613,7 +16949,9 @@ const GraphQLInt = new _definition.GraphQLScalarType({
     if (num > GRAPHQL_MAX_INT || num < GRAPHQL_MIN_INT) {
       throw new _GraphQLError.GraphQLError(
         `Int cannot represent non 32-bit signed integer value: ${valueNode.value}`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -16723,7 +17061,9 @@ const GraphQLString = new _definition.GraphQLScalarType({
         `String cannot represent a non string value: ${(0, _printer.print)(
           valueNode,
         )}`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -16771,7 +17111,9 @@ const GraphQLBoolean = new _definition.GraphQLScalarType({
         `Boolean cannot represent a non boolean value: ${(0, _printer.print)(
           valueNode,
         )}`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -16822,7 +17164,9 @@ const GraphQLID = new _definition.GraphQLScalarType({
       throw new _GraphQLError.GraphQLError(
         'ID cannot represent a non-string and non-integer value: ' +
           (0, _printer.print)(valueNode),
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -17351,7 +17695,11 @@ class SchemaValidationContext {
   reportError(message, nodes) {
     const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
 
-    this._errors.push(new _GraphQLError.GraphQLError(message, _nodes));
+    this._errors.push(
+      new _GraphQLError.GraphQLError(message, {
+        nodes: _nodes,
+      }),
+    );
   }
 
   getErrors() {
@@ -19320,11 +19668,9 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           inputValue,
           new _GraphQLError.GraphQLError(
             `Expected type "${type.name}". ` + error.message,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            error,
+            {
+              originalError: error,
+            },
           ),
         );
       }
@@ -20968,7 +21314,9 @@ function getOperationRootType(schema, operation) {
     if (!queryType) {
       throw new _GraphQLError.GraphQLError(
         'Schema does not define the required query root type.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -20981,7 +21329,9 @@ function getOperationRootType(schema, operation) {
     if (!mutationType) {
       throw new _GraphQLError.GraphQLError(
         'Schema is not configured for mutations.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -20994,7 +21344,9 @@ function getOperationRootType(schema, operation) {
     if (!subscriptionType) {
       throw new _GraphQLError.GraphQLError(
         'Schema is not configured for subscriptions.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -21003,7 +21355,9 @@ function getOperationRootType(schema, operation) {
 
   throw new _GraphQLError.GraphQLError(
     'Can only have query, mutation and subscription operations.',
-    operation,
+    {
+      nodes: operation,
+    },
   );
 }
 
@@ -23076,7 +23430,7 @@ var _UniqueOperationTypesRule = __nccwpck_require__(1492);
 
 var _UniqueTypeNamesRule = __nccwpck_require__(4316);
 
-var _UniqueEnumValueNamesRule = __nccwpck_require__(7907);
+var _UniqueEnumValueNamesRule = __nccwpck_require__(4437);
 
 var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(9502);
 
@@ -23131,7 +23485,9 @@ function ExecutableDefinitionsRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `The ${defName} definition is not executable.`,
-              definition,
+              {
+                nodes: definition,
+              },
             ),
           );
         }
@@ -23202,7 +23558,9 @@ function FieldsOnCorrectTypeRule(context) {
             new _GraphQLError.GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
                 suggestion,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -23340,7 +23698,9 @@ function FragmentsOnCompositeTypesRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Fragment cannot condition on non composite type "${typeStr}".`,
-              typeCondition,
+              {
+                nodes: typeCondition,
+              },
             ),
           );
         }
@@ -23358,7 +23718,9 @@ function FragmentsOnCompositeTypesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
-            node.typeCondition,
+            {
+              nodes: node.typeCondition,
+            },
           ),
         );
       }
@@ -23421,7 +23783,9 @@ function KnownArgumentNamesRule(context) {
           new _GraphQLError.GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
               (0, _didYouMean.didYouMean)(suggestions),
-            argNode,
+            {
+              nodes: argNode,
+            },
           ),
         );
       }
@@ -23478,7 +23842,9 @@ function KnownArgumentNamesOnDirectivesRule(context) {
               new _GraphQLError.GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
                   (0, _didYouMean.didYouMean)(suggestions),
-                argNode,
+                {
+                  nodes: argNode,
+                },
               ),
             );
           }
@@ -23552,7 +23918,9 @@ function KnownDirectivesRule(context) {
 
       if (!locations) {
         context.reportError(
-          new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, node),
+          new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, {
+            nodes: node,
+          }),
         );
         return;
       }
@@ -23563,7 +23931,9 @@ function KnownDirectivesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -23695,7 +24065,9 @@ function KnownFragmentNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Unknown fragment "${fragmentName}".`,
-            node.name,
+            {
+              nodes: node.name,
+            },
           ),
         );
       }
@@ -23777,7 +24149,9 @@ function KnownTypeNamesRule(context) {
           new _GraphQLError.GraphQLError(
             `Unknown type "${typeName}".` +
               (0, _didYouMean.didYouMean)(suggestedTypes),
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -23838,7 +24212,9 @@ function LoneAnonymousOperationRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             'This anonymous operation must be the only defined operation.',
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -23897,7 +24273,9 @@ function LoneSchemaDefinitionRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             'Cannot define a new schema within a schema extension.',
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
         return;
@@ -23907,7 +24285,9 @@ function LoneSchemaDefinitionRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             'Must provide only one schema definition.',
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -23996,7 +24376,9 @@ function NoFragmentCyclesRule(context) {
           new _GraphQLError.GraphQLError(
             `Cannot spread fragment "${spreadName}" within itself` +
               (viaPath !== '' ? ` via ${viaPath}.` : '.'),
-            cyclePath,
+            {
+              nodes: cyclePath,
+            },
           ),
         );
       }
@@ -24052,7 +24434,9 @@ function NoUndefinedVariablesRule(context) {
                 operation.name
                   ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
                   : `Variable "$${varName}" is not defined.`,
-                [node, operation],
+                {
+                  nodes: [node, operation],
+                },
               ),
             );
           }
@@ -24123,7 +24507,9 @@ function NoUnusedFragmentsRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `Fragment "${fragName}" is never used.`,
-                fragmentDef,
+                {
+                  nodes: fragmentDef,
+                },
               ),
             );
           }
@@ -24182,7 +24568,9 @@ function NoUnusedVariablesRule(context) {
                 operation.name
                   ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
                   : `Variable "$${variableName}" is never used.`,
-                variableDef,
+                {
+                  nodes: variableDef,
+                },
               ),
             );
           }
@@ -24271,7 +24659,9 @@ function OverlappingFieldsCanBeMergedRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
-            fields1.concat(fields2),
+            {
+              nodes: fields1.concat(fields2),
+            },
           ),
         );
       }
@@ -25060,7 +25450,9 @@ function PossibleFragmentSpreadsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -25085,7 +25477,9 @@ function PossibleFragmentSpreadsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -25181,7 +25575,9 @@ function PossibleTypeExtensionsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Cannot extend non-${kindStr} type "${typeName}".`,
-            defNode ? [defNode, node] : node,
+            {
+              nodes: defNode ? [defNode, node] : node,
+            },
           ),
         );
       }
@@ -25200,7 +25596,9 @@ function PossibleTypeExtensionsRule(context) {
         new _GraphQLError.GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
             (0, _didYouMean.didYouMean)(suggestedTypes),
-          node.name,
+          {
+            nodes: node.name,
+          },
         ),
       );
     }
@@ -25351,7 +25749,9 @@ function ProvidedRequiredArgumentsRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
-                fieldNode,
+                {
+                  nodes: fieldNode,
+                },
               ),
             );
           }
@@ -25432,7 +25832,9 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
               context.reportError(
                 new _GraphQLError.GraphQLError(
                   `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
-                  directiveNode,
+                  {
+                    nodes: directiveNode,
+                  },
                 ),
               );
             }
@@ -25489,7 +25891,9 @@ function ScalarLeafsRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
-                selectionSet,
+                {
+                  nodes: selectionSet,
+                },
               ),
             );
           }
@@ -25499,7 +25903,9 @@ function ScalarLeafsRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -25572,7 +25978,9 @@ function SingleFieldSubscriptionsRule(context) {
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                extraFieldSelections,
+                {
+                  nodes: extraFieldSelections,
+                },
               ),
             );
           }
@@ -25587,7 +25995,9 @@ function SingleFieldSubscriptionsRule(context) {
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  fieldNodes,
+                  {
+                    nodes: fieldNodes,
+                  },
                 ),
               );
             }
@@ -25686,7 +26096,9 @@ function UniqueArgumentDefinitionNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Argument "${parentName}(${argName}:)" can only be defined once.`,
-            argNodes.map((node) => node.name),
+            {
+              nodes: argNodes.map((node) => node.name),
+            },
           ),
         );
       }
@@ -25749,7 +26161,9 @@ function UniqueArgumentNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `There can be only one argument named "${argName}".`,
-            argNodes.map((node) => node.name),
+            {
+              nodes: argNodes.map((node) => node.name),
+            },
           ),
         );
       }
@@ -25793,7 +26207,9 @@ function UniqueDirectiveNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,
-            node.name,
+            {
+              nodes: node.name,
+            },
           ),
         );
         return;
@@ -25803,7 +26219,9 @@ function UniqueDirectiveNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            [knownDirectiveNames[directiveName], node.name],
+            {
+              nodes: [knownDirectiveNames[directiveName], node.name],
+            },
           ),
         );
       } else {
@@ -25904,7 +26322,9 @@ function UniqueDirectivesPerLocationRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `The directive "@${directiveName}" can only be used once at this location.`,
-                [seenDirectives[directiveName], directive],
+                {
+                  nodes: [seenDirectives[directiveName], directive],
+                },
               ),
             );
           } else {
@@ -25919,7 +26339,7 @@ function UniqueDirectivesPerLocationRule(context) {
 
 /***/ }),
 
-/***/ 7907:
+/***/ 4437:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -25976,14 +26396,18 @@ function UniqueEnumValueNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Enum value "${typeName}.${valueName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            valueDef.name,
+            {
+              nodes: valueDef.name,
+            },
           ),
         );
       } else if (valueNames[valueName]) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Enum value "${typeName}.${valueName}" can only be defined once.`,
-            [valueNames[valueName], valueDef.name],
+            {
+              nodes: [valueNames[valueName], valueDef.name],
+            },
           ),
         );
       } else {
@@ -26055,14 +26479,18 @@ function UniqueFieldDefinitionNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            fieldDef.name,
+            {
+              nodes: fieldDef.name,
+            },
           ),
         );
       } else if (fieldNames[fieldName]) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Field "${typeName}.${fieldName}" can only be defined once.`,
-            [fieldNames[fieldName], fieldDef.name],
+            {
+              nodes: [fieldNames[fieldName], fieldDef.name],
+            },
           ),
         );
       } else {
@@ -26121,7 +26549,9 @@ function UniqueFragmentNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `There can be only one fragment named "${fragmentName}".`,
-            [knownFragmentNames[fragmentName], node.name],
+            {
+              nodes: [knownFragmentNames[fragmentName], node.name],
+            },
           ),
         );
       } else {
@@ -26183,7 +26613,9 @@ function UniqueInputFieldNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `There can be only one input field named "${fieldName}".`,
-            [knownNames[fieldName], node.name],
+            {
+              nodes: [knownNames[fieldName], node.name],
+            },
           ),
         );
       } else {
@@ -26227,7 +26659,12 @@ function UniqueOperationNamesRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `There can be only one operation named "${operationName.value}".`,
-              [knownOperationNames[operationName.value], operationName],
+              {
+                nodes: [
+                  knownOperationNames[operationName.value],
+                  operationName,
+                ],
+              },
             ),
           );
         } else {
@@ -26298,14 +26735,18 @@ function UniqueOperationTypesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-            operationType,
+            {
+              nodes: operationType,
+            },
           ),
         );
       } else if (alreadyDefinedOperationType) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `There can be only one ${operation} type in schema.`,
-            [alreadyDefinedOperationType, operationType],
+            {
+              nodes: [alreadyDefinedOperationType, operationType],
+            },
           ),
         );
       } else {
@@ -26357,7 +26798,9 @@ function UniqueTypeNamesRule(context) {
       context.reportError(
         new _GraphQLError.GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
-          node.name,
+          {
+            nodes: node.name,
+          },
         ),
       );
       return;
@@ -26367,7 +26810,9 @@ function UniqueTypeNamesRule(context) {
       context.reportError(
         new _GraphQLError.GraphQLError(
           `There can be only one type named "${typeName}".`,
-          [knownTypeNames[typeName], node.name],
+          {
+            nodes: [knownTypeNames[typeName], node.name],
+          },
         ),
       );
     } else {
@@ -26424,7 +26869,9 @@ function UniqueVariableNamesRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `There can be only one variable named "$${variableName}".`,
-              variableNodes.map((node) => node.variable.name),
+              {
+                nodes: variableNodes.map((node) => node.variable.name),
+              },
             ),
           );
         }
@@ -26505,7 +26952,9 @@ function ValuesOfCorrectTypeRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -26527,7 +26976,9 @@ function ValuesOfCorrectTypeRule(context) {
           new _GraphQLError.GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
               (0, _didYouMean.didYouMean)(suggestions),
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -26542,7 +26993,9 @@ function ValuesOfCorrectTypeRule(context) {
             `Expected value of type "${(0, _inspect.inspect)(
               type,
             )}", found ${(0, _printer.print)(node)}.`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -26577,7 +27030,9 @@ function isValidValueNode(context, node) {
         `Expected value of type "${typeStr}", found ${(0, _printer.print)(
           node,
         )}.`,
-        node,
+        {
+          nodes: node,
+        },
       ),
     );
     return;
@@ -26598,7 +27053,9 @@ function isValidValueNode(context, node) {
           `Expected value of type "${typeStr}", found ${(0, _printer.print)(
             node,
           )}.`,
-          node,
+          {
+            nodes: node,
+          },
         ),
       );
     }
@@ -26613,11 +27070,10 @@ function isValidValueNode(context, node) {
           `Expected value of type "${typeStr}", found ${(0, _printer.print)(
             node,
           )}; ` + error.message,
-          node,
-          undefined,
-          undefined,
-          undefined,
-          error,
+          {
+            nodes: node,
+            originalError: error,
+          },
         ),
       );
     }
@@ -26668,7 +27124,9 @@ function VariablesAreInputTypesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            node.type,
+            {
+              nodes: node.type,
+            },
           ),
         );
       }
@@ -26748,7 +27206,9 @@ function VariablesInAllowedPositionRule(context) {
               context.reportError(
                 new _GraphQLError.GraphQLError(
                   `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
-                  [varDef, node],
+                  {
+                    nodes: [varDef, node],
+                  },
                 ),
               );
             }
@@ -26843,7 +27303,9 @@ function NoDeprecatedCustomRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -26863,7 +27325,9 @@ function NoDeprecatedCustomRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         } else {
@@ -26874,7 +27338,9 @@ function NoDeprecatedCustomRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -26897,7 +27363,9 @@ function NoDeprecatedCustomRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -26919,7 +27387,9 @@ function NoDeprecatedCustomRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -26966,7 +27436,9 @@ function NoSchemaIntrospectionCustomRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -27034,7 +27506,7 @@ var _UniqueDirectiveNamesRule = __nccwpck_require__(7074);
 
 var _UniqueDirectivesPerLocationRule = __nccwpck_require__(1944);
 
-var _UniqueEnumValueNamesRule = __nccwpck_require__(7907);
+var _UniqueEnumValueNamesRule = __nccwpck_require__(4437);
 
 var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(9502);
 
@@ -27320,7 +27792,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.3.0';
+const version = '16.4.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -27328,7 +27800,7 @@ const version = '16.3.0';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 3,
+  minor: 4,
   patch: 0,
   preReleaseTag: null,
 });
