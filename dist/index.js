@@ -21566,7 +21566,7 @@ var _getOperationAST = __nccwpck_require__(2854);
 
 var _getOperationRootType = __nccwpck_require__(1605);
 
-var _introspectionFromSchema = __nccwpck_require__(7371);
+var _introspectionFromSchema = __nccwpck_require__(2094);
 
 var _buildClientSchema = __nccwpck_require__(9352);
 
@@ -21605,7 +21605,7 @@ var _findBreakingChanges = __nccwpck_require__(9366);
 
 /***/ }),
 
-/***/ 7371:
+/***/ 2094:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -32276,26 +32276,36 @@ if (
 ) {
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
 }
-          var ReactVersion = '18.0.0-fc46dba67-20220329';
+          var ReactVersion = '18.1.0';
+
+// -----------------------------------------------------------------------------
+
+var enableScopeAPI = false; // Experimental Create Event Handle API.
+var enableCacheElement = false;
+var enableTransitionTracing = false; // No known bugs, but needs performance testing
+
+var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
+// stuff. Intended to enable React core members to more easily debug scheduling
+// issues in DEV builds.
+
+var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
 
 // ATTENTION
-// When adding new symbols to this file,
-// Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
-// The Symbol used to tag the ReactElement-like types.
-var REACT_ELEMENT_TYPE = Symbol.for('react.element');
-var REACT_PORTAL_TYPE = Symbol.for('react.portal');
-var REACT_FRAGMENT_TYPE = Symbol.for('react.fragment');
-var REACT_STRICT_MODE_TYPE = Symbol.for('react.strict_mode');
-var REACT_PROFILER_TYPE = Symbol.for('react.profiler');
-var REACT_PROVIDER_TYPE = Symbol.for('react.provider');
-var REACT_CONTEXT_TYPE = Symbol.for('react.context');
-var REACT_FORWARD_REF_TYPE = Symbol.for('react.forward_ref');
-var REACT_SUSPENSE_TYPE = Symbol.for('react.suspense');
-var REACT_SUSPENSE_LIST_TYPE = Symbol.for('react.suspense_list');
-var REACT_MEMO_TYPE = Symbol.for('react.memo');
-var REACT_LAZY_TYPE = Symbol.for('react.lazy');
-var REACT_OFFSCREEN_TYPE = Symbol.for('react.offscreen');
-var MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
+
+var REACT_ELEMENT_TYPE =  Symbol.for('react.element');
+var REACT_PORTAL_TYPE =  Symbol.for('react.portal');
+var REACT_FRAGMENT_TYPE =  Symbol.for('react.fragment');
+var REACT_STRICT_MODE_TYPE =  Symbol.for('react.strict_mode');
+var REACT_PROFILER_TYPE =  Symbol.for('react.profiler');
+var REACT_PROVIDER_TYPE =  Symbol.for('react.provider');
+var REACT_CONTEXT_TYPE =  Symbol.for('react.context');
+var REACT_FORWARD_REF_TYPE =  Symbol.for('react.forward_ref');
+var REACT_SUSPENSE_TYPE =  Symbol.for('react.suspense');
+var REACT_SUSPENSE_LIST_TYPE =  Symbol.for('react.suspense_list');
+var REACT_MEMO_TYPE =  Symbol.for('react.memo');
+var REACT_LAZY_TYPE =  Symbol.for('react.lazy');
+var REACT_OFFSCREEN_TYPE =  Symbol.for('react.offscreen');
+var MAYBE_ITERATOR_SYMBOL =  Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator';
 function getIteratorFn(maybeIterable) {
   if (maybeIterable === null || typeof maybeIterable !== 'object') {
@@ -32386,18 +32396,6 @@ function setExtraStackFrame(stack) {
     return stack;
   };
 }
-
-// -----------------------------------------------------------------------------
-
-var enableScopeAPI = false; // Experimental Create Event Handle API.
-var enableCacheElement = false;
-var enableTransitionTracing = false; // No known bugs, but needs performance testing
-
-var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
-// stuff. Intended to enable React core members to more easily debug scheduling
-// issues in DEV builds.
-
-var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
 
 var ReactSharedInternals = {
   ReactCurrentDispatcher: ReactCurrentDispatcher,
@@ -33768,7 +33766,12 @@ function forwardRef(render) {
   return elementType;
 }
 
-var REACT_MODULE_REFERENCE = Symbol.for('react.module.reference');
+var REACT_MODULE_REFERENCE;
+
+{
+  REACT_MODULE_REFERENCE = Symbol.for('react.module.reference');
+}
+
 function isValidElementType(type) {
   if (typeof type === 'string' || typeof type === 'function') {
     return true;
@@ -35018,7 +35021,7 @@ for(var m=0;m<f;m++)g[m]=arguments[m+2];d.children=g}return{$$typeof:l,type:a.ty
 exports.forwardRef=function(a){return{$$typeof:v,render:a}};exports.isValidElement=O;exports.lazy=function(a){return{$$typeof:y,_payload:{_status:-1,_result:a},_init:T}};exports.memo=function(a,b){return{$$typeof:x,type:a,compare:void 0===b?null:b}};exports.startTransition=function(a){var b=V.transition;V.transition={};try{a()}finally{V.transition=b}};exports.unstable_act=function(){throw Error("act(...) is not supported in production builds of React.");};
 exports.useCallback=function(a,b){return U.current.useCallback(a,b)};exports.useContext=function(a){return U.current.useContext(a)};exports.useDebugValue=function(){};exports.useDeferredValue=function(a){return U.current.useDeferredValue(a)};exports.useEffect=function(a,b){return U.current.useEffect(a,b)};exports.useId=function(){return U.current.useId()};exports.useImperativeHandle=function(a,b,e){return U.current.useImperativeHandle(a,b,e)};
 exports.useInsertionEffect=function(a,b){return U.current.useInsertionEffect(a,b)};exports.useLayoutEffect=function(a,b){return U.current.useLayoutEffect(a,b)};exports.useMemo=function(a,b){return U.current.useMemo(a,b)};exports.useReducer=function(a,b,e){return U.current.useReducer(a,b,e)};exports.useRef=function(a){return U.current.useRef(a)};exports.useState=function(a){return U.current.useState(a)};exports.useSyncExternalStore=function(a,b,e){return U.current.useSyncExternalStore(a,b,e)};
-exports.useTransition=function(){return U.current.useTransition()};exports.version="18.0.0-fc46dba67-20220329";
+exports.useTransition=function(){return U.current.useTransition()};exports.version="18.1.0";
 
 
 /***/ }),
@@ -35117,142 +35120,6 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 };
-
-/***/ }),
-
-/***/ 9994:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-var tslib = __nccwpck_require__(4351);
-
-var genericMessage = "Invariant Violation";
-var _a = Object.setPrototypeOf, setPrototypeOf = _a === void 0 ? function (obj, proto) {
-    obj.__proto__ = proto;
-    return obj;
-} : _a;
-var InvariantError = /** @class */ (function (_super) {
-    tslib.__extends(InvariantError, _super);
-    function InvariantError(message) {
-        if (message === void 0) { message = genericMessage; }
-        var _this = _super.call(this, typeof message === "number"
-            ? genericMessage + ": " + message + " (see https://github.com/apollographql/invariant-packages)"
-            : message) || this;
-        _this.framesToPop = 1;
-        _this.name = genericMessage;
-        setPrototypeOf(_this, InvariantError.prototype);
-        return _this;
-    }
-    return InvariantError;
-}(Error));
-function invariant(condition, message) {
-    if (!condition) {
-        throw new InvariantError(message);
-    }
-}
-var verbosityLevels = ["debug", "log", "warn", "error", "silent"];
-var verbosityLevel = verbosityLevels.indexOf("log");
-function wrapConsoleMethod(name) {
-    return function () {
-        if (verbosityLevels.indexOf(name) >= verbosityLevel) {
-            // Default to console.log if this host environment happens not to provide
-            // all the console.* methods we need.
-            var method = console[name] || console.log;
-            return method.apply(console, arguments);
-        }
-    };
-}
-(function (invariant) {
-    invariant.debug = wrapConsoleMethod("debug");
-    invariant.log = wrapConsoleMethod("log");
-    invariant.warn = wrapConsoleMethod("warn");
-    invariant.error = wrapConsoleMethod("error");
-})(invariant || (invariant = {}));
-function setVerbosity(level) {
-    var old = verbosityLevels[verbosityLevel];
-    verbosityLevel = Math.max(0, verbosityLevels.indexOf(level));
-    return old;
-}
-var invariant$1 = invariant;
-
-exports.InvariantError = InvariantError;
-exports["default"] = invariant$1;
-exports.invariant = invariant;
-exports.setVerbosity = setVerbosity;
-//# sourceMappingURL=invariant.js.map
-
-
-/***/ }),
-
-/***/ 5572:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-function maybe(thunk) {
-  try { return thunk() } catch (_) {}
-}
-
-var safeGlobal = (
-  maybe(function() { return globalThis }) ||
-  maybe(function() { return window }) ||
-  maybe(function() { return self }) ||
-  maybe(function() { return global }) ||
-  // We don't expect the Function constructor ever to be invoked at runtime, as
-  // long as at least one of globalThis, window, self, or global is defined, so
-  // we are under no obligation to make it easy for static analysis tools to
-  // detect syntactic usage of the Function constructor. If you think you can
-  // improve your static analysis to detect this obfuscation, think again. This
-  // is an arms race you cannot win, at least not in JavaScript.
-  maybe(function() { return maybe.constructor("return this")() })
-);
-
-var needToRemove = false;
-
-function install() {
-  if (safeGlobal &&
-      !maybe(function() { return process.env.NODE_ENV }) &&
-      !maybe(function() { return process })) {
-    Object.defineProperty(safeGlobal, "process", {
-      value: {
-        env: {
-          // This default needs to be "production" instead of "development", to
-          // avoid the problem https://github.com/graphql/graphql-js/pull/2894
-          // will eventually solve, once merged and released.
-          NODE_ENV: "production",
-        },
-      },
-      // Let anyone else change global.process as they see fit, but hide it from
-      // Object.keys(global) enumeration.
-      configurable: true,
-      enumerable: false,
-      writable: true,
-    });
-    needToRemove = true;
-  }
-}
-
-// Call install() at least once, when this module is imported.
-install();
-
-function remove() {
-  if (needToRemove) {
-    delete safeGlobal.process;
-    needToRemove = false;
-  }
-}
-
-exports.install = install;
-exports.remove = remove;
-//# sourceMappingURL=main.js.map
-
 
 /***/ }),
 
@@ -35845,6 +35712,287 @@ if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
   debug = function() {};
 }
 exports.debug = debug; // for test
+
+
+/***/ }),
+
+/***/ 3416:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+/**
+ * @license React
+ * use-sync-external-store-shim.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+if (process.env.NODE_ENV !== "production") {
+  (function() {
+
+          'use strict';
+
+/* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
+if (
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart ===
+    'function'
+) {
+  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
+}
+          var React = __nccwpck_require__(8444);
+
+var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+
+function error(format) {
+  {
+    {
+      for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        args[_key2 - 1] = arguments[_key2];
+      }
+
+      printWarning('error', format, args);
+    }
+  }
+}
+
+function printWarning(level, format, args) {
+  // When changing this logic, you might want to also
+  // update consoleWithStackDev.www.js as well.
+  {
+    var ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame;
+    var stack = ReactDebugCurrentFrame.getStackAddendum();
+
+    if (stack !== '') {
+      format += '%s';
+      args = args.concat([stack]);
+    } // eslint-disable-next-line react-internal/safe-string-coercion
+
+
+    var argsWithFormat = args.map(function (item) {
+      return String(item);
+    }); // Careful: RN currently depends on this prefix
+
+    argsWithFormat.unshift('Warning: ' + format); // We intentionally don't use spread (or .apply) directly because it
+    // breaks IE9: https://github.com/facebook/react/issues/13610
+    // eslint-disable-next-line react-internal/no-production-logging
+
+    Function.prototype.apply.call(console[level], console, argsWithFormat);
+  }
+}
+
+/**
+ * inlined Object.is polyfill to avoid requiring consumers ship their own
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+ */
+function is(x, y) {
+  return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y // eslint-disable-line no-self-compare
+  ;
+}
+
+var objectIs = typeof Object.is === 'function' ? Object.is : is;
+
+// dispatch for CommonJS interop named imports.
+
+var useState = React.useState,
+    useEffect = React.useEffect,
+    useLayoutEffect = React.useLayoutEffect,
+    useDebugValue = React.useDebugValue;
+var didWarnOld18Alpha = false;
+var didWarnUncachedGetSnapshot = false; // Disclaimer: This shim breaks many of the rules of React, and only works
+// because of a very particular set of implementation details and assumptions
+// -- change any one of them and it will break. The most important assumption
+// is that updates are always synchronous, because concurrent rendering is
+// only available in versions of React that also have a built-in
+// useSyncExternalStore API. And we only use this shim when the built-in API
+// does not exist.
+//
+// Do not assume that the clever hacks used by this hook also work in general.
+// The point of this shim is to replace the need for hacks by other libraries.
+
+function useSyncExternalStore(subscribe, getSnapshot, // Note: The shim does not use getServerSnapshot, because pre-18 versions of
+// React do not expose a way to check if we're hydrating. So users of the shim
+// will need to track that themselves and return the correct value
+// from `getSnapshot`.
+getServerSnapshot) {
+  {
+    if (!didWarnOld18Alpha) {
+      if (React.startTransition !== undefined) {
+        didWarnOld18Alpha = true;
+
+        error('You are using an outdated, pre-release alpha of React 18 that ' + 'does not support useSyncExternalStore. The ' + 'use-sync-external-store shim will not work correctly. Upgrade ' + 'to a newer pre-release.');
+      }
+    }
+  } // Read the current snapshot from the store on every render. Again, this
+  // breaks the rules of React, and only works here because of specific
+  // implementation details, most importantly that updates are
+  // always synchronous.
+
+
+  var value = getSnapshot();
+
+  {
+    if (!didWarnUncachedGetSnapshot) {
+      var cachedValue = getSnapshot();
+
+      if (!objectIs(value, cachedValue)) {
+        error('The result of getSnapshot should be cached to avoid an infinite loop');
+
+        didWarnUncachedGetSnapshot = true;
+      }
+    }
+  } // Because updates are synchronous, we don't queue them. Instead we force a
+  // re-render whenever the subscribed state changes by updating an some
+  // arbitrary useState hook. Then, during render, we call getSnapshot to read
+  // the current value.
+  //
+  // Because we don't actually use the state returned by the useState hook, we
+  // can save a bit of memory by storing other stuff in that slot.
+  //
+  // To implement the early bailout, we need to track some things on a mutable
+  // object. Usually, we would put that in a useRef hook, but we can stash it in
+  // our useState hook instead.
+  //
+  // To force a re-render, we call forceUpdate({inst}). That works because the
+  // new object always fails an equality check.
+
+
+  var _useState = useState({
+    inst: {
+      value: value,
+      getSnapshot: getSnapshot
+    }
+  }),
+      inst = _useState[0].inst,
+      forceUpdate = _useState[1]; // Track the latest getSnapshot function with a ref. This needs to be updated
+  // in the layout phase so we can access it during the tearing check that
+  // happens on subscribe.
+
+
+  useLayoutEffect(function () {
+    inst.value = value;
+    inst.getSnapshot = getSnapshot; // Whenever getSnapshot or subscribe changes, we need to check in the
+    // commit phase if there was an interleaved mutation. In concurrent mode
+    // this can happen all the time, but even in synchronous mode, an earlier
+    // effect may have mutated the store.
+
+    if (checkIfSnapshotChanged(inst)) {
+      // Force a re-render.
+      forceUpdate({
+        inst: inst
+      });
+    }
+  }, [subscribe, value, getSnapshot]);
+  useEffect(function () {
+    // Check for changes right before subscribing. Subsequent changes will be
+    // detected in the subscription handler.
+    if (checkIfSnapshotChanged(inst)) {
+      // Force a re-render.
+      forceUpdate({
+        inst: inst
+      });
+    }
+
+    var handleStoreChange = function () {
+      // TODO: Because there is no cross-renderer API for batching updates, it's
+      // up to the consumer of this library to wrap their subscription event
+      // with unstable_batchedUpdates. Should we try to detect when this isn't
+      // the case and print a warning in development?
+      // The store changed. Check if the snapshot changed since the last time we
+      // read from the store.
+      if (checkIfSnapshotChanged(inst)) {
+        // Force a re-render.
+        forceUpdate({
+          inst: inst
+        });
+      }
+    }; // Subscribe to the store and return a clean-up function.
+
+
+    return subscribe(handleStoreChange);
+  }, [subscribe]);
+  useDebugValue(value);
+  return value;
+}
+
+function checkIfSnapshotChanged(inst) {
+  var latestGetSnapshot = inst.getSnapshot;
+  var prevValue = inst.value;
+
+  try {
+    var nextValue = latestGetSnapshot();
+    return !objectIs(prevValue, nextValue);
+  } catch (error) {
+    return true;
+  }
+}
+
+function useSyncExternalStore$1(subscribe, getSnapshot, getServerSnapshot) {
+  // Note: The shim does not use getServerSnapshot, because pre-18 versions of
+  // React do not expose a way to check if we're hydrating. So users of the shim
+  // will need to track that themselves and return the correct value
+  // from `getSnapshot`.
+  return getSnapshot();
+}
+
+var canUseDOM = !!(typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined');
+
+var isServerEnvironment = !canUseDOM;
+
+var shim = isServerEnvironment ? useSyncExternalStore$1 : useSyncExternalStore;
+var useSyncExternalStore$2 = React.useSyncExternalStore !== undefined ? React.useSyncExternalStore : shim;
+
+exports.useSyncExternalStore = useSyncExternalStore$2;
+          /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
+if (
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop ===
+    'function'
+) {
+  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
+}
+        
+  })();
+}
+
+
+/***/ }),
+
+/***/ 6595:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+/**
+ * @license React
+ * use-sync-external-store-shim.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+var e=__nccwpck_require__(8444);function h(a,b){return a===b&&(0!==a||1/a===1/b)||a!==a&&b!==b}var k="function"===typeof Object.is?Object.is:h,l=e.useState,m=e.useEffect,n=e.useLayoutEffect,p=e.useDebugValue;function q(a,b){var d=b(),f=l({inst:{value:d,getSnapshot:b}}),c=f[0].inst,g=f[1];n(function(){c.value=d;c.getSnapshot=b;r(c)&&g({inst:c})},[a,d,b]);m(function(){r(c)&&g({inst:c});return a(function(){r(c)&&g({inst:c})})},[a]);p(d);return d}
+function r(a){var b=a.getSnapshot;a=a.value;try{var d=b();return!k(a,d)}catch(f){return!0}}function t(a,b){return b()}var u="undefined"===typeof window||"undefined"===typeof window.document||"undefined"===typeof window.document.createElement?t:q;exports.useSyncExternalStore=void 0!==e.useSyncExternalStore?e.useSyncExternalStore:u;
+
+
+/***/ }),
+
+/***/ 7155:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+if (process.env.NODE_ENV === 'production') {
+  module.exports = __nccwpck_require__(6595);
+} else {
+  module.exports = __nccwpck_require__(3416);
+}
 
 
 /***/ }),
@@ -38910,17 +39058,17 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var globals = __nccwpck_require__(8869);
 var tslib = __nccwpck_require__(4351);
 var core = __nccwpck_require__(6784);
-var utilities = __nccwpck_require__(3150);
 var http = __nccwpck_require__(1137);
 var equality = __nccwpck_require__(9969);
 var cache = __nccwpck_require__(768);
+var utilities = __nccwpck_require__(3150);
 var errors = __nccwpck_require__(1621);
 var graphql = __nccwpck_require__(6155);
 var utils = __nccwpck_require__(6922);
-var tsInvariant = __nccwpck_require__(9994);
+var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.5.10';
+var version = '3.6.0';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -38937,7 +39085,6 @@ function isNetworkRequestInFlight(networkStatus) {
 }
 
 var assign = Object.assign, hasOwnProperty$1 = Object.hasOwnProperty;
-var warnedAboutUpdateQuery = false;
 var ObservableQuery = (function (_super) {
     tslib.__extends(ObservableQuery, _super);
     function ObservableQuery(_a) {
@@ -38970,16 +39117,22 @@ var ObservableQuery = (function (_super) {
         }) || this;
         _this.observers = new Set();
         _this.subscriptions = new Set();
-        _this.isTornDown = false;
-        _this.options = options;
-        _this.queryId = queryInfo.queryId || queryManager.generateQueryId();
-        var opDef = utilities.getOperationDefinition(options.query);
-        _this.queryName = opDef && opDef.name && opDef.name.value;
-        _this.initialFetchPolicy = options.fetchPolicy || "cache-first";
-        _this.queryManager = queryManager;
         _this.queryInfo = queryInfo;
+        _this.queryManager = queryManager;
+        _this.isTornDown = false;
+        _this.options = tslib.__assign({ initialFetchPolicy: options.fetchPolicy || "cache-first" }, options);
+        _this.queryId = queryInfo.queryId || queryManager.generateQueryId();
+        var opDef = utilities.getOperationDefinition(_this.query);
+        _this.queryName = opDef && opDef.name && opDef.name.value;
         return _this;
     }
+    Object.defineProperty(ObservableQuery.prototype, "query", {
+        get: function () {
+            return this.queryManager.transform(this.options.query).document;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(ObservableQuery.prototype, "variables", {
         get: function () {
             return this.options.variables;
@@ -39093,7 +39246,7 @@ var ObservableQuery = (function (_super) {
             reobserveOptions.fetchPolicy = 'network-only';
         }
         if (__DEV__ && variables && hasOwnProperty$1.call(variables, "variables")) {
-            var queryDef = utilities.getQueryDefinition(this.options.query);
+            var queryDef = utilities.getQueryDefinition(this.query);
             var vars = queryDef.variableDefinitions;
             if (!vars || !vars.some(function (v) { return v.variable.name.value === "variables"; })) {
                 __DEV__ && globals.invariant.warn("Called refetch(".concat(JSON.stringify(variables), ") for query ").concat(((_a = queryDef.name) === null || _a === void 0 ? void 0 : _a.value) || JSON.stringify(queryDef), ", which does not declare a $variables variable.\nDid you mean to call refetch(variables) instead of refetch({ variables })?"));
@@ -39107,37 +39260,51 @@ var ObservableQuery = (function (_super) {
     };
     ObservableQuery.prototype.fetchMore = function (fetchMoreOptions) {
         var _this = this;
-        var combinedOptions = tslib.__assign(tslib.__assign({}, (fetchMoreOptions.query ? fetchMoreOptions : tslib.__assign(tslib.__assign(tslib.__assign({}, this.options), fetchMoreOptions), { variables: tslib.__assign(tslib.__assign({}, this.options.variables), fetchMoreOptions.variables) }))), { fetchPolicy: "no-cache" });
+        var combinedOptions = tslib.__assign(tslib.__assign({}, (fetchMoreOptions.query ? fetchMoreOptions : tslib.__assign(tslib.__assign(tslib.__assign(tslib.__assign({}, this.options), { query: this.query }), fetchMoreOptions), { variables: tslib.__assign(tslib.__assign({}, this.options.variables), fetchMoreOptions.variables) }))), { fetchPolicy: "no-cache" });
         var qid = this.queryManager.generateQueryId();
+        var queryInfo = this.queryInfo;
+        var originalNetworkStatus = queryInfo.networkStatus;
+        queryInfo.networkStatus = exports.NetworkStatus.fetchMore;
         if (combinedOptions.notifyOnNetworkStatusChange) {
-            this.queryInfo.networkStatus = exports.NetworkStatus.fetchMore;
             this.observe();
         }
+        var updatedQuerySet = new Set();
         return this.queryManager.fetchQuery(qid, combinedOptions, exports.NetworkStatus.fetchMore).then(function (fetchMoreResult) {
-            var data = fetchMoreResult.data;
-            var updateQuery = fetchMoreOptions.updateQuery;
-            if (updateQuery) {
-                if (__DEV__ &&
-                    !warnedAboutUpdateQuery) {
-                    __DEV__ && globals.invariant.warn("The updateQuery callback for fetchMore is deprecated, and will be removed\nin the next major version of Apollo Client.\n\nPlease convert updateQuery functions to field policies with appropriate\nread and merge functions, or use/adapt a helper function (such as\nconcatPagination, offsetLimitPagination, or relayStylePagination) from\n@apollo/client/utilities.\n\nThe field policy system handles pagination more effectively than a\nhand-written updateQuery function, and you only need to define the policy\nonce, rather than every time you call fetchMore.");
-                    warnedAboutUpdateQuery = true;
-                }
-                _this.updateQuery(function (previous) { return updateQuery(previous, {
-                    fetchMoreResult: data,
-                    variables: combinedOptions.variables,
-                }); });
+            _this.queryManager.removeQuery(qid);
+            if (queryInfo.networkStatus === exports.NetworkStatus.fetchMore) {
+                queryInfo.networkStatus = originalNetworkStatus;
             }
-            else {
-                _this.queryManager.cache.writeQuery({
-                    query: combinedOptions.query,
-                    variables: combinedOptions.variables,
-                    data: data,
-                });
-            }
+            _this.queryManager.cache.batch({
+                update: function (cache) {
+                    var updateQuery = fetchMoreOptions.updateQuery;
+                    if (updateQuery) {
+                        cache.updateQuery({
+                            query: _this.query,
+                            variables: _this.variables,
+                            returnPartialData: true,
+                            optimistic: false,
+                        }, function (previous) { return updateQuery(previous, {
+                            fetchMoreResult: fetchMoreResult.data,
+                            variables: combinedOptions.variables,
+                        }); });
+                    }
+                    else {
+                        cache.writeQuery({
+                            query: combinedOptions.query,
+                            variables: combinedOptions.variables,
+                            data: fetchMoreResult.data,
+                        });
+                    }
+                },
+                onWatchUpdated: function (watch) {
+                    updatedQuerySet.add(watch.query);
+                },
+            });
             return fetchMoreResult;
         }).finally(function () {
-            _this.queryManager.stopQuery(qid);
-            _this.reobserve();
+            if (!updatedQuerySet.has(_this.query)) {
+                reobserveCacheFirst(_this);
+            }
         });
     };
     ObservableQuery.prototype.subscribeToMore = function (options) {
@@ -39190,7 +39357,7 @@ var ObservableQuery = (function (_super) {
             return Promise.resolve();
         }
         return this.reobserve({
-            fetchPolicy: this.initialFetchPolicy,
+            fetchPolicy: this.options.initialFetchPolicy,
             variables: variables,
         }, exports.NetworkStatus.setVariables);
     };
@@ -39221,6 +39388,26 @@ var ObservableQuery = (function (_super) {
     ObservableQuery.prototype.stopPolling = function () {
         this.options.pollInterval = 0;
         this.updatePolling();
+    };
+    ObservableQuery.prototype.applyNextFetchPolicy = function (reason, options) {
+        if (options.nextFetchPolicy) {
+            var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? "cache-first" : _a, _b = options.initialFetchPolicy, initialFetchPolicy = _b === void 0 ? fetchPolicy : _b;
+            if (typeof options.nextFetchPolicy === "function") {
+                options.fetchPolicy = options.nextFetchPolicy(fetchPolicy, {
+                    reason: reason,
+                    options: options,
+                    observable: this,
+                    initialFetchPolicy: initialFetchPolicy,
+                });
+            }
+            else if (reason === "variables-changed") {
+                options.fetchPolicy = initialFetchPolicy;
+            }
+            else {
+                options.fetchPolicy = options.nextFetchPolicy;
+            }
+        }
+        return options.fetchPolicy;
     };
     ObservableQuery.prototype.fetch = function (options, newNetworkStatus) {
         this.queryManager.setObservableQuery(this);
@@ -39284,16 +39471,18 @@ var ObservableQuery = (function (_super) {
             newNetworkStatus === exports.NetworkStatus.fetchMore ||
             newNetworkStatus === exports.NetworkStatus.poll;
         var oldVariables = this.options.variables;
+        var oldFetchPolicy = this.options.fetchPolicy;
+        var mergedOptions = utilities.mergeOptions(this.options, newOptions || {});
         var options = useDisposableConcast
-            ? utilities.compact(this.options, newOptions)
-            : assign(this.options, utilities.compact(newOptions));
+            ? mergedOptions
+            : assign(this.options, mergedOptions);
         if (!useDisposableConcast) {
             this.updatePolling();
             if (newOptions &&
                 newOptions.variables &&
-                !newOptions.fetchPolicy &&
-                !equality.equal(newOptions.variables, oldVariables)) {
-                options.fetchPolicy = this.initialFetchPolicy;
+                !equality.equal(newOptions.variables, oldVariables) &&
+                (!newOptions.fetchPolicy || newOptions.fetchPolicy === oldFetchPolicy)) {
+                this.applyNextFetchPolicy("variables-changed", options);
                 if (newNetworkStatus === void 0) {
                     newNetworkStatus = exports.NetworkStatus.setVariables;
                 }
@@ -39357,20 +39546,29 @@ var ObservableQuery = (function (_super) {
     return ObservableQuery;
 }(utilities.Observable));
 utilities.fixObservableSubclass(ObservableQuery);
+function reobserveCacheFirst(obsQuery) {
+    var _a = obsQuery.options, fetchPolicy = _a.fetchPolicy, nextFetchPolicy = _a.nextFetchPolicy;
+    if (fetchPolicy === "cache-and-network" ||
+        fetchPolicy === "network-only") {
+        return obsQuery.reobserve({
+            fetchPolicy: "cache-first",
+            nextFetchPolicy: function () {
+                this.nextFetchPolicy = nextFetchPolicy;
+                if (typeof nextFetchPolicy === "function") {
+                    return nextFetchPolicy.apply(this, arguments);
+                }
+                return fetchPolicy;
+            },
+        });
+    }
+    return obsQuery.reobserve();
+}
 function defaultSubscriptionObserverErrorCallback(error) {
     __DEV__ && globals.invariant.error('Unhandled error', error.message, error.stack);
 }
 function logMissingFieldErrors(missing) {
     if (__DEV__ && missing) {
         __DEV__ && globals.invariant.debug("Missing cache result fields: ".concat(JSON.stringify(missing)), missing);
-    }
-}
-function applyNextFetchPolicy(options) {
-    var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? "cache-first" : _a, nextFetchPolicy = options.nextFetchPolicy;
-    if (nextFetchPolicy) {
-        options.fetchPolicy = typeof nextFetchPolicy === "function"
-            ? nextFetchPolicy.call(options, fetchPolicy)
-            : nextFetchPolicy;
     }
 }
 
@@ -39755,11 +39953,12 @@ var QueryInfo = (function () {
         if (oq) {
             oq["queryInfo"] = this;
             this.listeners.add(this.oqListener = function () {
-                if (_this.getDiff().fromOptimisticTransaction) {
+                var diff = _this.getDiff();
+                if (diff.fromOptimisticTransaction) {
                     oq["observe"]();
                 }
                 else {
-                    oq.reobserve();
+                    reobserveCacheFirst(oq);
                 }
             });
         }
@@ -39904,7 +40103,7 @@ function shouldWriteResult(result, errorPolicy) {
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var QueryManager = (function () {
     function QueryManager(_a) {
-        var cache = _a.cache, link = _a.link, _b = _a.queryDeduplication, queryDeduplication = _b === void 0 ? false : _b, onBroadcast = _a.onBroadcast, _c = _a.ssrMode, ssrMode = _c === void 0 ? false : _c, _d = _a.clientAwareness, clientAwareness = _d === void 0 ? {} : _d, localState = _a.localState, assumeImmutableResults = _a.assumeImmutableResults;
+        var cache = _a.cache, link = _a.link, defaultOptions = _a.defaultOptions, _b = _a.queryDeduplication, queryDeduplication = _b === void 0 ? false : _b, onBroadcast = _a.onBroadcast, _c = _a.ssrMode, ssrMode = _c === void 0 ? false : _c, _d = _a.clientAwareness, clientAwareness = _d === void 0 ? {} : _d, localState = _a.localState, assumeImmutableResults = _a.assumeImmutableResults;
         this.clientAwareness = {};
         this.queries = new Map();
         this.fetchCancelFns = new Map();
@@ -39915,6 +40114,7 @@ var QueryManager = (function () {
         this.inFlightLinkObservables = new Map();
         this.cache = cache;
         this.link = link;
+        this.defaultOptions = defaultOptions || Object.create(null);
         this.queryDeduplication = queryDeduplication;
         this.clientAwareness = clientAwareness;
         this.localState = localState || new LocalState({ cache: cache });
@@ -39936,11 +40136,12 @@ var QueryManager = (function () {
         this.fetchCancelFns.clear();
     };
     QueryManager.prototype.mutate = function (_a) {
-        var mutation = _a.mutation, variables = _a.variables, optimisticResponse = _a.optimisticResponse, updateQueries = _a.updateQueries, _b = _a.refetchQueries, refetchQueries = _b === void 0 ? [] : _b, _c = _a.awaitRefetchQueries, awaitRefetchQueries = _c === void 0 ? false : _c, updateWithProxyFn = _a.update, onQueryUpdated = _a.onQueryUpdated, _d = _a.errorPolicy, errorPolicy = _d === void 0 ? 'none' : _d, _e = _a.fetchPolicy, fetchPolicy = _e === void 0 ? 'network-only' : _e, keepRootFields = _a.keepRootFields, context = _a.context;
+        var _b, _c;
+        var mutation = _a.mutation, variables = _a.variables, optimisticResponse = _a.optimisticResponse, updateQueries = _a.updateQueries, _d = _a.refetchQueries, refetchQueries = _d === void 0 ? [] : _d, _e = _a.awaitRefetchQueries, awaitRefetchQueries = _e === void 0 ? false : _e, updateWithProxyFn = _a.update, onQueryUpdated = _a.onQueryUpdated, _f = _a.fetchPolicy, fetchPolicy = _f === void 0 ? ((_b = this.defaultOptions.mutate) === null || _b === void 0 ? void 0 : _b.fetchPolicy) || "network-only" : _f, _g = _a.errorPolicy, errorPolicy = _g === void 0 ? ((_c = this.defaultOptions.mutate) === null || _c === void 0 ? void 0 : _c.errorPolicy) || "none" : _g, keepRootFields = _a.keepRootFields, context = _a.context;
         return tslib.__awaiter(this, void 0, void 0, function () {
             var mutationId, mutationStoreValue, self;
-            return tslib.__generator(this, function (_f) {
-                switch (_f.label) {
+            return tslib.__generator(this, function (_h) {
+                switch (_h.label) {
                     case 0:
                         __DEV__ ? globals.invariant(mutation, 'mutation option is required. You must specify your GraphQL document in the mutation option.') : globals.invariant(mutation, 12);
                         __DEV__ ? globals.invariant(fetchPolicy === 'network-only' ||
@@ -39952,8 +40153,8 @@ var QueryManager = (function () {
                         if (!this.transform(mutation).hasClientExports) return [3, 2];
                         return [4, this.localState.addExportedVariables(mutation, variables, context)];
                     case 1:
-                        variables = (_f.sent());
-                        _f.label = 2;
+                        variables = (_h.sent());
+                        _h.label = 2;
                     case 2:
                         mutationStoreValue = this.mutationStore &&
                             (this.mutationStore[mutationId] = {
@@ -40220,9 +40421,9 @@ var QueryManager = (function () {
         });
         this.queries.set(observable.queryId, queryInfo);
         queryInfo.init({
-            document: options.query,
+            document: observable.query,
             observableQuery: observable,
-            variables: options.variables,
+            variables: observable.variables,
         });
         return observable;
     };
@@ -40406,8 +40607,10 @@ var QueryManager = (function () {
     };
     QueryManager.prototype.removeQuery = function (queryId) {
         this.fetchCancelFns.delete(queryId);
-        this.getQuery(queryId).stop();
-        this.queries.delete(queryId);
+        if (this.queries.has(queryId)) {
+            this.getQuery(queryId).stop();
+            this.queries.delete(queryId);
+        }
     };
     QueryManager.prototype.broadcastQueries = function () {
         if (this.onBroadcast)
@@ -40491,10 +40694,11 @@ var QueryManager = (function () {
             var aqr = {
                 data: result.data,
                 loading: false,
-                networkStatus: queryInfo.networkStatus || exports.NetworkStatus.ready,
+                networkStatus: exports.NetworkStatus.ready,
             };
             if (hasErrors && options.errorPolicy !== "ignore") {
                 aqr.errors = result.errors;
+                aqr.networkStatus = exports.NetworkStatus.error;
             }
             return aqr;
         }, function (networkError) {
@@ -40513,7 +40717,8 @@ var QueryManager = (function () {
         var query = this.transform(options.query).document;
         var variables = this.getVariables(query, options.variables);
         var queryInfo = this.getQuery(queryId);
-        var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? "cache-first" : _a, _b = options.errorPolicy, errorPolicy = _b === void 0 ? "none" : _b, _c = options.returnPartialData, returnPartialData = _c === void 0 ? false : _c, _d = options.notifyOnNetworkStatusChange, notifyOnNetworkStatusChange = _d === void 0 ? false : _d, _e = options.context, context = _e === void 0 ? {} : _e;
+        var defaults = this.defaultOptions.watchQuery;
+        var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? defaults && defaults.fetchPolicy || "cache-first" : _a, _b = options.errorPolicy, errorPolicy = _b === void 0 ? defaults && defaults.errorPolicy || "none" : _b, _c = options.returnPartialData, returnPartialData = _c === void 0 ? false : _c, _d = options.notifyOnNetworkStatusChange, notifyOnNetworkStatusChange = _d === void 0 ? false : _d, _e = options.context, context = _e === void 0 ? {} : _e;
         var normalized = Object.assign({}, options, {
             query: query,
             variables: variables,
@@ -40535,7 +40740,9 @@ var QueryManager = (function () {
             : fromVariables(normalized.variables));
         concast.cleanup(function () {
             _this.fetchCancelFns.delete(queryId);
-            applyNextFetchPolicy(options);
+            if (queryInfo.observableQuery) {
+                queryInfo.observableQuery["applyNextFetchPolicy"]("after-fetch", options);
+            }
         });
         return concast;
     };
@@ -40609,10 +40816,10 @@ var QueryManager = (function () {
     };
     QueryManager.prototype.fetchQueryByPolicy = function (queryInfo, _a, networkStatus) {
         var _this = this;
-        var query = _a.query, variables = _a.variables, fetchPolicy = _a.fetchPolicy, refetchWritePolicy = _a.refetchWritePolicy, errorPolicy = _a.errorPolicy, returnPartialData = _a.returnPartialData, context = _a.context, notifyOnNetworkStatusChange = _a.notifyOnNetworkStatusChange;
+        var query = _a.query, variables = _a.variables, fetchPolicy = _a.fetchPolicy, refetchWritePolicy = _a.refetchWritePolicy, errorPolicy = _a.errorPolicy, returnPartialData = _a.returnPartialData, context = _a.context, notifyOnNetworkStatusChange = _a.notifyOnNetworkStatusChange, fetchBlockingPromise = _a.fetchBlockingPromise;
         var oldNetworkStatus = queryInfo.networkStatus;
         queryInfo.init({
-            document: query,
+            document: this.transform(query).document,
             variables: variables,
             networkStatus: networkStatus,
         });
@@ -40642,12 +40849,26 @@ var QueryManager = (function () {
                 refetchWritePolicy !== "merge") ? 1
                 : 2;
         var resultsFromLink = function () {
-            return _this.getResultsFromLink(queryInfo, cacheWriteBehavior, {
+            var get = function () { return _this.getResultsFromLink(queryInfo, cacheWriteBehavior, {
                 variables: variables,
                 context: context,
                 fetchPolicy: fetchPolicy,
                 errorPolicy: errorPolicy,
-            });
+            }); };
+            return fetchBlockingPromise ? fetchBlockingPromise.then(function (ok) { return ok ? get() : utilities.Observable.of(); }, function (error) {
+                var apolloError = errors.isApolloError(error)
+                    ? error
+                    : new errors.ApolloError({ clientErrors: [error] });
+                if (errorPolicy !== "ignore") {
+                    queryInfo.markError(apolloError);
+                }
+                return utilities.Observable.of({
+                    loading: false,
+                    networkStatus: exports.NetworkStatus.error,
+                    error: apolloError,
+                    data: readCache().result,
+                });
+            }) : get();
         };
         var shouldNotify = notifyOnNetworkStatusChange &&
             typeof oldNetworkStatus === "number" &&
@@ -40723,15 +40944,9 @@ var QueryManager = (function () {
 }());
 
 var hasSuggestedDevtools = false;
-function mergeOptions(defaults, options) {
-    return utilities.compact(defaults, options, options.variables && {
-        variables: tslib.__assign(tslib.__assign({}, defaults.variables), options.variables),
-    });
-}
 var ApolloClient = (function () {
     function ApolloClient(options) {
         var _this = this;
-        this.defaultOptions = {};
         this.resetStoreCallbacks = [];
         this.clearStoreCallbacks = [];
         var uri = options.uri, credentials = options.credentials, headers = options.headers, cache = options.cache, _a = options.ssrMode, ssrMode = _a === void 0 ? false : _a, _b = options.ssrForceFetchDelay, ssrForceFetchDelay = _b === void 0 ? 0 : _b, _c = options.connectToDevTools, connectToDevTools = _c === void 0 ? typeof window === 'object' &&
@@ -40752,7 +40967,7 @@ var ApolloClient = (function () {
         this.cache = cache;
         this.disableNetworkFetches = ssrMode || ssrForceFetchDelay > 0;
         this.queryDeduplication = queryDeduplication;
-        this.defaultOptions = defaultOptions || {};
+        this.defaultOptions = defaultOptions || Object.create(null);
         this.typeDefs = typeDefs;
         if (ssrForceFetchDelay) {
             setTimeout(function () { return (_this.disableNetworkFetches = false); }, ssrForceFetchDelay);
@@ -40799,6 +41014,7 @@ var ApolloClient = (function () {
         this.queryManager = new QueryManager({
             cache: this.cache,
             link: this.link,
+            defaultOptions: this.defaultOptions,
             queryDeduplication: queryDeduplication,
             ssrMode: ssrMode,
             clientAwareness: {
@@ -40826,7 +41042,7 @@ var ApolloClient = (function () {
     };
     ApolloClient.prototype.watchQuery = function (options) {
         if (this.defaultOptions.watchQuery) {
-            options = mergeOptions(this.defaultOptions.watchQuery, options);
+            options = utilities.mergeOptions(this.defaultOptions.watchQuery, options);
         }
         if (this.disableNetworkFetches &&
             (options.fetchPolicy === 'network-only' ||
@@ -40837,7 +41053,7 @@ var ApolloClient = (function () {
     };
     ApolloClient.prototype.query = function (options) {
         if (this.defaultOptions.query) {
-            options = mergeOptions(this.defaultOptions.query, options);
+            options = utilities.mergeOptions(this.defaultOptions.query, options);
         }
         __DEV__ ? globals.invariant(options.fetchPolicy !== 'cache-and-network', 'The cache-and-network fetchPolicy does not work with client.query, because ' +
             'client.query can only return a single result. Please use client.watchQuery ' +
@@ -40850,7 +41066,7 @@ var ApolloClient = (function () {
     };
     ApolloClient.prototype.mutate = function (options) {
         if (this.defaultOptions.mutate) {
-            options = mergeOptions(this.defaultOptions.mutate, options);
+            options = utilities.mergeOptions(this.defaultOptions.mutate, options);
         }
         return this.queryManager.mutate(options);
     };
@@ -40959,15 +41175,16 @@ var ApolloClient = (function () {
 
 tsInvariant.setVerbosity(globals.DEV ? "log" : "silent");
 
-exports.Observable = utilities.Observable;
-exports.isReference = utilities.isReference;
-exports.makeReference = utilities.makeReference;
 exports.ApolloCache = cache.ApolloCache;
 exports.Cache = cache.Cache;
 exports.InMemoryCache = cache.InMemoryCache;
 exports.MissingFieldError = cache.MissingFieldError;
 exports.defaultDataIdFromObject = cache.defaultDataIdFromObject;
 exports.makeVar = cache.makeVar;
+exports.Observable = utilities.Observable;
+exports.isReference = utilities.isReference;
+exports.makeReference = utilities.makeReference;
+exports.mergeOptions = utilities.mergeOptions;
 exports.ApolloError = errors.ApolloError;
 exports.isApolloError = errors.isApolloError;
 exports.fromError = utils.fromError;
@@ -40982,8 +41199,6 @@ exports.gql = graphqlTag.gql;
 exports.resetCaches = graphqlTag.resetCaches;
 exports.ApolloClient = ApolloClient;
 exports.ObservableQuery = ObservableQuery;
-exports.applyNextFetchPolicy = applyNextFetchPolicy;
-exports.mergeOptions = mergeOptions;
 for (var k in core) {
     if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = core[k];
 }
@@ -41742,10 +41957,12 @@ var globals = __nccwpck_require__(8869);
 var react = __nccwpck_require__(8444);
 var context = __nccwpck_require__(3673);
 var tslib = __nccwpck_require__(4351);
+var errors = __nccwpck_require__(1621);
+var index_js = __nccwpck_require__(7155);
 var equality = __nccwpck_require__(9969);
 var core = __nccwpck_require__(1402);
-var errors = __nccwpck_require__(1621);
 var parser = __nccwpck_require__(5043);
+var utilities = __nccwpck_require__(3150);
 
 function useApolloClient(override) {
     var context$1 = react.useContext(context.getApolloContext());
@@ -41756,254 +41973,306 @@ function useApolloClient(override) {
     return client;
 }
 
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 function useQuery(query, options) {
-    var _a;
-    var context$1 = react.useContext(context.getApolloContext());
-    var client = useApolloClient(options === null || options === void 0 ? void 0 : options.client);
-    var defaultWatchQueryOptions = client.defaultOptions.watchQuery;
-    parser.verifyDocumentType(query, parser.DocumentType.Query);
-    var _b = react.useState(function () {
-        var watchQueryOptions = createWatchQueryOptions(query, options, defaultWatchQueryOptions);
-        var obsQuery = null;
-        if (context$1.renderPromises) {
-            obsQuery = context$1.renderPromises.getSSRObservable(watchQueryOptions);
-        }
-        if (!obsQuery) {
-            obsQuery = client.watchQuery(watchQueryOptions);
-            if (context$1.renderPromises) {
-                context$1.renderPromises.registerSSRObservable(obsQuery, watchQueryOptions);
-            }
-        }
-        if (context$1.renderPromises &&
-            (options === null || options === void 0 ? void 0 : options.ssr) !== false &&
-            !(options === null || options === void 0 ? void 0 : options.skip) &&
-            obsQuery.getCurrentResult().loading) {
-            context$1.renderPromises.addQueryPromise({
-                getOptions: function () { return createWatchQueryOptions(query, options, defaultWatchQueryOptions); },
-                fetchData: function () { return new Promise(function (resolve) {
-                    var sub = obsQuery.subscribe({
-                        next: function (result) {
-                            if (!result.loading) {
-                                resolve();
-                                sub.unsubscribe();
-                            }
-                        },
-                        error: function () {
-                            resolve();
-                            sub.unsubscribe();
-                        },
-                        complete: function () {
-                            resolve();
-                        },
-                    });
-                }); },
-            }, function () { return null; });
-        }
-        return obsQuery;
-    }), obsQuery = _b[0], setObsQuery = _b[1];
-    var _c = react.useState(function () {
-        var _a, _b;
-        var result = obsQuery.getCurrentResult();
-        if (!result.loading && options) {
-            if (result.error) {
-                (_a = options.onError) === null || _a === void 0 ? void 0 : _a.call(options, result.error);
-            }
-            else if (result.data) {
-                (_b = options.onCompleted) === null || _b === void 0 ? void 0 : _b.call(options, result.data);
-            }
-        }
-        return result;
-    }), result = _c[0], setResult = _c[1];
-    var ref = react.useRef({
-        client: client,
-        query: query,
-        options: options,
-        result: result,
-        previousData: void 0,
-        watchQueryOptions: createWatchQueryOptions(query, options, defaultWatchQueryOptions),
-    });
-    react.useEffect(function () {
-        var _a, _b;
-        var watchQueryOptions = createWatchQueryOptions(query, options, defaultWatchQueryOptions);
-        var nextResult;
-        if (ref.current.client !== client || !equality.equal(ref.current.query, query)) {
-            var obsQuery_1 = client.watchQuery(watchQueryOptions);
-            setObsQuery(obsQuery_1);
-            nextResult = obsQuery_1.getCurrentResult();
-        }
-        else if (!equality.equal(ref.current.watchQueryOptions, watchQueryOptions)) {
-            obsQuery.setOptions(watchQueryOptions).catch(function () { });
-            nextResult = obsQuery.getCurrentResult();
-            ref.current.watchQueryOptions = watchQueryOptions;
-        }
-        if (nextResult) {
-            var previousResult = ref.current.result;
-            if (previousResult.data) {
-                ref.current.previousData = previousResult.data;
-            }
-            setResult(ref.current.result = nextResult);
-            if (!nextResult.loading && options) {
-                if (nextResult.error) {
-                    (_a = options.onError) === null || _a === void 0 ? void 0 : _a.call(options, nextResult.error);
-                }
-                else if (nextResult.data) {
-                    (_b = options.onCompleted) === null || _b === void 0 ? void 0 : _b.call(options, nextResult.data);
-                }
-            }
-        }
-        Object.assign(ref.current, { client: client, query: query });
-    }, [obsQuery, client, query, options]);
-    react.useEffect(function () {
-        if (context$1.renderPromises) {
-            return;
-        }
-        var subscription = obsQuery.subscribe(onNext, onError);
-        function onNext() {
-            var _a, _b;
-            var previousResult = ref.current.result;
-            var result = obsQuery.getCurrentResult();
-            if (previousResult &&
-                previousResult.loading === result.loading &&
-                previousResult.networkStatus === result.networkStatus &&
-                equality.equal(previousResult.data, result.data)) {
-                return;
-            }
-            if (previousResult.data) {
-                ref.current.previousData = previousResult.data;
-            }
-            setResult(ref.current.result = result);
-            if (!result.loading) {
-                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onCompleted) === null || _b === void 0 ? void 0 : _b.call(_a, result.data);
-            }
-        }
-        function onError(error) {
-            var _a, _b;
-            var last = obsQuery["last"];
-            subscription.unsubscribe();
-            try {
-                obsQuery.resetLastResults();
-                subscription = obsQuery.subscribe(onNext, onError);
-            }
-            finally {
-                obsQuery["last"] = last;
-            }
-            if (!error.hasOwnProperty('graphQLErrors')) {
-                throw error;
-            }
-            var previousResult = ref.current.result;
-            if ((previousResult && previousResult.loading) ||
-                !equality.equal(error, previousResult.error)) {
-                setResult(ref.current.result = {
-                    data: previousResult.data,
-                    error: error,
-                    loading: false,
-                    networkStatus: core.NetworkStatus.error,
-                });
-                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) === null || _b === void 0 ? void 0 : _b.call(_a, error);
-            }
-        }
-        return function () { return subscription.unsubscribe(); };
-    }, [obsQuery, context$1.renderPromises, client.disableNetworkFetches]);
-    var partial;
-    (_a = result, partial = _a.partial, result = tslib.__rest(_a, ["partial"]));
-    {
-        if (partial &&
-            (options === null || options === void 0 ? void 0 : options.partialRefetch) &&
-            !result.loading &&
-            (!result.data || Object.keys(result.data).length === 0) &&
-            obsQuery.options.fetchPolicy !== 'cache-only') {
-            result = tslib.__assign(tslib.__assign({}, result), { loading: true, networkStatus: core.NetworkStatus.refetch });
-            obsQuery.refetch();
-        }
-        if (context$1.renderPromises &&
-            (options === null || options === void 0 ? void 0 : options.ssr) !== false &&
-            !(options === null || options === void 0 ? void 0 : options.skip) &&
-            result.loading) {
-            obsQuery.setOptions(createWatchQueryOptions(query, options, defaultWatchQueryOptions)).catch(function () { });
-        }
-        Object.assign(ref.current, { options: options });
+    if (options === void 0) { options = Object.create(null); }
+    return useInternalState(useApolloClient(options.client), query).useQuery(options);
+}
+function useInternalState(client, query) {
+    var stateRef = react.useRef();
+    if (!stateRef.current ||
+        client !== stateRef.current.client ||
+        query !== stateRef.current.query) {
+        stateRef.current = new InternalState(client, query);
     }
-    if ((context$1.renderPromises || client.disableNetworkFetches) &&
-        (options === null || options === void 0 ? void 0 : options.ssr) === false) {
-        result = ref.current.result = {
+    var state = stateRef.current;
+    var _a = react.useState(0); _a[0]; var setTick = _a[1];
+    state.forceUpdate = function () {
+        setTick(function (tick) { return tick + 1; });
+    };
+    return state;
+}
+var InternalState = (function () {
+    function InternalState(client, query) {
+        this.client = client;
+        this.query = query;
+        this.ssrDisabledResult = utilities.maybeDeepFreeze({
             loading: true,
             data: void 0,
             error: void 0,
             networkStatus: core.NetworkStatus.loading,
-        };
-    }
-    else if ((options === null || options === void 0 ? void 0 : options.skip) || (options === null || options === void 0 ? void 0 : options.fetchPolicy) === 'standby') {
-        result = {
+        });
+        this.skipStandbyResult = utilities.maybeDeepFreeze({
             loading: false,
             data: void 0,
             error: void 0,
             networkStatus: core.NetworkStatus.ready,
-        };
+        });
+        this.toQueryResultCache = new (utilities.canUseWeakMap ? WeakMap : Map)();
+        parser.verifyDocumentType(query, parser.DocumentType.Query);
     }
-    if (result.errors && result.errors.length) {
-        result = tslib.__assign(tslib.__assign({}, result), { error: result.error || new errors.ApolloError({ graphQLErrors: result.errors }) });
+    InternalState.prototype.forceUpdate = function () {
+    };
+    InternalState.prototype.useQuery = function (options) {
+        var _this = this;
+        this.renderPromises = react.useContext(context.getApolloContext()).renderPromises;
+        this.useOptions(options);
+        var obsQuery = this.useObservableQuery();
+        var result = index_js.useSyncExternalStore(react.useCallback(function () {
+            if (_this.renderPromises) {
+                return function () { };
+            }
+            var onNext = function () {
+                var previousResult = _this.result;
+                var result = obsQuery.getCurrentResult();
+                if (previousResult &&
+                    previousResult.loading === result.loading &&
+                    previousResult.networkStatus === result.networkStatus &&
+                    equality.equal(previousResult.data, result.data)) {
+                    return;
+                }
+                _this.setResult(result);
+            };
+            var onError = function (error) {
+                var last = obsQuery["last"];
+                subscription.unsubscribe();
+                try {
+                    obsQuery.resetLastResults();
+                    subscription = obsQuery.subscribe(onNext, onError);
+                }
+                finally {
+                    obsQuery["last"] = last;
+                }
+                if (!hasOwnProperty.call(error, 'graphQLErrors')) {
+                    throw error;
+                }
+                var previousResult = _this.result;
+                if (!previousResult ||
+                    (previousResult && previousResult.loading) ||
+                    !equality.equal(error, previousResult.error)) {
+                    _this.setResult({
+                        data: (previousResult && previousResult.data),
+                        error: error,
+                        loading: false,
+                        networkStatus: core.NetworkStatus.error,
+                    });
+                }
+            };
+            var subscription = obsQuery.subscribe(onNext, onError);
+            return function () { return subscription.unsubscribe(); };
+        }, [
+            obsQuery,
+            this.renderPromises,
+            this.client.disableNetworkFetches,
+        ]), function () { return _this.getCurrentResult(); });
+        this.unsafeHandlePartialRefetch(result);
+        return this.toQueryResult(result);
+    };
+    InternalState.prototype.useOptions = function (options) {
+        var _a;
+        var watchQueryOptions = this.createWatchQueryOptions(this.queryHookOptions = options);
+        var currentWatchQueryOptions = this.watchQueryOptions;
+        var resolveFetchBlockingPromise;
+        if (!equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
+            this.watchQueryOptions = watchQueryOptions;
+            if (currentWatchQueryOptions && this.observable) {
+                this.observable.reobserve(tslib.__assign({ fetchBlockingPromise: new Promise(function (resolve) {
+                        resolveFetchBlockingPromise = resolve;
+                    }) }, watchQueryOptions));
+                this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
+                this.result = void 0;
+            }
+        }
+        useUnblockFetchEffect(this.renderPromises, resolveFetchBlockingPromise);
+        this.onCompleted = options.onCompleted || InternalState.prototype.onCompleted;
+        this.onError = options.onError || InternalState.prototype.onError;
+        if ((this.renderPromises || this.client.disableNetworkFetches) &&
+            this.queryHookOptions.ssr === false) {
+            this.result = this.ssrDisabledResult;
+        }
+        else if (this.queryHookOptions.skip ||
+            this.watchQueryOptions.fetchPolicy === 'standby') {
+            this.result = this.skipStandbyResult;
+        }
+        else if (this.result === this.ssrDisabledResult ||
+            this.result === this.skipStandbyResult) {
+            this.result = void 0;
+        }
+    };
+    InternalState.prototype.createWatchQueryOptions = function (_a) {
+        if (_a === void 0) { _a = {}; }
+        var skip = _a.skip; _a.ssr; _a.onCompleted; _a.onError; _a.displayName; var defaultOptions = _a.defaultOptions, otherOptions = tslib.__rest(_a, ["skip", "ssr", "onCompleted", "onError", "displayName", "defaultOptions"]);
+        var toMerge = [];
+        var globalDefaults = this.client.defaultOptions.watchQuery;
+        if (globalDefaults)
+            toMerge.push(globalDefaults);
+        if (defaultOptions)
+            toMerge.push(defaultOptions);
+        var latestOptions = this.observable && this.observable.options;
+        if (latestOptions && toMerge.length) {
+            var defaults_1 = toMerge.reduce(core.mergeOptions, Object.create(null));
+            toMerge.length = 1;
+            toMerge[0] = defaults_1;
+            Object.keys(defaults_1).forEach(function (defaultOptionName) {
+                var currentOptionValue = latestOptions[defaultOptionName];
+                if (hasOwnProperty.call(latestOptions, defaultOptionName) &&
+                    !equality.equal(defaults_1[defaultOptionName], currentOptionValue)) {
+                    defaults_1[defaultOptionName] = defaultOptionName === "variables"
+                        ? tslib.__assign(tslib.__assign({}, defaults_1.variables), currentOptionValue) : currentOptionValue;
+                }
+            });
+        }
+        toMerge.push(otherOptions);
+        var merged = toMerge.reduce(core.mergeOptions, Object.create(null));
+        var watchQueryOptions = Object.assign(merged, { query: this.query });
+        if (this.renderPromises &&
+            (watchQueryOptions.fetchPolicy === 'network-only' ||
+                watchQueryOptions.fetchPolicy === 'cache-and-network')) {
+            watchQueryOptions.fetchPolicy = 'cache-first';
+        }
+        else if (!watchQueryOptions.fetchPolicy) {
+            watchQueryOptions.fetchPolicy = 'cache-first';
+        }
+        if (skip) {
+            var _b = watchQueryOptions.initialFetchPolicy, initialFetchPolicy = _b === void 0 ? watchQueryOptions.fetchPolicy : _b;
+            Object.assign(watchQueryOptions, {
+                initialFetchPolicy: initialFetchPolicy,
+                fetchPolicy: 'standby',
+            });
+        }
+        if (!watchQueryOptions.variables) {
+            watchQueryOptions.variables = {};
+        }
+        return watchQueryOptions;
+    };
+    InternalState.prototype.onCompleted = function (data) { };
+    InternalState.prototype.onError = function (error) { };
+    InternalState.prototype.useObservableQuery = function () {
+        var resolveFetchBlockingPromise;
+        var obsQuery = this.observable =
+            this.renderPromises
+                && this.renderPromises.getSSRObservable(this.watchQueryOptions)
+                || this.observable
+                || this.client.watchQuery(tslib.__assign({ fetchBlockingPromise: new Promise(function (resolve) {
+                        resolveFetchBlockingPromise = resolve;
+                    }) }, this.watchQueryOptions));
+        useUnblockFetchEffect(this.renderPromises, resolveFetchBlockingPromise);
+        this.obsQueryFields = react.useMemo(function () { return ({
+            refetch: obsQuery.refetch.bind(obsQuery),
+            reobserve: obsQuery.reobserve.bind(obsQuery),
+            fetchMore: obsQuery.fetchMore.bind(obsQuery),
+            updateQuery: obsQuery.updateQuery.bind(obsQuery),
+            startPolling: obsQuery.startPolling.bind(obsQuery),
+            stopPolling: obsQuery.stopPolling.bind(obsQuery),
+            subscribeToMore: obsQuery.subscribeToMore.bind(obsQuery),
+        }); }, [obsQuery]);
+        if (this.renderPromises) {
+            this.renderPromises.registerSSRObservable(obsQuery);
+            var ssrAllowed = !(this.queryHookOptions.ssr === false ||
+                this.queryHookOptions.skip);
+            if (ssrAllowed && obsQuery.getCurrentResult().loading) {
+                this.renderPromises.addObservableQueryPromise(obsQuery);
+            }
+        }
+        return obsQuery;
+    };
+    InternalState.prototype.setResult = function (nextResult) {
+        var previousResult = this.result;
+        if (previousResult && previousResult.data) {
+            this.previousData = previousResult.data;
+        }
+        this.result = nextResult;
+        this.forceUpdate();
+        this.handleErrorOrCompleted(nextResult);
+    };
+    InternalState.prototype.handleErrorOrCompleted = function (result) {
+        if (!result.loading) {
+            if (result.error) {
+                this.onError(result.error);
+            }
+            else if (result.data) {
+                this.onCompleted(result.data);
+            }
+        }
+    };
+    InternalState.prototype.getCurrentResult = function () {
+        if (!this.result) {
+            this.handleErrorOrCompleted(this.result = this.observable.getCurrentResult());
+        }
+        return this.result;
+    };
+    InternalState.prototype.toQueryResult = function (result) {
+        var queryResult = this.toQueryResultCache.get(result);
+        if (queryResult)
+            return queryResult;
+        var data = result.data; result.partial; var resultWithoutPartial = tslib.__rest(result, ["data", "partial"]);
+        this.toQueryResultCache.set(result, queryResult = tslib.__assign(tslib.__assign(tslib.__assign({ data: data }, resultWithoutPartial), this.obsQueryFields), { client: this.client, observable: this.observable, variables: this.observable.variables, called: true, previousData: this.previousData }));
+        if (!queryResult.error && utilities.isNonEmptyArray(result.errors)) {
+            queryResult.error = new errors.ApolloError({ graphQLErrors: result.errors });
+        }
+        return queryResult;
+    };
+    InternalState.prototype.unsafeHandlePartialRefetch = function (result) {
+        if (result.partial &&
+            this.queryHookOptions.partialRefetch &&
+            !result.loading &&
+            (!result.data || Object.keys(result.data).length === 0) &&
+            this.observable.options.fetchPolicy !== 'cache-only') {
+            Object.assign(result, {
+                loading: true,
+                networkStatus: core.NetworkStatus.refetch,
+            });
+            this.observable.refetch();
+        }
+    };
+    return InternalState;
+}());
+function useUnblockFetchEffect(renderPromises, resolveFetchBlockingPromise) {
+    if (resolveFetchBlockingPromise) {
+        if (renderPromises) {
+            resolveFetchBlockingPromise(true);
+        }
+        else {
+            setTimeout(function () { return resolveFetchBlockingPromise(false); }, 5000);
+        }
     }
-    var obsQueryFields = react.useMemo(function () { return ({
-        refetch: obsQuery.refetch.bind(obsQuery),
-        fetchMore: obsQuery.fetchMore.bind(obsQuery),
-        updateQuery: obsQuery.updateQuery.bind(obsQuery),
-        startPolling: obsQuery.startPolling.bind(obsQuery),
-        stopPolling: obsQuery.stopPolling.bind(obsQuery),
-        subscribeToMore: obsQuery.subscribeToMore.bind(obsQuery),
-    }); }, [obsQuery]);
-    return tslib.__assign(tslib.__assign(tslib.__assign({}, obsQueryFields), { variables: createWatchQueryOptions(query, options, defaultWatchQueryOptions).variables, client: client, called: true, previousData: ref.current.previousData }), result);
-}
-function createWatchQueryOptions(query, options, defaultOptions) {
-    var _a;
-    if (options === void 0) { options = {}; }
-    var skip = options.skip; options.ssr; options.onCompleted; options.onError; options.displayName; var otherOptions = tslib.__rest(options, ["skip", "ssr", "onCompleted", "onError", "displayName"]);
-    var watchQueryOptions = tslib.__assign({ query: query }, otherOptions);
-    if (defaultOptions) {
-        watchQueryOptions = core.mergeOptions(defaultOptions, watchQueryOptions);
-    }
-    if (skip) {
-        watchQueryOptions.fetchPolicy = 'standby';
-    }
-    else if (((_a = watchQueryOptions.context) === null || _a === void 0 ? void 0 : _a.renderPromises) &&
-        (watchQueryOptions.fetchPolicy === 'network-only' ||
-            watchQueryOptions.fetchPolicy === 'cache-and-network')) {
-        watchQueryOptions.fetchPolicy = 'cache-first';
-    }
-    else if (!watchQueryOptions.fetchPolicy) {
-        watchQueryOptions.fetchPolicy = 'cache-first';
-    }
-    if (!watchQueryOptions.variables) {
-        watchQueryOptions.variables = {};
-    }
-    return watchQueryOptions;
+    react.useEffect(function () {
+        if (resolveFetchBlockingPromise) {
+            resolveFetchBlockingPromise(true);
+        }
+    }, [resolveFetchBlockingPromise]);
 }
 
 var EAGER_METHODS = [
     'refetch',
+    'reobserve',
     'fetchMore',
     'updateQuery',
     'startPolling',
     'subscribeToMore',
 ];
 function useLazyQuery(query, options) {
-    var _a = react.useState({
-        called: false,
-    }), execution = _a[0], setExecution = _a[1];
-    var result = useQuery(query, tslib.__assign(tslib.__assign(tslib.__assign({}, options), execution.options), { fetchPolicy: execution.called ? options === null || options === void 0 ? void 0 : options.fetchPolicy : 'standby', skip: undefined }));
-    if (!execution.called) {
-        result = tslib.__assign(tslib.__assign({}, result), { loading: false, data: void 0, error: void 0, called: false });
-    }
+    var internalState = useInternalState(useApolloClient(options && options.client), query);
+    var execOptionsRef = react.useRef();
+    var defaultOptions = internalState.client.defaultOptions.watchQuery;
+    var initialFetchPolicy = (options && options.fetchPolicy) ||
+        (execOptionsRef.current && execOptionsRef.current.fetchPolicy) ||
+        (defaultOptions && defaultOptions.fetchPolicy) ||
+        "cache-first";
+    var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign(tslib.__assign({}, options), execOptionsRef.current), { skip: !execOptionsRef.current }));
+    var result = Object.assign(useQueryResult, {
+        called: !!execOptionsRef.current,
+    });
     var eagerMethods = react.useMemo(function () {
         var eagerMethods = {};
         var _loop_1 = function (key) {
             var method = result[key];
             eagerMethods[key] = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
+                if (!execOptionsRef.current) {
+                    execOptionsRef.current = Object.create(null);
+                    internalState.forceUpdate();
                 }
-                setExecution(function (execution) { return (tslib.__assign(tslib.__assign({}, execution), { called: true })); });
-                return method.apply(void 0, args);
+                return method.apply(this, arguments);
             };
         };
         for (var _i = 0, EAGER_METHODS_1 = EAGER_METHODS; _i < EAGER_METHODS_1.length; _i++) {
@@ -42012,15 +42281,24 @@ function useLazyQuery(query, options) {
         }
         return eagerMethods;
     }, []);
-    result.error = result.error || void 0;
     Object.assign(result, eagerMethods);
     var execute = react.useCallback(function (executeOptions) {
-        setExecution({ called: true, options: executeOptions });
-        var promise = result.refetch(executeOptions === null || executeOptions === void 0 ? void 0 : executeOptions.variables).then(function (result1) {
-            var result2 = tslib.__assign(tslib.__assign({}, result), { data: result1.data, error: result1.error, called: true, loading: false });
-            Object.assign(result2, eagerMethods);
-            return result2;
-        });
+        var promise = result.reobserve(execOptionsRef.current = executeOptions ? tslib.__assign(tslib.__assign({}, executeOptions), { fetchPolicy: executeOptions.fetchPolicy || initialFetchPolicy }) : {
+            fetchPolicy: initialFetchPolicy,
+        }).then(function (apolloQueryResult) {
+            apolloQueryResult = apolloQueryResult || internalState["getCurrentResult"]();
+            if (apolloQueryResult.error ||
+                utilities.isNonEmptyArray(apolloQueryResult.errors)) {
+                var _a = result.observable.options.errorPolicy, errorPolicy = _a === void 0 ? "none" : _a;
+                if (errorPolicy === "none") {
+                    throw apolloQueryResult.error || new errors.ApolloError({
+                        graphQLErrors: apolloQueryResult.errors,
+                    });
+                }
+            }
+            return internalState.toQueryResult(apolloQueryResult);
+        }).then(function (queryResult) { return Object.assign(queryResult, eagerMethods); });
+        internalState.forceUpdate();
         promise.catch(function () { });
         return promise;
     }, []);
@@ -42109,9 +42387,12 @@ function useMutation(mutation, options) {
     var reset = react.useCallback(function () {
         setResult({ called: false, loading: false, client: client });
     }, []);
-    react.useEffect(function () { return function () {
-        ref.current.isMounted = false;
-    }; }, []);
+    react.useEffect(function () {
+        ref.current.isMounted = true;
+        return function () {
+            ref.current.isMounted = false;
+        };
+    }, []);
     return [execute, tslib.__assign({ reset: reset }, result)];
 }
 
@@ -42373,8 +42654,8 @@ for (var k in hooks) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
-var tsInvariant = __nccwpck_require__(9994);
-var process$1 = __nccwpck_require__(5572);
+var tsInvariant = __nccwpck_require__(7371);
+var process$1 = __nccwpck_require__(8219);
 var graphql = __nccwpck_require__(6155);
 
 function maybe(thunk) {
@@ -42947,7 +43228,7 @@ function removeDirectivesFromDocument(directives, doc) {
     return modifiedDoc;
 }
 var addTypenameToDocument = Object.assign(function (doc) {
-    return graphql.visit(checkDocument(doc), {
+    return graphql.visit(doc, {
         SelectionSet: {
             enter: function (node, _key, parent) {
                 if (parent &&
@@ -43641,6 +43922,12 @@ function stringifyForDisplay(value) {
     }).split(JSON.stringify(undefId)).join("<undefined>");
 }
 
+function mergeOptions(defaults, options) {
+    return compact(defaults, options, options.variables && {
+        variables: tslib.__assign(tslib.__assign({}, defaults.variables), options.variables),
+    });
+}
+
 exports.DEV = globals.DEV;
 exports.maybe = globals.maybe;
 exports.Observable = zenObservableTs.Observable;
@@ -43687,6 +43974,7 @@ exports.makeUniqueId = makeUniqueId;
 exports.maybeDeepFreeze = maybeDeepFreeze;
 exports.mergeDeep = mergeDeep;
 exports.mergeDeepArray = mergeDeepArray;
+exports.mergeOptions = mergeOptions;
 exports.offsetLimitPagination = offsetLimitPagination;
 exports.relayStylePagination = relayStylePagination;
 exports.removeArgumentsFromDocument = removeArgumentsFromDocument;
@@ -43700,6 +43988,142 @@ exports.storeKeyNameFromField = storeKeyNameFromField;
 exports.stringifyForDisplay = stringifyForDisplay;
 exports.valueToObjectRepresentation = valueToObjectRepresentation;
 //# sourceMappingURL=utilities.cjs.map
+
+
+/***/ }),
+
+/***/ 7371:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+var tslib = __nccwpck_require__(4351);
+
+var genericMessage = "Invariant Violation";
+var _a = Object.setPrototypeOf, setPrototypeOf = _a === void 0 ? function (obj, proto) {
+    obj.__proto__ = proto;
+    return obj;
+} : _a;
+var InvariantError = /** @class */ (function (_super) {
+    tslib.__extends(InvariantError, _super);
+    function InvariantError(message) {
+        if (message === void 0) { message = genericMessage; }
+        var _this = _super.call(this, typeof message === "number"
+            ? genericMessage + ": " + message + " (see https://github.com/apollographql/invariant-packages)"
+            : message) || this;
+        _this.framesToPop = 1;
+        _this.name = genericMessage;
+        setPrototypeOf(_this, InvariantError.prototype);
+        return _this;
+    }
+    return InvariantError;
+}(Error));
+function invariant(condition, message) {
+    if (!condition) {
+        throw new InvariantError(message);
+    }
+}
+var verbosityLevels = ["debug", "log", "warn", "error", "silent"];
+var verbosityLevel = verbosityLevels.indexOf("log");
+function wrapConsoleMethod(name) {
+    return function () {
+        if (verbosityLevels.indexOf(name) >= verbosityLevel) {
+            // Default to console.log if this host environment happens not to provide
+            // all the console.* methods we need.
+            var method = console[name] || console.log;
+            return method.apply(console, arguments);
+        }
+    };
+}
+(function (invariant) {
+    invariant.debug = wrapConsoleMethod("debug");
+    invariant.log = wrapConsoleMethod("log");
+    invariant.warn = wrapConsoleMethod("warn");
+    invariant.error = wrapConsoleMethod("error");
+})(invariant || (invariant = {}));
+function setVerbosity(level) {
+    var old = verbosityLevels[verbosityLevel];
+    verbosityLevel = Math.max(0, verbosityLevels.indexOf(level));
+    return old;
+}
+var invariant$1 = invariant;
+
+exports.InvariantError = InvariantError;
+exports["default"] = invariant$1;
+exports.invariant = invariant;
+exports.setVerbosity = setVerbosity;
+//# sourceMappingURL=invariant.cjs.map
+
+
+/***/ }),
+
+/***/ 8219:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+function maybe(thunk) {
+  try { return thunk() } catch (_) {}
+}
+
+var safeGlobal = (
+  maybe(function() { return globalThis }) ||
+  maybe(function() { return window }) ||
+  maybe(function() { return self }) ||
+  maybe(function() { return global }) ||
+  // We don't expect the Function constructor ever to be invoked at runtime, as
+  // long as at least one of globalThis, window, self, or global is defined, so
+  // we are under no obligation to make it easy for static analysis tools to
+  // detect syntactic usage of the Function constructor. If you think you can
+  // improve your static analysis to detect this obfuscation, think again. This
+  // is an arms race you cannot win, at least not in JavaScript.
+  maybe(function() { return maybe.constructor("return this")() })
+);
+
+var needToRemove = false;
+
+function install() {
+  if (safeGlobal &&
+      !maybe(function() { return process.env.NODE_ENV }) &&
+      !maybe(function() { return process })) {
+    Object.defineProperty(safeGlobal, "process", {
+      value: {
+        env: {
+          // This default needs to be "production" instead of "development", to
+          // avoid the problem https://github.com/graphql/graphql-js/pull/2894
+          // will eventually solve, once merged and released.
+          NODE_ENV: "production",
+        },
+      },
+      // Let anyone else change global.process as they see fit, but hide it from
+      // Object.keys(global) enumeration.
+      configurable: true,
+      enumerable: false,
+      writable: true,
+    });
+    needToRemove = true;
+  }
+}
+
+// Call install() at least once, when this module is imported.
+install();
+
+function remove() {
+  if (needToRemove) {
+    delete safeGlobal.process;
+    needToRemove = false;
+  }
+}
+
+exports.install = install;
+exports.remove = remove;
+//# sourceMappingURL=main.cjs.map
 
 
 /***/ }),
