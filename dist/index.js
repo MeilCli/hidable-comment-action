@@ -39068,7 +39068,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.0';
+var version = '3.6.1';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -40816,7 +40816,7 @@ var QueryManager = (function () {
     };
     QueryManager.prototype.fetchQueryByPolicy = function (queryInfo, _a, networkStatus) {
         var _this = this;
-        var query = _a.query, variables = _a.variables, fetchPolicy = _a.fetchPolicy, refetchWritePolicy = _a.refetchWritePolicy, errorPolicy = _a.errorPolicy, returnPartialData = _a.returnPartialData, context = _a.context, notifyOnNetworkStatusChange = _a.notifyOnNetworkStatusChange, fetchBlockingPromise = _a.fetchBlockingPromise;
+        var query = _a.query, variables = _a.variables, fetchPolicy = _a.fetchPolicy, refetchWritePolicy = _a.refetchWritePolicy, errorPolicy = _a.errorPolicy, returnPartialData = _a.returnPartialData, context = _a.context, notifyOnNetworkStatusChange = _a.notifyOnNetworkStatusChange;
         var oldNetworkStatus = queryInfo.networkStatus;
         queryInfo.init({
             document: this.transform(query).document,
@@ -40848,28 +40848,12 @@ var QueryManager = (function () {
             (networkStatus === exports.NetworkStatus.refetch &&
                 refetchWritePolicy !== "merge") ? 1
                 : 2;
-        var resultsFromLink = function () {
-            var get = function () { return _this.getResultsFromLink(queryInfo, cacheWriteBehavior, {
-                variables: variables,
-                context: context,
-                fetchPolicy: fetchPolicy,
-                errorPolicy: errorPolicy,
-            }); };
-            return fetchBlockingPromise ? fetchBlockingPromise.then(function (ok) { return ok ? get() : utilities.Observable.of(); }, function (error) {
-                var apolloError = errors.isApolloError(error)
-                    ? error
-                    : new errors.ApolloError({ clientErrors: [error] });
-                if (errorPolicy !== "ignore") {
-                    queryInfo.markError(apolloError);
-                }
-                return utilities.Observable.of({
-                    loading: false,
-                    networkStatus: exports.NetworkStatus.error,
-                    error: apolloError,
-                    data: readCache().result,
-                });
-            }) : get();
-        };
+        var resultsFromLink = function () { return _this.getResultsFromLink(queryInfo, cacheWriteBehavior, {
+            variables: variables,
+            context: context,
+            fetchPolicy: fetchPolicy,
+            errorPolicy: errorPolicy,
+        }); };
         var shouldNotify = notifyOnNetworkStatusChange &&
             typeof oldNetworkStatus === "number" &&
             oldNetworkStatus !== networkStatus &&
@@ -42072,18 +42056,14 @@ var InternalState = (function () {
         var _a;
         var watchQueryOptions = this.createWatchQueryOptions(this.queryHookOptions = options);
         var currentWatchQueryOptions = this.watchQueryOptions;
-        var resolveFetchBlockingPromise;
         if (!equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
             this.watchQueryOptions = watchQueryOptions;
             if (currentWatchQueryOptions && this.observable) {
-                this.observable.reobserve(tslib.__assign({ fetchBlockingPromise: new Promise(function (resolve) {
-                        resolveFetchBlockingPromise = resolve;
-                    }) }, watchQueryOptions));
+                this.observable.reobserve(watchQueryOptions);
                 this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
                 this.result = void 0;
             }
         }
-        useUnblockFetchEffect(this.renderPromises, resolveFetchBlockingPromise);
         this.onCompleted = options.onCompleted || InternalState.prototype.onCompleted;
         this.onError = options.onError || InternalState.prototype.onError;
         if ((this.renderPromises || this.client.disableNetworkFetches) &&
@@ -42148,15 +42128,11 @@ var InternalState = (function () {
     InternalState.prototype.onCompleted = function (data) { };
     InternalState.prototype.onError = function (error) { };
     InternalState.prototype.useObservableQuery = function () {
-        var resolveFetchBlockingPromise;
         var obsQuery = this.observable =
             this.renderPromises
                 && this.renderPromises.getSSRObservable(this.watchQueryOptions)
                 || this.observable
-                || this.client.watchQuery(tslib.__assign({ fetchBlockingPromise: new Promise(function (resolve) {
-                        resolveFetchBlockingPromise = resolve;
-                    }) }, this.watchQueryOptions));
-        useUnblockFetchEffect(this.renderPromises, resolveFetchBlockingPromise);
+                || this.client.watchQuery(tslib.__assign({}, this.watchQueryOptions));
         this.obsQueryFields = react.useMemo(function () { return ({
             refetch: obsQuery.refetch.bind(obsQuery),
             reobserve: obsQuery.reobserve.bind(obsQuery),
@@ -42227,21 +42203,6 @@ var InternalState = (function () {
     };
     return InternalState;
 }());
-function useUnblockFetchEffect(renderPromises, resolveFetchBlockingPromise) {
-    if (resolveFetchBlockingPromise) {
-        if (renderPromises) {
-            resolveFetchBlockingPromise(true);
-        }
-        else {
-            setTimeout(function () { return resolveFetchBlockingPromise(false); }, 5000);
-        }
-    }
-    react.useEffect(function () {
-        if (resolveFetchBlockingPromise) {
-            resolveFetchBlockingPromise(true);
-        }
-    }, [resolveFetchBlockingPromise]);
-}
 
 var EAGER_METHODS = [
     'refetch',
@@ -42559,16 +42520,30 @@ function parser(document) {
     __DEV__ ? globals.invariant(!!document && !!document.kind, "Argument of ".concat(document, " passed to parser was not a valid GraphQL ") +
         "DocumentNode. You may need to use 'graphql-tag' or another method " +
         "to convert your operation into a document") : globals.invariant(!!document && !!document.kind, 30);
-    var fragments = document.definitions.filter(function (x) { return x.kind === 'FragmentDefinition'; });
-    var queries = document.definitions.filter(function (x) {
-        return x.kind === 'OperationDefinition' && x.operation === 'query';
-    });
-    var mutations = document.definitions.filter(function (x) {
-        return x.kind === 'OperationDefinition' && x.operation === 'mutation';
-    });
-    var subscriptions = document.definitions.filter(function (x) {
-        return x.kind === 'OperationDefinition' && x.operation === 'subscription';
-    });
+    var fragments = [];
+    var queries = [];
+    var mutations = [];
+    var subscriptions = [];
+    for (var _i = 0, _a = document.definitions; _i < _a.length; _i++) {
+        var x = _a[_i];
+        if (x.kind === 'FragmentDefinition') {
+            fragments.push(x);
+            continue;
+        }
+        if (x.kind === 'OperationDefinition') {
+            switch (x.operation) {
+                case 'query':
+                    queries.push(x);
+                    break;
+                case 'mutation':
+                    mutations.push(x);
+                    break;
+                case 'subscription':
+                    subscriptions.push(x);
+                    break;
+            }
+        }
+    }
     __DEV__ ? globals.invariant(!fragments.length ||
         (queries.length || mutations.length || subscriptions.length), "Passing only a fragment to 'graphql' is not yet supported. " +
         "You must include a query, subscription or mutation as well") : globals.invariant(!fragments.length ||
