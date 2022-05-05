@@ -39068,7 +39068,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.1';
+var version = '3.6.2';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -41899,17 +41899,17 @@ function getApolloContext() {
 
 var ApolloConsumer = function (props) {
     var ApolloContext = getApolloContext();
-    return React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
+    return (React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
         __DEV__ ? globals.invariant(context && context.client, 'Could not find "client" in the context of ApolloConsumer. ' +
             'Wrap the root component in an <ApolloProvider>.') : globals.invariant(context && context.client, 25);
         return props.children(context.client);
-    });
+    }));
 };
 
 var ApolloProvider = function (_a) {
     var client = _a.client, children = _a.children;
     var ApolloContext = getApolloContext();
-    return React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
+    return (React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
         if (context === void 0) { context = {}; }
         if (client && context.client !== client) {
             context = Object.assign({}, context, { client: client });
@@ -41917,7 +41917,7 @@ var ApolloProvider = function (_a) {
         __DEV__ ? globals.invariant(context.client, 'ApolloProvider was not passed a client instance. Make ' +
             'sure you pass in your client via the "client" prop.') : globals.invariant(context.client, 26);
         return (React__namespace.createElement(ApolloContext.Provider, { value: context }, children));
-    });
+    }));
 };
 
 exports.ApolloConsumer = ApolloConsumer;
@@ -42048,7 +42048,7 @@ var InternalState = (function () {
             obsQuery,
             this.renderPromises,
             this.client.disableNetworkFetches,
-        ]), function () { return _this.getCurrentResult(); });
+        ]), function () { return _this.getCurrentResult(); }, function () { return _this.getCurrentResult(); });
         this.unsafeHandlePartialRefetch(result);
         return this.toQueryResult(result);
     };
