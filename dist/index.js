@@ -35817,287 +35817,6 @@ exports.debug = debug; // for test
 
 /***/ }),
 
-/***/ 3416:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-/**
- * @license React
- * use-sync-external-store-shim.development.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-
-if (process.env.NODE_ENV !== "production") {
-  (function() {
-
-          'use strict';
-
-/* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
-if (
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart ===
-    'function'
-) {
-  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
-}
-          var React = __nccwpck_require__(8444);
-
-var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-
-function error(format) {
-  {
-    {
-      for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-        args[_key2 - 1] = arguments[_key2];
-      }
-
-      printWarning('error', format, args);
-    }
-  }
-}
-
-function printWarning(level, format, args) {
-  // When changing this logic, you might want to also
-  // update consoleWithStackDev.www.js as well.
-  {
-    var ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame;
-    var stack = ReactDebugCurrentFrame.getStackAddendum();
-
-    if (stack !== '') {
-      format += '%s';
-      args = args.concat([stack]);
-    } // eslint-disable-next-line react-internal/safe-string-coercion
-
-
-    var argsWithFormat = args.map(function (item) {
-      return String(item);
-    }); // Careful: RN currently depends on this prefix
-
-    argsWithFormat.unshift('Warning: ' + format); // We intentionally don't use spread (or .apply) directly because it
-    // breaks IE9: https://github.com/facebook/react/issues/13610
-    // eslint-disable-next-line react-internal/no-production-logging
-
-    Function.prototype.apply.call(console[level], console, argsWithFormat);
-  }
-}
-
-/**
- * inlined Object.is polyfill to avoid requiring consumers ship their own
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
- */
-function is(x, y) {
-  return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y // eslint-disable-line no-self-compare
-  ;
-}
-
-var objectIs = typeof Object.is === 'function' ? Object.is : is;
-
-// dispatch for CommonJS interop named imports.
-
-var useState = React.useState,
-    useEffect = React.useEffect,
-    useLayoutEffect = React.useLayoutEffect,
-    useDebugValue = React.useDebugValue;
-var didWarnOld18Alpha = false;
-var didWarnUncachedGetSnapshot = false; // Disclaimer: This shim breaks many of the rules of React, and only works
-// because of a very particular set of implementation details and assumptions
-// -- change any one of them and it will break. The most important assumption
-// is that updates are always synchronous, because concurrent rendering is
-// only available in versions of React that also have a built-in
-// useSyncExternalStore API. And we only use this shim when the built-in API
-// does not exist.
-//
-// Do not assume that the clever hacks used by this hook also work in general.
-// The point of this shim is to replace the need for hacks by other libraries.
-
-function useSyncExternalStore(subscribe, getSnapshot, // Note: The shim does not use getServerSnapshot, because pre-18 versions of
-// React do not expose a way to check if we're hydrating. So users of the shim
-// will need to track that themselves and return the correct value
-// from `getSnapshot`.
-getServerSnapshot) {
-  {
-    if (!didWarnOld18Alpha) {
-      if (React.startTransition !== undefined) {
-        didWarnOld18Alpha = true;
-
-        error('You are using an outdated, pre-release alpha of React 18 that ' + 'does not support useSyncExternalStore. The ' + 'use-sync-external-store shim will not work correctly. Upgrade ' + 'to a newer pre-release.');
-      }
-    }
-  } // Read the current snapshot from the store on every render. Again, this
-  // breaks the rules of React, and only works here because of specific
-  // implementation details, most importantly that updates are
-  // always synchronous.
-
-
-  var value = getSnapshot();
-
-  {
-    if (!didWarnUncachedGetSnapshot) {
-      var cachedValue = getSnapshot();
-
-      if (!objectIs(value, cachedValue)) {
-        error('The result of getSnapshot should be cached to avoid an infinite loop');
-
-        didWarnUncachedGetSnapshot = true;
-      }
-    }
-  } // Because updates are synchronous, we don't queue them. Instead we force a
-  // re-render whenever the subscribed state changes by updating an some
-  // arbitrary useState hook. Then, during render, we call getSnapshot to read
-  // the current value.
-  //
-  // Because we don't actually use the state returned by the useState hook, we
-  // can save a bit of memory by storing other stuff in that slot.
-  //
-  // To implement the early bailout, we need to track some things on a mutable
-  // object. Usually, we would put that in a useRef hook, but we can stash it in
-  // our useState hook instead.
-  //
-  // To force a re-render, we call forceUpdate({inst}). That works because the
-  // new object always fails an equality check.
-
-
-  var _useState = useState({
-    inst: {
-      value: value,
-      getSnapshot: getSnapshot
-    }
-  }),
-      inst = _useState[0].inst,
-      forceUpdate = _useState[1]; // Track the latest getSnapshot function with a ref. This needs to be updated
-  // in the layout phase so we can access it during the tearing check that
-  // happens on subscribe.
-
-
-  useLayoutEffect(function () {
-    inst.value = value;
-    inst.getSnapshot = getSnapshot; // Whenever getSnapshot or subscribe changes, we need to check in the
-    // commit phase if there was an interleaved mutation. In concurrent mode
-    // this can happen all the time, but even in synchronous mode, an earlier
-    // effect may have mutated the store.
-
-    if (checkIfSnapshotChanged(inst)) {
-      // Force a re-render.
-      forceUpdate({
-        inst: inst
-      });
-    }
-  }, [subscribe, value, getSnapshot]);
-  useEffect(function () {
-    // Check for changes right before subscribing. Subsequent changes will be
-    // detected in the subscription handler.
-    if (checkIfSnapshotChanged(inst)) {
-      // Force a re-render.
-      forceUpdate({
-        inst: inst
-      });
-    }
-
-    var handleStoreChange = function () {
-      // TODO: Because there is no cross-renderer API for batching updates, it's
-      // up to the consumer of this library to wrap their subscription event
-      // with unstable_batchedUpdates. Should we try to detect when this isn't
-      // the case and print a warning in development?
-      // The store changed. Check if the snapshot changed since the last time we
-      // read from the store.
-      if (checkIfSnapshotChanged(inst)) {
-        // Force a re-render.
-        forceUpdate({
-          inst: inst
-        });
-      }
-    }; // Subscribe to the store and return a clean-up function.
-
-
-    return subscribe(handleStoreChange);
-  }, [subscribe]);
-  useDebugValue(value);
-  return value;
-}
-
-function checkIfSnapshotChanged(inst) {
-  var latestGetSnapshot = inst.getSnapshot;
-  var prevValue = inst.value;
-
-  try {
-    var nextValue = latestGetSnapshot();
-    return !objectIs(prevValue, nextValue);
-  } catch (error) {
-    return true;
-  }
-}
-
-function useSyncExternalStore$1(subscribe, getSnapshot, getServerSnapshot) {
-  // Note: The shim does not use getServerSnapshot, because pre-18 versions of
-  // React do not expose a way to check if we're hydrating. So users of the shim
-  // will need to track that themselves and return the correct value
-  // from `getSnapshot`.
-  return getSnapshot();
-}
-
-var canUseDOM = !!(typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined');
-
-var isServerEnvironment = !canUseDOM;
-
-var shim = isServerEnvironment ? useSyncExternalStore$1 : useSyncExternalStore;
-var useSyncExternalStore$2 = React.useSyncExternalStore !== undefined ? React.useSyncExternalStore : shim;
-
-exports.useSyncExternalStore = useSyncExternalStore$2;
-          /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
-if (
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop ===
-    'function'
-) {
-  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
-}
-        
-  })();
-}
-
-
-/***/ }),
-
-/***/ 6595:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-/**
- * @license React
- * use-sync-external-store-shim.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-var e=__nccwpck_require__(8444);function h(a,b){return a===b&&(0!==a||1/a===1/b)||a!==a&&b!==b}var k="function"===typeof Object.is?Object.is:h,l=e.useState,m=e.useEffect,n=e.useLayoutEffect,p=e.useDebugValue;function q(a,b){var d=b(),f=l({inst:{value:d,getSnapshot:b}}),c=f[0].inst,g=f[1];n(function(){c.value=d;c.getSnapshot=b;r(c)&&g({inst:c})},[a,d,b]);m(function(){r(c)&&g({inst:c});return a(function(){r(c)&&g({inst:c})})},[a]);p(d);return d}
-function r(a){var b=a.getSnapshot;a=a.value;try{var d=b();return!k(a,d)}catch(f){return!0}}function t(a,b){return b()}var u="undefined"===typeof window||"undefined"===typeof window.document||"undefined"===typeof window.document.createElement?t:q;exports.useSyncExternalStore=void 0!==e.useSyncExternalStore?e.useSyncExternalStore:u;
-
-
-/***/ }),
-
-/***/ 7155:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-if (process.env.NODE_ENV === 'production') {
-  module.exports = __nccwpck_require__(6595);
-} else {
-  module.exports = __nccwpck_require__(3416);
-}
-
-
-/***/ }),
-
 /***/ 3701:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -39169,7 +38888,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.2';
+var version = '3.6.4';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -39221,7 +38940,9 @@ var ObservableQuery = (function (_super) {
         _this.queryInfo = queryInfo;
         _this.queryManager = queryManager;
         _this.isTornDown = false;
-        _this.options = tslib.__assign({ initialFetchPolicy: options.fetchPolicy || "cache-first" }, options);
+        var _b = queryManager.defaultOptions.watchQuery, _c = _b === void 0 ? {} : _b, _d = _c.fetchPolicy, defaultFetchPolicy = _d === void 0 ? "cache-first" : _d;
+        var _e = options.fetchPolicy, fetchPolicy = _e === void 0 ? defaultFetchPolicy : _e, _f = options.initialFetchPolicy, initialFetchPolicy = _f === void 0 ? (fetchPolicy === "standby" ? defaultFetchPolicy : fetchPolicy) : _f;
+        _this.options = tslib.__assign(tslib.__assign({}, options), { initialFetchPolicy: initialFetchPolicy, fetchPolicy: fetchPolicy });
         _this.queryId = queryInfo.queryId || queryManager.generateQueryId();
         var opDef = utilities.getOperationDefinition(_this.query);
         _this.queryName = opDef && opDef.name && opDef.name.value;
@@ -42039,23 +41760,81 @@ exports.resetApolloContext = getApolloContext;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var globals = __nccwpck_require__(8869);
-var react = __nccwpck_require__(8444);
+var React = __nccwpck_require__(8444);
 var context = __nccwpck_require__(3673);
 var tslib = __nccwpck_require__(4351);
-var errors = __nccwpck_require__(1621);
-var index_js = __nccwpck_require__(7155);
+var utilities = __nccwpck_require__(3150);
 var equality = __nccwpck_require__(9969);
 var core = __nccwpck_require__(1402);
+var errors = __nccwpck_require__(1621);
 var parser = __nccwpck_require__(5043);
-var utilities = __nccwpck_require__(3150);
+
+function _interopNamespace(e) {
+    if (e && e.__esModule) return e;
+    var n = Object.create(null);
+    if (e) {
+        for (var k in e) {
+            n[k] = e[k];
+        }
+    }
+    n["default"] = e;
+    return Object.freeze(n);
+}
+
+var React__namespace = /*#__PURE__*/_interopNamespace(React);
 
 function useApolloClient(override) {
-    var context$1 = react.useContext(context.getApolloContext());
+    var context$1 = React.useContext(context.getApolloContext());
     var client = override || context$1.client;
     __DEV__ ? globals.invariant(!!client, 'Could not find "client" in the context or passed in as an option. ' +
         'Wrap the root component in an <ApolloProvider>, or pass an ApolloClient ' +
         'instance in via options.') : globals.invariant(!!client, 29);
     return client;
+}
+
+var didWarnUncachedGetSnapshot = false;
+var uSESKey = "useSyncExternalStore";
+var realHook = React__namespace[uSESKey];
+var useSyncExternalStore = realHook || (function (subscribe, getSnapshot, getServerSnapshot) {
+    var value = getSnapshot();
+    if (__DEV__ &&
+        !didWarnUncachedGetSnapshot &&
+        value !== getSnapshot()) {
+        didWarnUncachedGetSnapshot = true;
+        __DEV__ && globals.invariant.error('The result of getSnapshot should be cached to avoid an infinite loop');
+    }
+    var _a = React__namespace.useState({ inst: { value: value, getSnapshot: getSnapshot } }), inst = _a[0].inst, forceUpdate = _a[1];
+    if (utilities.canUseLayoutEffect) {
+        React__namespace.useLayoutEffect(function () {
+            Object.assign(inst, { value: value, getSnapshot: getSnapshot });
+            if (checkIfSnapshotChanged(inst)) {
+                forceUpdate({ inst: inst });
+            }
+        }, [subscribe, value, getSnapshot]);
+    }
+    else {
+        Object.assign(inst, { value: value, getSnapshot: getSnapshot });
+    }
+    React__namespace.useEffect(function () {
+        if (checkIfSnapshotChanged(inst)) {
+            forceUpdate({ inst: inst });
+        }
+        return subscribe(function handleStoreChange() {
+            if (checkIfSnapshotChanged(inst)) {
+                forceUpdate({ inst: inst });
+            }
+        });
+    }, [subscribe]);
+    return value;
+});
+function checkIfSnapshotChanged(_a) {
+    var value = _a.value, getSnapshot = _a.getSnapshot;
+    try {
+        return value !== getSnapshot();
+    }
+    catch (_b) {
+        return true;
+    }
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -42064,14 +41843,14 @@ function useQuery(query, options) {
     return useInternalState(useApolloClient(options.client), query).useQuery(options);
 }
 function useInternalState(client, query) {
-    var stateRef = react.useRef();
+    var stateRef = React.useRef();
     if (!stateRef.current ||
         client !== stateRef.current.client ||
         query !== stateRef.current.query) {
         stateRef.current = new InternalState(client, query);
     }
     var state = stateRef.current;
-    var _a = react.useState(0); _a[0]; var setTick = _a[1];
+    var _a = React.useState(0); _a[0]; var setTick = _a[1];
     state.forceUpdate = function () {
         setTick(function (tick) { return tick + 1; });
     };
@@ -42081,6 +41860,8 @@ var InternalState = (function () {
     function InternalState(client, query) {
         this.client = client;
         this.query = query;
+        this.asyncResolveFns = new Set();
+        this.optionsToIgnoreOnce = new (utilities.canUseWeakSet ? WeakSet : Set)();
         this.ssrDisabledResult = utilities.maybeDeepFreeze({
             loading: true,
             data: void 0,
@@ -42097,13 +41878,22 @@ var InternalState = (function () {
         parser.verifyDocumentType(query, parser.DocumentType.Query);
     }
     InternalState.prototype.forceUpdate = function () {
+        __DEV__ && globals.invariant.warn("Calling default no-op implementation of InternalState#forceUpdate");
+    };
+    InternalState.prototype.asyncUpdate = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            _this.asyncResolveFns.add(resolve);
+            _this.optionsToIgnoreOnce.add(_this.watchQueryOptions);
+            _this.forceUpdate();
+        });
     };
     InternalState.prototype.useQuery = function (options) {
         var _this = this;
-        this.renderPromises = react.useContext(context.getApolloContext()).renderPromises;
+        this.renderPromises = React.useContext(context.getApolloContext()).renderPromises;
         this.useOptions(options);
         var obsQuery = this.useObservableQuery();
-        var result = index_js.useSyncExternalStore(react.useCallback(function () {
+        var result = useSyncExternalStore(React.useCallback(function () {
             if (_this.renderPromises) {
                 return function () { };
             }
@@ -42151,15 +41941,22 @@ var InternalState = (function () {
             this.client.disableNetworkFetches,
         ]), function () { return _this.getCurrentResult(); }, function () { return _this.getCurrentResult(); });
         this.unsafeHandlePartialRefetch(result);
-        return this.toQueryResult(result);
+        var queryResult = this.toQueryResult(result);
+        if (!queryResult.loading && this.asyncResolveFns.size) {
+            this.asyncResolveFns.forEach(function (resolve) { return resolve(queryResult); });
+            this.asyncResolveFns.clear();
+        }
+        return queryResult;
     };
     InternalState.prototype.useOptions = function (options) {
         var _a;
         var watchQueryOptions = this.createWatchQueryOptions(this.queryHookOptions = options);
         var currentWatchQueryOptions = this.watchQueryOptions;
-        if (!equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
+        if (this.optionsToIgnoreOnce.has(currentWatchQueryOptions) ||
+            !equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
             this.watchQueryOptions = watchQueryOptions;
             if (currentWatchQueryOptions && this.observable) {
+                this.optionsToIgnoreOnce.delete(currentWatchQueryOptions);
                 this.observable.reobserve(watchQueryOptions);
                 this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
                 this.result = void 0;
@@ -42168,7 +41965,8 @@ var InternalState = (function () {
         this.onCompleted = options.onCompleted || InternalState.prototype.onCompleted;
         this.onError = options.onError || InternalState.prototype.onError;
         if ((this.renderPromises || this.client.disableNetworkFetches) &&
-            this.queryHookOptions.ssr === false) {
+            this.queryHookOptions.ssr === false &&
+            !this.queryHookOptions.skip) {
             this.result = this.ssrDisabledResult;
         }
         else if (this.queryHookOptions.skip ||
@@ -42181,50 +41979,37 @@ var InternalState = (function () {
         }
     };
     InternalState.prototype.createWatchQueryOptions = function (_a) {
+        var _b;
         if (_a === void 0) { _a = {}; }
-        var skip = _a.skip; _a.ssr; _a.onCompleted; _a.onError; _a.displayName; var defaultOptions = _a.defaultOptions, otherOptions = tslib.__rest(_a, ["skip", "ssr", "onCompleted", "onError", "displayName", "defaultOptions"]);
-        var toMerge = [];
-        var globalDefaults = this.client.defaultOptions.watchQuery;
-        if (globalDefaults)
-            toMerge.push(globalDefaults);
-        if (defaultOptions)
-            toMerge.push(defaultOptions);
-        var latestOptions = this.observable && this.observable.options;
-        if (latestOptions && toMerge.length) {
-            var defaults_1 = toMerge.reduce(core.mergeOptions, Object.create(null));
-            toMerge.length = 1;
-            toMerge[0] = defaults_1;
-            Object.keys(defaults_1).forEach(function (defaultOptionName) {
-                var currentOptionValue = latestOptions[defaultOptionName];
-                if (hasOwnProperty.call(latestOptions, defaultOptionName) &&
-                    !equality.equal(defaults_1[defaultOptionName], currentOptionValue)) {
-                    defaults_1[defaultOptionName] = defaultOptionName === "variables"
-                        ? tslib.__assign(tslib.__assign({}, defaults_1.variables), currentOptionValue) : currentOptionValue;
-                }
-            });
-        }
-        toMerge.push(otherOptions);
-        var merged = toMerge.reduce(core.mergeOptions, Object.create(null));
-        var watchQueryOptions = Object.assign(merged, { query: this.query });
+        var skip = _a.skip; _a.ssr; _a.onCompleted; _a.onError; _a.displayName; _a.defaultOptions; var otherOptions = tslib.__rest(_a, ["skip", "ssr", "onCompleted", "onError", "displayName", "defaultOptions"]);
+        var watchQueryOptions = Object.assign(otherOptions, { query: this.query });
         if (this.renderPromises &&
             (watchQueryOptions.fetchPolicy === 'network-only' ||
                 watchQueryOptions.fetchPolicy === 'cache-and-network')) {
             watchQueryOptions.fetchPolicy = 'cache-first';
         }
-        else if (!watchQueryOptions.fetchPolicy) {
-            watchQueryOptions.fetchPolicy = 'cache-first';
+        if (!watchQueryOptions.variables) {
+            watchQueryOptions.variables = {};
         }
         if (skip) {
-            var _b = watchQueryOptions.initialFetchPolicy, initialFetchPolicy = _b === void 0 ? watchQueryOptions.fetchPolicy : _b;
+            var _c = watchQueryOptions.fetchPolicy, fetchPolicy = _c === void 0 ? this.getDefaultFetchPolicy() : _c, _d = watchQueryOptions.initialFetchPolicy, initialFetchPolicy = _d === void 0 ? fetchPolicy : _d;
             Object.assign(watchQueryOptions, {
                 initialFetchPolicy: initialFetchPolicy,
                 fetchPolicy: 'standby',
             });
         }
-        if (!watchQueryOptions.variables) {
-            watchQueryOptions.variables = {};
+        else if (!watchQueryOptions.fetchPolicy) {
+            watchQueryOptions.fetchPolicy =
+                ((_b = this.observable) === null || _b === void 0 ? void 0 : _b.options.initialFetchPolicy) ||
+                    this.getDefaultFetchPolicy();
         }
         return watchQueryOptions;
+    };
+    InternalState.prototype.getDefaultFetchPolicy = function () {
+        var _a, _b;
+        return (((_a = this.queryHookOptions.defaultOptions) === null || _a === void 0 ? void 0 : _a.fetchPolicy) ||
+            ((_b = this.client.defaultOptions.watchQuery) === null || _b === void 0 ? void 0 : _b.fetchPolicy) ||
+            "cache-first");
     };
     InternalState.prototype.onCompleted = function (data) { };
     InternalState.prototype.onError = function (error) { };
@@ -42233,8 +42018,8 @@ var InternalState = (function () {
             this.renderPromises
                 && this.renderPromises.getSSRObservable(this.watchQueryOptions)
                 || this.observable
-                || this.client.watchQuery(tslib.__assign({}, this.watchQueryOptions));
-        this.obsQueryFields = react.useMemo(function () { return ({
+                || this.client.watchQuery(core.mergeOptions(this.queryHookOptions.defaultOptions, this.watchQueryOptions));
+        this.obsQueryFields = React.useMemo(function () { return ({
             refetch: obsQuery.refetch.bind(obsQuery),
             reobserve: obsQuery.reobserve.bind(obsQuery),
             fetchMore: obsQuery.fetchMore.bind(obsQuery),
@@ -42243,11 +42028,11 @@ var InternalState = (function () {
             stopPolling: obsQuery.stopPolling.bind(obsQuery),
             subscribeToMore: obsQuery.subscribeToMore.bind(obsQuery),
         }); }, [obsQuery]);
-        if (this.renderPromises) {
+        var ssrAllowed = !(this.queryHookOptions.ssr === false ||
+            this.queryHookOptions.skip);
+        if (this.renderPromises && ssrAllowed) {
             this.renderPromises.registerSSRObservable(obsQuery);
-            var ssrAllowed = !(this.queryHookOptions.ssr === false ||
-                this.queryHookOptions.skip);
-            if (ssrAllowed && obsQuery.getCurrentResult().loading) {
+            if (obsQuery.getCurrentResult().loading) {
                 this.renderPromises.addObservableQueryPromise(obsQuery);
             }
         }
@@ -42315,17 +42100,14 @@ var EAGER_METHODS = [
 ];
 function useLazyQuery(query, options) {
     var internalState = useInternalState(useApolloClient(options && options.client), query);
-    var execOptionsRef = react.useRef();
-    var defaultOptions = internalState.client.defaultOptions.watchQuery;
-    var initialFetchPolicy = (options && options.fetchPolicy) ||
-        (execOptionsRef.current && execOptionsRef.current.fetchPolicy) ||
-        (defaultOptions && defaultOptions.fetchPolicy) ||
-        "cache-first";
+    var execOptionsRef = React.useRef();
     var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign(tslib.__assign({}, options), execOptionsRef.current), { skip: !execOptionsRef.current }));
+    var initialFetchPolicy = useQueryResult.observable.options.initialFetchPolicy ||
+        internalState.getDefaultFetchPolicy();
     var result = Object.assign(useQueryResult, {
         called: !!execOptionsRef.current,
     });
-    var eagerMethods = react.useMemo(function () {
+    var eagerMethods = React.useMemo(function () {
         var eagerMethods = {};
         var _loop_1 = function (key) {
             var method = result[key];
@@ -42344,23 +42126,13 @@ function useLazyQuery(query, options) {
         return eagerMethods;
     }, []);
     Object.assign(result, eagerMethods);
-    var execute = react.useCallback(function (executeOptions) {
-        var promise = result.reobserve(execOptionsRef.current = executeOptions ? tslib.__assign(tslib.__assign({}, executeOptions), { fetchPolicy: executeOptions.fetchPolicy || initialFetchPolicy }) : {
+    var execute = React.useCallback(function (executeOptions) {
+        execOptionsRef.current = executeOptions ? tslib.__assign(tslib.__assign({}, executeOptions), { fetchPolicy: executeOptions.fetchPolicy || initialFetchPolicy }) : {
             fetchPolicy: initialFetchPolicy,
-        }).then(function (apolloQueryResult) {
-            apolloQueryResult = apolloQueryResult || internalState["getCurrentResult"]();
-            if (apolloQueryResult.error ||
-                utilities.isNonEmptyArray(apolloQueryResult.errors)) {
-                var _a = result.observable.options.errorPolicy, errorPolicy = _a === void 0 ? "none" : _a;
-                if (errorPolicy === "none") {
-                    throw apolloQueryResult.error || new errors.ApolloError({
-                        graphQLErrors: apolloQueryResult.errors,
-                    });
-                }
-            }
-            return internalState.toQueryResult(apolloQueryResult);
-        }).then(function (queryResult) { return Object.assign(queryResult, eagerMethods); });
-        internalState.forceUpdate();
+        };
+        var promise = internalState
+            .asyncUpdate()
+            .then(function (queryResult) { return Object.assign(queryResult, eagerMethods); });
         promise.catch(function () { });
         return promise;
     }, []);
@@ -42370,12 +42142,12 @@ function useLazyQuery(query, options) {
 function useMutation(mutation, options) {
     var client = useApolloClient(options === null || options === void 0 ? void 0 : options.client);
     parser.verifyDocumentType(mutation, parser.DocumentType.Mutation);
-    var _a = react.useState({
+    var _a = React.useState({
         called: false,
         loading: false,
         client: client,
     }), result = _a[0], setResult = _a[1];
-    var ref = react.useRef({
+    var ref = React.useRef({
         result: result,
         mutationId: 0,
         isMounted: true,
@@ -42386,7 +42158,7 @@ function useMutation(mutation, options) {
     {
         Object.assign(ref.current, { client: client, options: options, mutation: mutation });
     }
-    var execute = react.useCallback(function (executeOptions) {
+    var execute = React.useCallback(function (executeOptions) {
         if (executeOptions === void 0) { executeOptions = {}; }
         var _a = ref.current, client = _a.client, options = _a.options, mutation = _a.mutation;
         var baseOptions = tslib.__assign(tslib.__assign({}, options), { mutation: mutation });
@@ -42446,10 +42218,10 @@ function useMutation(mutation, options) {
             throw error;
         });
     }, []);
-    var reset = react.useCallback(function () {
+    var reset = React.useCallback(function () {
         setResult({ called: false, loading: false, client: client });
     }, []);
-    react.useEffect(function () {
+    React.useEffect(function () {
         ref.current.isMounted = true;
         return function () {
             ref.current.isMounted = false;
@@ -42461,13 +42233,13 @@ function useMutation(mutation, options) {
 function useSubscription(subscription, options) {
     var client = useApolloClient(options === null || options === void 0 ? void 0 : options.client);
     parser.verifyDocumentType(subscription, parser.DocumentType.Subscription);
-    var _a = react.useState({
+    var _a = React.useState({
         loading: !(options === null || options === void 0 ? void 0 : options.skip),
         error: void 0,
         data: void 0,
         variables: options === null || options === void 0 ? void 0 : options.variables,
     }), result = _a[0], setResult = _a[1];
-    var _b = react.useState(function () {
+    var _b = React.useState(function () {
         if (options === null || options === void 0 ? void 0 : options.skip) {
             return null;
         }
@@ -42478,15 +42250,21 @@ function useSubscription(subscription, options) {
             context: options === null || options === void 0 ? void 0 : options.context,
         });
     }), observable = _b[0], setObservable = _b[1];
-    var ref = react.useRef({ client: client, subscription: subscription, options: options });
-    react.useEffect(function () {
+    var canResetObservableRef = React.useRef(false);
+    React.useEffect(function () {
+        return function () {
+            canResetObservableRef.current = true;
+        };
+    }, []);
+    var ref = React.useRef({ client: client, subscription: subscription, options: options });
+    React.useEffect(function () {
         var _a, _b, _c, _d;
         var shouldResubscribe = options === null || options === void 0 ? void 0 : options.shouldResubscribe;
         if (typeof shouldResubscribe === 'function') {
             shouldResubscribe = !!shouldResubscribe(options);
         }
         if (options === null || options === void 0 ? void 0 : options.skip) {
-            if (!(options === null || options === void 0 ? void 0 : options.skip) !== !((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.skip)) {
+            if (!(options === null || options === void 0 ? void 0 : options.skip) !== !((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.skip) || canResetObservableRef.current) {
                 setResult({
                     loading: false,
                     data: void 0,
@@ -42494,13 +42272,16 @@ function useSubscription(subscription, options) {
                     variables: options === null || options === void 0 ? void 0 : options.variables,
                 });
                 setObservable(null);
+                canResetObservableRef.current = false;
             }
         }
-        else if (shouldResubscribe !== false && (client !== ref.current.client ||
-            subscription !== ref.current.subscription ||
-            (options === null || options === void 0 ? void 0 : options.fetchPolicy) !== ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.fetchPolicy) ||
-            !(options === null || options === void 0 ? void 0 : options.skip) !== !((_c = ref.current.options) === null || _c === void 0 ? void 0 : _c.skip) ||
-            !equality.equal(options === null || options === void 0 ? void 0 : options.variables, (_d = ref.current.options) === null || _d === void 0 ? void 0 : _d.variables))) {
+        else if ((shouldResubscribe !== false &&
+            (client !== ref.current.client ||
+                subscription !== ref.current.subscription ||
+                (options === null || options === void 0 ? void 0 : options.fetchPolicy) !== ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.fetchPolicy) ||
+                !(options === null || options === void 0 ? void 0 : options.skip) !== !((_c = ref.current.options) === null || _c === void 0 ? void 0 : _c.skip) ||
+                !equality.equal(options === null || options === void 0 ? void 0 : options.variables, (_d = ref.current.options) === null || _d === void 0 ? void 0 : _d.variables))) ||
+            canResetObservableRef.current) {
             setResult({
                 loading: true,
                 data: void 0,
@@ -42513,10 +42294,11 @@ function useSubscription(subscription, options) {
                 fetchPolicy: options === null || options === void 0 ? void 0 : options.fetchPolicy,
                 context: options === null || options === void 0 ? void 0 : options.context,
             }));
+            canResetObservableRef.current = false;
         }
         Object.assign(ref.current, { client: client, subscription: subscription, options: options });
-    }, [client, subscription, options]);
-    react.useEffect(function () {
+    }, [client, subscription, options, canResetObservableRef.current]);
+    React.useEffect(function () {
         if (!observable) {
             return;
         }
@@ -42557,8 +42339,8 @@ function useSubscription(subscription, options) {
 
 function useReactiveVar(rv) {
     var value = rv();
-    var setValue = react.useState(value)[1];
-    react.useEffect(function () {
+    var setValue = React.useState(value)[1];
+    React.useEffect(function () {
         var probablySameValue = rv();
         if (value !== probablySameValue) {
             setValue(probablySameValue);
@@ -43560,14 +43342,16 @@ function offsetLimitPagination(keyArgs) {
         merge: function (existing, incoming, _a) {
             var args = _a.args;
             var merged = existing ? existing.slice(0) : [];
-            if (args) {
-                var _b = args.offset, offset = _b === void 0 ? 0 : _b;
-                for (var i = 0; i < incoming.length; ++i) {
-                    merged[offset + i] = incoming[i];
+            if (incoming) {
+                if (args) {
+                    var _b = args.offset, offset = _b === void 0 ? 0 : _b;
+                    for (var i = 0; i < incoming.length; ++i) {
+                        merged[offset + i] = incoming[i];
+                    }
                 }
-            }
-            else {
-                merged.push.apply(merged, incoming);
+                else {
+                    merged.push.apply(merged, incoming);
+                }
             }
             return merged;
         },
@@ -43809,11 +43593,14 @@ function asyncMap(observable, mapFn, catchFn) {
     });
 }
 
-var canUseWeakMap = typeof WeakMap === 'function' && !(typeof navigator === 'object' &&
-    navigator.product === 'ReactNative');
+var canUseWeakMap = typeof WeakMap === 'function' &&
+    globals.maybe(function () { return navigator.product; }) !== 'ReactNative';
 var canUseWeakSet = typeof WeakSet === 'function';
 var canUseSymbol = typeof Symbol === 'function' &&
     typeof Symbol.for === 'function';
+var canUseDOM = typeof globals.maybe(function () { return window.document.createElement; }) === "function";
+var usingJSDOM = globals.maybe(function () { return navigator.userAgent.indexOf("jsdom") >= 0; }) || false;
+var canUseLayoutEffect = canUseDOM && !usingJSDOM;
 
 function fixObservableSubclass(subclass) {
     function set(key) {
@@ -43861,9 +43648,12 @@ var Concast = (function (_super) {
                 }
             },
             complete: function () {
-                if (_this.sub !== null) {
+                var sub = _this.sub;
+                if (sub !== null) {
                     var value = _this.sources.shift();
                     if (!value) {
+                        if (sub)
+                            setTimeout(function () { return sub.unsubscribe(); });
                         _this.sub = null;
                         if (_this.latest &&
                             _this.latest[0] === "next") {
@@ -43931,7 +43721,7 @@ var Concast = (function (_super) {
         if (this.observers.delete(observer) &&
             --this.addCount < 1 &&
             !quietly) {
-            this.handlers.error(new Error("Observable cancelled prematurely"));
+            this.handlers.complete();
         }
     };
     Concast.prototype.cleanup = function (callback) {
@@ -44000,7 +43790,7 @@ function stringifyForDisplay(value) {
 
 function mergeOptions(defaults, options) {
     return compact(defaults, options, options.variables && {
-        variables: tslib.__assign(tslib.__assign({}, defaults.variables), options.variables),
+        variables: tslib.__assign(tslib.__assign({}, (defaults && defaults.variables)), options.variables),
     });
 }
 
@@ -44013,6 +43803,8 @@ exports.addTypenameToDocument = addTypenameToDocument;
 exports.argumentsObjectFromField = argumentsObjectFromField;
 exports.asyncMap = asyncMap;
 exports.buildQueryFromSelectionSet = buildQueryFromSelectionSet;
+exports.canUseDOM = canUseDOM;
+exports.canUseLayoutEffect = canUseLayoutEffect;
 exports.canUseSymbol = canUseSymbol;
 exports.canUseWeakMap = canUseWeakMap;
 exports.canUseWeakSet = canUseWeakSet;
