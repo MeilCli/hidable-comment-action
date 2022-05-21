@@ -1,5 +1,5 @@
 # hidable-comment-action
-[![CI](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci.yml/badge.svg)](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci.yml)  
+[![CI-Master](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml/badge.svg)](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml)    
 Create, update or delete comment by action argument
 
 ## Example
