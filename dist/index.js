@@ -37381,7 +37381,6 @@ var StoreReader = (function () {
         var policies = this.config.cache.policies;
         variables = tslib.__assign(tslib.__assign({}, utilities.getDefaultValues(utilities.getQueryDefinition(query))), variables);
         var rootRef = utilities.makeReference(rootId);
-        var merger = new utilities.DeepMerger;
         var execResult = this.executeSelectionSet({
             selectionSet: utilities.getMainDefinition(query).selectionSet,
             objectOrReference: rootRef,
@@ -37394,9 +37393,6 @@ var StoreReader = (function () {
                 varString: canonicalStringify(variables),
                 canonizeResults: canonizeResults,
                 fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(query)),
-                merge: function (a, b) {
-                    return merger.merge(a, b);
-                },
             },
         });
         var missing;
@@ -37435,17 +37431,18 @@ var StoreReader = (function () {
         }
         var variables = context.variables, policies = context.policies, store = context.store;
         var typename = store.getFieldValue(objectOrReference, "__typename");
-        var result = {};
+        var objectsToMerge = [];
         var missing;
+        var missingMerger = new utilities.DeepMerger();
         if (this.config.addTypename &&
             typeof typename === "string" &&
             !policies.rootIdsByTypename[typename]) {
-            result = { __typename: typename };
+            objectsToMerge.push({ __typename: typename });
         }
         function handleMissing(result, resultName) {
             var _a;
             if (result.missing) {
-                missing = context.merge(missing, (_a = {}, _a[resultName] = result.missing, _a));
+                missing = missingMerger.merge(missing, (_a = {}, _a[resultName] = result.missing, _a));
             }
             return result.result;
         }
@@ -37464,7 +37461,7 @@ var StoreReader = (function () {
                 var resultName = utilities.resultKeyNameFromField(selection);
                 if (fieldValue === void 0) {
                     if (!utilities.addTypenameToDocument.added(selection)) {
-                        missing = context.merge(missing, (_a = {},
+                        missing = missingMerger.merge(missing, (_a = {},
                             _a[resultName] = "Can't find field '".concat(selection.name.value, "' on ").concat(utilities.isReference(objectOrReference)
                                 ? objectOrReference.__ref + " object"
                                 : "object " + JSON.stringify(objectOrReference, null, 2)),
@@ -37493,7 +37490,7 @@ var StoreReader = (function () {
                     }), resultName);
                 }
                 if (fieldValue !== void 0) {
-                    result = context.merge(result, (_b = {}, _b[resultName] = fieldValue, _b));
+                    objectsToMerge.push((_b = {}, _b[resultName] = fieldValue, _b));
                 }
             }
             else {
@@ -37503,6 +37500,7 @@ var StoreReader = (function () {
                 }
             }
         });
+        var result = utilities.mergeDeepArray(objectsToMerge);
         var finalResult = { result: result, missing: missing };
         var frozen = context.canonizeResults
             ? this.canon.admit(finalResult)
@@ -37516,10 +37514,11 @@ var StoreReader = (function () {
         var _this = this;
         var field = _a.field, array = _a.array, enclosingRef = _a.enclosingRef, context = _a.context;
         var missing;
+        var missingMerger = new utilities.DeepMerger();
         function handleMissing(childResult, i) {
             var _a;
             if (childResult.missing) {
-                missing = context.merge(missing, (_a = {}, _a[i] = childResult.missing, _a));
+                missing = missingMerger.merge(missing, (_a = {}, _a[i] = childResult.missing, _a));
             }
             return childResult.result;
         }
@@ -38888,7 +38887,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.4';
+var version = '3.6.5';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -39294,7 +39293,7 @@ var ObservableQuery = (function (_super) {
             newNetworkStatus === exports.NetworkStatus.poll;
         var oldVariables = this.options.variables;
         var oldFetchPolicy = this.options.fetchPolicy;
-        var mergedOptions = utilities.mergeOptions(this.options, newOptions || {});
+        var mergedOptions = utilities.compact(this.options, newOptions || {});
         var options = useDisposableConcast
             ? mergedOptions
             : assign(this.options, mergedOptions);
@@ -41847,7 +41846,7 @@ function useInternalState(client, query) {
     if (!stateRef.current ||
         client !== stateRef.current.client ||
         query !== stateRef.current.query) {
-        stateRef.current = new InternalState(client, query);
+        stateRef.current = new InternalState(client, query, stateRef.current);
     }
     var state = stateRef.current;
     var _a = React.useState(0); _a[0]; var setTick = _a[1];
@@ -41857,7 +41856,7 @@ function useInternalState(client, query) {
     return state;
 }
 var InternalState = (function () {
-    function InternalState(client, query) {
+    function InternalState(client, query, previous) {
         this.client = client;
         this.query = query;
         this.asyncResolveFns = new Set();
@@ -41876,6 +41875,11 @@ var InternalState = (function () {
         });
         this.toQueryResultCache = new (utilities.canUseWeakMap ? WeakMap : Map)();
         parser.verifyDocumentType(query, parser.DocumentType.Query);
+        var previousResult = previous && previous.result;
+        var previousData = previousResult && previousResult.data;
+        if (previousData) {
+            this.previousData = previousData;
+        }
     }
     InternalState.prototype.forceUpdate = function () {
         __DEV__ && globals.invariant.warn("Calling default no-op implementation of InternalState#forceUpdate");
@@ -42101,7 +42105,10 @@ var EAGER_METHODS = [
 function useLazyQuery(query, options) {
     var internalState = useInternalState(useApolloClient(options && options.client), query);
     var execOptionsRef = React.useRef();
-    var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign(tslib.__assign({}, options), execOptionsRef.current), { skip: !execOptionsRef.current }));
+    var merged = execOptionsRef.current
+        ? utilities.mergeOptions(options, execOptionsRef.current)
+        : options;
+    var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign({}, merged), { skip: !execOptionsRef.current }));
     var initialFetchPolicy = useQueryResult.observable.options.initialFetchPolicy ||
         internalState.getDefaultFetchPolicy();
     var result = Object.assign(useQueryResult, {
@@ -42174,7 +42181,7 @@ function useMutation(mutation, options) {
         var mutationId = ++ref.current.mutationId;
         var clientOptions = core.mergeOptions(baseOptions, executeOptions);
         return client.mutate(clientOptions).then(function (response) {
-            var _a, _b;
+            var _a, _b, _c;
             var data = response.data, errors$1 = response.errors;
             var error = errors$1 && errors$1.length > 0
                 ? new errors.ApolloError({ graphQLErrors: errors$1 })
@@ -42192,11 +42199,11 @@ function useMutation(mutation, options) {
                     setResult(ref.current.result = result_1);
                 }
             }
-            (_a = baseOptions.onCompleted) === null || _a === void 0 ? void 0 : _a.call(baseOptions, response.data);
-            (_b = executeOptions.onCompleted) === null || _b === void 0 ? void 0 : _b.call(executeOptions, response.data);
+            (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onCompleted) === null || _b === void 0 ? void 0 : _b.call(_a, response.data);
+            (_c = executeOptions.onCompleted) === null || _c === void 0 ? void 0 : _c.call(executeOptions, response.data);
             return response;
         }).catch(function (error) {
-            var _a, _b;
+            var _a, _b, _c, _d;
             if (mutationId === ref.current.mutationId &&
                 ref.current.isMounted) {
                 var result_2 = {
@@ -42210,9 +42217,9 @@ function useMutation(mutation, options) {
                     setResult(ref.current.result = result_2);
                 }
             }
-            if (baseOptions.onError || clientOptions.onError) {
-                (_a = baseOptions.onError) === null || _a === void 0 ? void 0 : _a.call(baseOptions, error);
-                (_b = executeOptions.onError) === null || _b === void 0 ? void 0 : _b.call(executeOptions, error);
+            if (((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) || clientOptions.onError) {
+                (_c = (_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onError) === null || _c === void 0 ? void 0 : _c.call(_b, error);
+                (_d = executeOptions.onError) === null || _d === void 0 ? void 0 : _d.call(executeOptions, error);
                 return { data: void 0, errors: error };
             }
             throw error;
@@ -43308,18 +43315,15 @@ var DeepMerger = (function () {
     };
     DeepMerger.prototype.shallowCopyForMerge = function (value) {
         if (isNonNullObject(value)) {
-            if (this.pastCopies.has(value)) {
-                if (!Object.isFrozen(value))
-                    return value;
-                this.pastCopies.delete(value);
+            if (!this.pastCopies.has(value)) {
+                if (Array.isArray(value)) {
+                    value = value.slice(0);
+                }
+                else {
+                    value = tslib.__assign({ __proto__: Object.getPrototypeOf(value) }, value);
+                }
+                this.pastCopies.add(value);
             }
-            if (Array.isArray(value)) {
-                value = value.slice(0);
-            }
-            else {
-                value = tslib.__assign({ __proto__: Object.getPrototypeOf(value) }, value);
-            }
-            this.pastCopies.add(value);
         }
         return value;
     };
