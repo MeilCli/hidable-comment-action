@@ -87,11 +87,14 @@ jobs:
   - required
   - comment body
 
-## Contributing
+## Contributes
+[<img src="https://gist.github.com/MeilCli/31fde39d6f48f6d2978d05cad61faf7e/raw/372f88f3f9a7a1cf3315fb146935b3994ba89cf3/metrics_contributors.svg">](https://github.com/MeilCli/hidable-comment-action/graphs/contributors)
+
+### Could you want to contribute?
 see [Contributing.md](./.github/CONTRIBUTING.md)
 
 ## License
-MIT License
+[<img src="https://gist.github.com/MeilCli/31fde39d6f48f6d2978d05cad61faf7e/raw/372f88f3f9a7a1cf3315fb146935b3994ba89cf3/metrics_licenses.svg">](LICENSE.txt)
 
 ### Using
 - [actions/toolkit](https://github.com/actions/toolkit), published by [MIT License](https://github.com/actions/toolkit/blob/master/LICENSE.md)
