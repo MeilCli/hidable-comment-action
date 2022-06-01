@@ -38887,7 +38887,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.5';
+var version = '3.6.6';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -41961,7 +41961,7 @@ var InternalState = (function () {
             this.watchQueryOptions = watchQueryOptions;
             if (currentWatchQueryOptions && this.observable) {
                 this.optionsToIgnoreOnce.delete(currentWatchQueryOptions);
-                this.observable.reobserve(watchQueryOptions);
+                this.observable.reobserve(this.getObsQueryOptions());
                 this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
                 this.result = void 0;
             }
@@ -41981,6 +41981,17 @@ var InternalState = (function () {
             this.result === this.skipStandbyResult) {
             this.result = void 0;
         }
+    };
+    InternalState.prototype.getObsQueryOptions = function () {
+        var toMerge = [];
+        var globalDefaults = this.client.defaultOptions.watchQuery;
+        if (globalDefaults)
+            toMerge.push(globalDefaults);
+        if (this.queryHookOptions.defaultOptions) {
+            toMerge.push(this.queryHookOptions.defaultOptions);
+        }
+        toMerge.push(utilities.compact(this.observable && this.observable.options, this.watchQueryOptions));
+        return toMerge.reduce(core.mergeOptions);
     };
     InternalState.prototype.createWatchQueryOptions = function (_a) {
         var _b;
@@ -42022,7 +42033,7 @@ var InternalState = (function () {
             this.renderPromises
                 && this.renderPromises.getSSRObservable(this.watchQueryOptions)
                 || this.observable
-                || this.client.watchQuery(core.mergeOptions(this.queryHookOptions.defaultOptions, this.watchQueryOptions));
+                || this.client.watchQuery(this.getObsQueryOptions());
         this.obsQueryFields = React.useMemo(function () { return ({
             refetch: obsQuery.refetch.bind(obsQuery),
             reobserve: obsQuery.reobserve.bind(obsQuery),
