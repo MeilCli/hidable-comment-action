@@ -38887,7 +38887,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.6';
+var version = '3.6.7';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
