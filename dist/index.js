@@ -38113,7 +38113,7 @@ function makeFieldFunctionOptions(policies, objectOrReference, fieldSpec, contex
         cache: policies.cache,
         canRead: canRead,
         readField: function () {
-            return policies.readField(normalizeReadFieldOptions(arguments, objectOrReference, context), context);
+            return policies.readField(normalizeReadFieldOptions(arguments, objectOrReference, variables), context);
         },
         mergeObjects: makeMergeObjectsFunction(context.store),
     };
@@ -38893,7 +38893,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.7';
+var version = '3.6.8';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -39327,7 +39327,7 @@ var ObservableQuery = (function (_super) {
         };
         if (!useDisposableConcast) {
             if (this.concast && this.observer) {
-                this.concast.removeObserver(this.observer, true);
+                this.concast.removeObserver(this.observer);
             }
             this.concast = concast;
             this.observer = observer;
@@ -42089,7 +42089,7 @@ var InternalState = (function () {
         if (queryResult)
             return queryResult;
         var data = result.data; result.partial; var resultWithoutPartial = tslib.__rest(result, ["data", "partial"]);
-        this.toQueryResultCache.set(result, queryResult = tslib.__assign(tslib.__assign(tslib.__assign({ data: data }, resultWithoutPartial), this.obsQueryFields), { client: this.client, observable: this.observable, variables: this.observable.variables, called: true, previousData: this.previousData }));
+        this.toQueryResultCache.set(result, queryResult = tslib.__assign(tslib.__assign(tslib.__assign({ data: data }, resultWithoutPartial), this.obsQueryFields), { client: this.client, observable: this.observable, variables: this.observable.variables, called: !this.queryHookOptions.skip, previousData: this.previousData }));
         if (!queryResult.error && utilities.isNonEmptyArray(result.errors)) {
             queryResult.error = new errors.ApolloError({ graphQLErrors: result.errors });
         }
