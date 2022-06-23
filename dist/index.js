@@ -38967,7 +38967,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.8';
+var version = '3.6.9';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -39293,7 +39293,8 @@ var ObservableQuery = (function (_super) {
     ObservableQuery.prototype.applyNextFetchPolicy = function (reason, options) {
         if (options.nextFetchPolicy) {
             var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? "cache-first" : _a, _b = options.initialFetchPolicy, initialFetchPolicy = _b === void 0 ? fetchPolicy : _b;
-            if (typeof options.nextFetchPolicy === "function") {
+            if (fetchPolicy === "standby") ;
+            else if (typeof options.nextFetchPolicy === "function") {
                 options.fetchPolicy = options.nextFetchPolicy(fetchPolicy, {
                     reason: reason,
                     options: options,
@@ -39382,7 +39383,8 @@ var ObservableQuery = (function (_super) {
             if (newOptions &&
                 newOptions.variables &&
                 !equality.equal(newOptions.variables, oldVariables) &&
-                (!newOptions.fetchPolicy || newOptions.fetchPolicy === oldFetchPolicy)) {
+                options.fetchPolicy !== "standby" &&
+                options.fetchPolicy === oldFetchPolicy) {
                 this.applyNextFetchPolicy("variables-changed", options);
                 if (newNetworkStatus === void 0) {
                     newNetworkStatus = exports.NetworkStatus.setVariables;
@@ -40631,20 +40633,23 @@ var QueryManager = (function () {
         });
         var fromVariables = function (variables) {
             normalized.variables = variables;
-            return _this.fetchQueryByPolicy(queryInfo, normalized, networkStatus);
+            var concastSources = _this.fetchQueryByPolicy(queryInfo, normalized, networkStatus);
+            if (normalized.fetchPolicy !== "standby" &&
+                concastSources.length > 0 &&
+                queryInfo.observableQuery) {
+                queryInfo.observableQuery["applyNextFetchPolicy"]("after-fetch", options);
+            }
+            return concastSources;
         };
+        var cleanupCancelFn = function () { return _this.fetchCancelFns.delete(queryId); };
         this.fetchCancelFns.set(queryId, function (reason) {
+            cleanupCancelFn();
             setTimeout(function () { return concast.cancel(reason); });
         });
         var concast = new utilities.Concast(this.transform(normalized.query).hasClientExports
             ? this.localState.addExportedVariables(normalized.query, normalized.variables, normalized.context).then(fromVariables)
             : fromVariables(normalized.variables));
-        concast.cleanup(function () {
-            _this.fetchCancelFns.delete(queryId);
-            if (queryInfo.observableQuery) {
-                queryInfo.observableQuery["applyNextFetchPolicy"]("after-fetch", options);
-            }
-        });
+        concast.promise.then(cleanupCancelFn, cleanupCancelFn);
         return concast;
     };
     QueryManager.prototype.refetchQueries = function (_a) {
