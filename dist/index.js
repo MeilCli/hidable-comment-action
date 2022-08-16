@@ -6851,25 +6851,7 @@ async function subscribe(args) {
       false,
       'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
     );
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
-  const resultOrStream = await createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  const resultOrStream = await createSourceEventStream(args);
 
   if (!(0, _isAsyncIterable.isAsyncIterable)(resultOrStream)) {
     return resultOrStream;
@@ -6881,20 +6863,31 @@ async function subscribe(args) {
   // "ExecuteQuery" algorithm, for which `execute` is also used.
 
   const mapSourceToResponse = (payload) =>
-    (0, _execute.execute)({
-      schema,
-      document,
-      rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    }); // Map every source value to a ExecutionResult value as described above.
+    (0, _execute.execute)({ ...args, rootValue: payload }); // Map every source value to a ExecutionResult value as described above.
 
   return (0, _mapAsyncIterator.mapAsyncIterator)(
     resultOrStream,
     mapSourceToResponse,
   );
+}
+
+function toNormalizedArgs(args) {
+  const firstArg = args[0];
+
+  if (firstArg && 'document' in firstArg) {
+    return firstArg;
+  }
+
+  return {
+    schema: firstArg,
+    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
+    document: args[1],
+    rootValue: args[2],
+    contextValue: args[3],
+    variableValues: args[4],
+    operationName: args[5],
+    subscribeFieldResolver: args[6],
+  };
 }
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
@@ -6925,29 +6918,15 @@ async function subscribe(args) {
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 
-async function createSourceEventStream(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  subscribeFieldResolver,
-) {
-  // If arguments are missing or incorrectly typed, this is an internal
+async function createSourceEventStream(...rawArgs) {
+  const args = toNormalizedArgs(rawArgs);
+  const { schema, document, variableValues } = args; // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
+
   (0, _execute.assertValidExecutionArguments)(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  const exeContext = (0, _execute.buildExecutionContext)({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  }); // Return early errors if execution context failed.
+  const exeContext = (0, _execute.buildExecutionContext)(args); // Return early errors if execution context failed.
 
   if (!('schema' in exeContext)) {
     return {
@@ -10023,7 +10002,7 @@ function isNode(maybeNode) {
 }
 /** Name */
 
-let OperationTypeNode;
+var OperationTypeNode;
 exports.OperationTypeNode = OperationTypeNode;
 
 (function (OperationTypeNode) {
@@ -10335,13 +10314,7 @@ exports.DirectiveLocation = void 0;
 /**
  * The set of allowed directive location values.
  */
-let DirectiveLocation;
-/**
- * The enum type representing the directive location values.
- *
- * @deprecated Please use `DirectiveLocation`. Will be remove in v17.
- */
-
+var DirectiveLocation;
 exports.DirectiveLocation = DirectiveLocation;
 
 (function (DirectiveLocation) {
@@ -10365,6 +10338,11 @@ exports.DirectiveLocation = DirectiveLocation;
   DirectiveLocation['INPUT_OBJECT'] = 'INPUT_OBJECT';
   DirectiveLocation['INPUT_FIELD_DEFINITION'] = 'INPUT_FIELD_DEFINITION';
 })(DirectiveLocation || (exports.DirectiveLocation = DirectiveLocation = {}));
+/**
+ * The enum type representing the directive location values.
+ *
+ * @deprecated Please use `DirectiveLocation`. Will be remove in v17.
+ */
 
 
 /***/ }),
@@ -10606,13 +10584,7 @@ exports.Kind = void 0;
 /**
  * The set of allowed kind values for AST nodes.
  */
-let Kind;
-/**
- * The enum type representing the possible kind values of AST nodes.
- *
- * @deprecated Please use `Kind`. Will be remove in v17.
- */
-
+var Kind;
 exports.Kind = Kind;
 
 (function (Kind) {
@@ -10660,6 +10632,11 @@ exports.Kind = Kind;
   Kind['ENUM_TYPE_EXTENSION'] = 'EnumTypeExtension';
   Kind['INPUT_OBJECT_TYPE_EXTENSION'] = 'InputObjectTypeExtension';
 })(Kind || (exports.Kind = Kind = {}));
+/**
+ * The enum type representing the possible kind values of AST nodes.
+ *
+ * @deprecated Please use `Kind`. Will be remove in v17.
+ */
 
 
 /***/ }),
@@ -11822,12 +11799,13 @@ function parseType(source, options) {
  */
 
 class Parser {
-  constructor(source, options) {
+  constructor(source, options = {}) {
     const sourceObj = (0, _source.isSource)(source)
       ? source
       : new _source.Source(source);
     this._lexer = new _lexer.Lexer(sourceObj);
     this._options = options;
+    this._tokenCounter = 0;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -12162,18 +12140,12 @@ class Parser {
    */
 
   parseFragmentDefinition() {
-    var _this$_options;
-
     const start = this._lexer.token;
     this.expectKeyword('fragment'); // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
 
-    if (
-      ((_this$_options = this._options) === null || _this$_options === void 0
-        ? void 0
-        : _this$_options.allowLegacyFragmentVariables) === true
-    ) {
+    if (this._options.allowLegacyFragmentVariables === true) {
       return this.node(start, {
         kind: _kinds.Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -12234,16 +12206,14 @@ class Parser {
         return this.parseObject(isConst);
 
       case _tokenKind.TokenKind.INT:
-        this._lexer.advance();
-
+        this.advanceLexer();
         return this.node(token, {
           kind: _kinds.Kind.INT,
           value: token.value,
         });
 
       case _tokenKind.TokenKind.FLOAT:
-        this._lexer.advance();
-
+        this.advanceLexer();
         return this.node(token, {
           kind: _kinds.Kind.FLOAT,
           value: token.value,
@@ -12254,7 +12224,7 @@ class Parser {
         return this.parseStringLiteral();
 
       case _tokenKind.TokenKind.NAME:
-        this._lexer.advance();
+        this.advanceLexer();
 
         switch (token.value) {
           case 'true':
@@ -12310,9 +12280,7 @@ class Parser {
 
   parseStringLiteral() {
     const token = this._lexer.token;
-
-    this._lexer.advance();
-
+    this.advanceLexer();
     return this.node(token, {
       kind: _kinds.Kind.STRING,
       value: token.value,
@@ -13103,13 +13071,7 @@ class Parser {
    */
 
   node(startToken, node) {
-    var _this$_options2;
-
-    if (
-      ((_this$_options2 = this._options) === null || _this$_options2 === void 0
-        ? void 0
-        : _this$_options2.noLocation) !== true
-    ) {
+    if (this._options.noLocation !== true) {
       node.loc = new _ast.Location(
         startToken,
         this._lexer.lastToken,
@@ -13135,8 +13097,7 @@ class Parser {
     const token = this._lexer.token;
 
     if (token.kind === kind) {
-      this._lexer.advance();
-
+      this.advanceLexer();
       return token;
     }
 
@@ -13155,8 +13116,7 @@ class Parser {
     const token = this._lexer.token;
 
     if (token.kind === kind) {
-      this._lexer.advance();
-
+      this.advanceLexer();
       return true;
     }
 
@@ -13171,7 +13131,7 @@ class Parser {
     const token = this._lexer.token;
 
     if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
     } else {
       throw (0, _syntaxError.syntaxError)(
         this._lexer.source,
@@ -13189,8 +13149,7 @@ class Parser {
     const token = this._lexer.token;
 
     if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
-
+      this.advanceLexer();
       return true;
     }
 
@@ -13276,6 +13235,24 @@ class Parser {
     } while (this.expectOptionalToken(delimiterKind));
 
     return nodes;
+  }
+
+  advanceLexer() {
+    const { maxTokens } = this._options;
+
+    const token = this._lexer.advance();
+
+    if (maxTokens !== undefined && token.kind !== _tokenKind.TokenKind.EOF) {
+      ++this._tokenCounter;
+
+      if (this._tokenCounter > maxTokens) {
+        throw (0, _syntaxError.syntaxError)(
+          this._lexer.source,
+          token.start,
+          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+        );
+      }
+    }
   }
 }
 /**
@@ -14136,13 +14113,7 @@ exports.TokenKind = void 0;
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-let TokenKind;
-/**
- * The enum type representing the token kinds values.
- *
- * @deprecated Please use `TokenKind`. Will be remove in v17.
- */
-
+var TokenKind;
 exports.TokenKind = TokenKind;
 
 (function (TokenKind) {
@@ -14169,6 +14140,11 @@ exports.TokenKind = TokenKind;
   TokenKind['BLOCK_STRING'] = 'BlockString';
   TokenKind['COMMENT'] = 'Comment';
 })(TokenKind || (exports.TokenKind = TokenKind = {}));
+/**
+ * The enum type representing the token kinds values.
+ *
+ * @deprecated Please use `TokenKind`. Will be remove in v17.
+ */
 
 
 /***/ }),
@@ -17258,7 +17234,7 @@ const __EnumValue = new _definition.GraphQLObjectType({
 });
 
 exports.__EnumValue = __EnumValue;
-let TypeKind;
+var TypeKind;
 exports.TypeKind = TypeKind;
 
 (function (TypeKind) {
@@ -21121,7 +21097,7 @@ var _astFromValue = __nccwpck_require__(2653);
 
 var _sortValueNode = __nccwpck_require__(2278);
 
-let BreakingChangeType;
+var BreakingChangeType;
 exports.BreakingChangeType = BreakingChangeType;
 
 (function (BreakingChangeType) {
@@ -21150,7 +21126,7 @@ exports.BreakingChangeType = BreakingChangeType;
   BreakingChangeType || (exports.BreakingChangeType = BreakingChangeType = {}),
 );
 
-let DangerousChangeType;
+var DangerousChangeType;
 exports.DangerousChangeType = DangerousChangeType;
 
 (function (DangerousChangeType) {
@@ -28343,7 +28319,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.5.0';
+const version = '16.6.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -28351,7 +28327,7 @@ const version = '16.5.0';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 5,
+  minor: 6,
   patch: 0,
   preReleaseTag: null,
 });
