@@ -16583,6 +16583,8 @@ export type PullRequestThread = Node & {
   __typename?: 'PullRequestThread';
   /** A list of pull request comments associated with the thread. */
   comments: PullRequestReviewCommentConnection;
+  /** The side of the diff on which this thread was placed. */
+  diffSide: DiffSide;
   id: Scalars['ID'];
   /** Whether or not the thread has been collapsed (resolved) */
   isCollapsed: Scalars['Boolean'];
@@ -16590,12 +16592,18 @@ export type PullRequestThread = Node & {
   isOutdated: Scalars['Boolean'];
   /** Whether this thread has been resolved */
   isResolved: Scalars['Boolean'];
+  /** The line in the file to which this thread refers */
+  line?: Maybe<Scalars['Int']>;
   /** Identifies the pull request associated with this thread. */
   pullRequest: PullRequest;
   /** Identifies the repository associated with this thread. */
   repository: Repository;
   /** The user who resolved this thread */
   resolvedBy?: Maybe<User>;
+  /** The side of the diff that the first line of the thread starts on (multi-line only) */
+  startDiffSide?: Maybe<DiffSide>;
+  /** The line of the first file diff in the thread. */
+  startLine?: Maybe<Scalars['Int']>;
   /** Indicates whether the current viewer can reply to this thread. */
   viewerCanReply: Scalars['Boolean'];
   /** Whether or not the viewer can resolve this thread */
@@ -34109,13 +34117,17 @@ export type PullRequestTemplateResolvers<ContextType = any, ParentType extends R
 
 export type PullRequestThreadResolvers<ContextType = any, ParentType extends ResolversParentTypes['PullRequestThread'] = ResolversParentTypes['PullRequestThread']> = {
   comments?: Resolver<ResolversTypes['PullRequestReviewCommentConnection'], ParentType, ContextType, Partial<PullRequestThreadCommentsArgs>>;
+  diffSide?: Resolver<ResolversTypes['DiffSide'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isCollapsed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isOutdated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isResolved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  line?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   pullRequest?: Resolver<ResolversTypes['PullRequest'], ParentType, ContextType>;
   repository?: Resolver<ResolversTypes['Repository'], ParentType, ContextType>;
   resolvedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  startDiffSide?: Resolver<Maybe<ResolversTypes['DiffSide']>, ParentType, ContextType>;
+  startLine?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   viewerCanReply?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   viewerCanResolve?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   viewerCanUnresolve?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
