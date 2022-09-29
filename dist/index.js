@@ -2816,7 +2816,6 @@ const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
-const uuid_1 = __nccwpck_require__(5840);
 const oidc_utils_1 = __nccwpck_require__(8041);
 /**
  * The code to exit an action
@@ -2846,20 +2845,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = `ghadelimiter_${uuid_1.v4()}`;
-        // These should realistically never happen, but just in case someone finds a way to exploit uuid generation let's not allow keys or values that contain the delimiter.
-        if (name.includes(delimiter)) {
-            throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
-        }
-        if (convertedVal.includes(delimiter)) {
-            throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
-        }
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -2877,7 +2865,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -2917,7 +2905,10 @@ function getMultilineInput(name, options) {
     const inputs = getInput(name, options)
         .split('\n')
         .filter(x => x !== '');
-    return inputs;
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
 }
 exports.getMultilineInput = getMultilineInput;
 /**
@@ -2950,8 +2941,12 @@ exports.getBooleanInput = getBooleanInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
     process.stdout.write(os.EOL);
-    command_1.issueCommand('set-output', { name }, value);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -3080,7 +3075,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -3146,13 +3145,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issueCommand = void 0;
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
+const uuid_1 = __nccwpck_require__(5840);
 const utils_1 = __nccwpck_require__(5278);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -3164,7 +3164,22 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -4420,6 +4435,251 @@ function checkBypass(reqUrl) {
 }
 exports.checkBypass = checkBypass;
 //# sourceMappingURL=proxy.js.map
+
+/***/ }),
+
+/***/ 3037:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+// This currentContext variable will only be used if the makeSlotClass
+// function is called, which happens only if this is the first copy of the
+// @wry/context package to be imported.
+var currentContext = null;
+// This unique internal object is used to denote the absence of a value
+// for a given Slot, and is never exposed to outside code.
+var MISSING_VALUE = {};
+var idCounter = 1;
+// Although we can't do anything about the cost of duplicated code from
+// accidentally bundling multiple copies of the @wry/context package, we can
+// avoid creating the Slot class more than once using makeSlotClass.
+var makeSlotClass = function () { return /** @class */ (function () {
+    function Slot() {
+        // If you have a Slot object, you can find out its slot.id, but you cannot
+        // guess the slot.id of a Slot you don't have access to, thanks to the
+        // randomized suffix.
+        this.id = [
+            "slot",
+            idCounter++,
+            Date.now(),
+            Math.random().toString(36).slice(2),
+        ].join(":");
+    }
+    Slot.prototype.hasValue = function () {
+        for (var context_1 = currentContext; context_1; context_1 = context_1.parent) {
+            // We use the Slot object iself as a key to its value, which means the
+            // value cannot be obtained without a reference to the Slot object.
+            if (this.id in context_1.slots) {
+                var value = context_1.slots[this.id];
+                if (value === MISSING_VALUE)
+                    break;
+                if (context_1 !== currentContext) {
+                    // Cache the value in currentContext.slots so the next lookup will
+                    // be faster. This caching is safe because the tree of contexts and
+                    // the values of the slots are logically immutable.
+                    currentContext.slots[this.id] = value;
+                }
+                return true;
+            }
+        }
+        if (currentContext) {
+            // If a value was not found for this Slot, it's never going to be found
+            // no matter how many times we look it up, so we might as well cache
+            // the absence of the value, too.
+            currentContext.slots[this.id] = MISSING_VALUE;
+        }
+        return false;
+    };
+    Slot.prototype.getValue = function () {
+        if (this.hasValue()) {
+            return currentContext.slots[this.id];
+        }
+    };
+    Slot.prototype.withValue = function (value, callback, 
+    // Given the prevalence of arrow functions, specifying arguments is likely
+    // to be much more common than specifying `this`, hence this ordering:
+    args, thisArg) {
+        var _a;
+        var slots = (_a = {
+                __proto__: null
+            },
+            _a[this.id] = value,
+            _a);
+        var parent = currentContext;
+        currentContext = { parent: parent, slots: slots };
+        try {
+            // Function.prototype.apply allows the arguments array argument to be
+            // omitted or undefined, so args! is fine here.
+            return callback.apply(thisArg, args);
+        }
+        finally {
+            currentContext = parent;
+        }
+    };
+    // Capture the current context and wrap a callback function so that it
+    // reestablishes the captured context when called.
+    Slot.bind = function (callback) {
+        var context = currentContext;
+        return function () {
+            var saved = currentContext;
+            try {
+                currentContext = context;
+                return callback.apply(this, arguments);
+            }
+            finally {
+                currentContext = saved;
+            }
+        };
+    };
+    // Immediately run a callback function without any captured context.
+    Slot.noContext = function (callback, 
+    // Given the prevalence of arrow functions, specifying arguments is likely
+    // to be much more common than specifying `this`, hence this ordering:
+    args, thisArg) {
+        if (currentContext) {
+            var saved = currentContext;
+            try {
+                currentContext = null;
+                // Function.prototype.apply allows the arguments array argument to be
+                // omitted or undefined, so args! is fine here.
+                return callback.apply(thisArg, args);
+            }
+            finally {
+                currentContext = saved;
+            }
+        }
+        else {
+            return callback.apply(thisArg, args);
+        }
+    };
+    return Slot;
+}()); };
+function maybe(fn) {
+    try {
+        return fn();
+    }
+    catch (ignored) { }
+}
+// We store a single global implementation of the Slot class as a permanent
+// non-enumerable property of the globalThis object. This obfuscation does
+// nothing to prevent access to the Slot class, but at least it ensures the
+// implementation (i.e. currentContext) cannot be tampered with, and all copies
+// of the @wry/context package (hopefully just one) will share the same Slot
+// implementation. Since the first copy of the @wry/context package to be
+// imported wins, this technique imposes a steep cost for any future breaking
+// changes to the Slot class.
+var globalKey = "@wry/context:Slot";
+var host = 
+// Prefer globalThis when available.
+// https://github.com/benjamn/wryware/issues/347
+maybe(function () { return globalThis; }) ||
+    // Fall back to global, which works in Node.js and may be converted by some
+    // bundlers to the appropriate identifier (window, self, ...) depending on the
+    // bundling target. https://github.com/endojs/endo/issues/576#issuecomment-1178515224
+    maybe(function () { return global; }) ||
+    // Otherwise, use a dummy host that's local to this module. We used to fall
+    // back to using the Array constructor as a namespace, but that was flagged in
+    // https://github.com/benjamn/wryware/issues/347, and can be avoided.
+    Object.create(null);
+// Whichever globalHost we're using, make TypeScript happy about the additional
+// globalKey property.
+var globalHost = host;
+var Slot = globalHost[globalKey] ||
+    // Earlier versions of this package stored the globalKey property on the Array
+    // constructor, so we check there as well, to prevent Slot class duplication.
+    Array[globalKey] ||
+    (function (Slot) {
+        try {
+            Object.defineProperty(globalHost, globalKey, {
+                value: Slot,
+                enumerable: false,
+                writable: false,
+                // When it was possible for globalHost to be the Array constructor (a
+                // legacy Slot dedup strategy), it was important for the property to be
+                // configurable:true so it could be deleted. That does not seem to be as
+                // important when globalHost is the global object, but I don't want to
+                // cause similar problems again, and configurable:true seems safest.
+                // https://github.com/endojs/endo/issues/576#issuecomment-1178274008
+                configurable: true
+            });
+        }
+        finally {
+            return Slot;
+        }
+    })(makeSlotClass());
+
+var bind = Slot.bind, noContext = Slot.noContext;
+function setTimeoutWithContext(callback, delay) {
+    return setTimeout(bind(callback), delay);
+}
+// Turn any generator function into an async function (using yield instead
+// of await), with context automatically preserved across yields.
+function asyncFromGen(genFn) {
+    return function () {
+        var gen = genFn.apply(this, arguments);
+        var boundNext = bind(gen.next);
+        var boundThrow = bind(gen.throw);
+        return new Promise(function (resolve, reject) {
+            function invoke(method, argument) {
+                try {
+                    var result = method.call(gen, argument);
+                }
+                catch (error) {
+                    return reject(error);
+                }
+                var next = result.done ? resolve : invokeNext;
+                if (isPromiseLike(result.value)) {
+                    result.value.then(next, result.done ? reject : invokeThrow);
+                }
+                else {
+                    next(result.value);
+                }
+            }
+            var invokeNext = function (value) { return invoke(boundNext, value); };
+            var invokeThrow = function (error) { return invoke(boundThrow, error); };
+            invokeNext();
+        });
+    };
+}
+function isPromiseLike(value) {
+    return value && typeof value.then === "function";
+}
+// If you use the fibers npm package to implement coroutines in Node.js,
+// you should call this function at least once to ensure context management
+// remains coherent across any yields.
+var wrappedFibers = [];
+function wrapYieldingFiberMethods(Fiber) {
+    // There can be only one implementation of Fiber per process, so this array
+    // should never grow longer than one element.
+    if (wrappedFibers.indexOf(Fiber) < 0) {
+        var wrap = function (obj, method) {
+            var fn = obj[method];
+            obj[method] = function () {
+                return noContext(fn, arguments, this);
+            };
+        };
+        // These methods can yield, according to
+        // https://github.com/laverdet/node-fibers/blob/ddebed9b8ae3883e57f822e2108e6943e5c8d2a8/fibers.js#L97-L100
+        wrap(Fiber, "yield");
+        wrap(Fiber.prototype, "run");
+        wrap(Fiber.prototype, "throwInto");
+        wrappedFibers.push(Fiber);
+    }
+    return Fiber;
+}
+
+exports.Slot = Slot;
+exports.asyncFromGen = asyncFromGen;
+exports.bind = bind;
+exports.noContext = noContext;
+exports.setTimeout = setTimeoutWithContext;
+exports.wrapYieldingFiberMethods = wrapYieldingFiberMethods;
+//# sourceMappingURL=context.js.map
+
 
 /***/ }),
 
@@ -37807,7 +38067,7 @@ var optimism = __nccwpck_require__(6864);
 var utilities = __nccwpck_require__(3150);
 var equality = __nccwpck_require__(9969);
 var trie = __nccwpck_require__(1653);
-var context = __nccwpck_require__(3792);
+var context = __nccwpck_require__(3037);
 
 var ApolloCache = (function () {
     function ApolloCache() {
@@ -37893,15 +38153,19 @@ exports.Cache = void 0;
 (function (Cache) {
 })(exports.Cache || (exports.Cache = {}));
 
-var MissingFieldError = (function () {
+var MissingFieldError = (function (_super) {
+    tslib.__extends(MissingFieldError, _super);
     function MissingFieldError(message, path, query, variables) {
-        this.message = message;
-        this.path = path;
-        this.query = query;
-        this.variables = variables;
+        var _this = _super.call(this, message) || this;
+        _this.message = message;
+        _this.path = path;
+        _this.query = query;
+        _this.variables = variables;
+        _this.__proto__ = MissingFieldError.prototype;
+        return _this;
     }
     return MissingFieldError;
-}());
+}(Error));
 
 var hasOwn = Object.prototype.hasOwnProperty;
 function defaultDataIdFromObject(_a, context) {
@@ -40110,7 +40374,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.9';
+var version = '3.6.10';
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -42448,6 +42712,17 @@ function parseAndCheckHttpResponse(operations) {
     return function (response) { return response
         .text()
         .then(function (bodyText) {
+        if (response.status >= 300) {
+            var getResult = function () {
+                try {
+                    return JSON.parse(bodyText);
+                }
+                catch (err) {
+                    return bodyText;
+                }
+            };
+            utils.throwServerError(response, getResult(), "Response not successful: Received status code ".concat(response.status));
+        }
         try {
             return JSON.parse(bodyText);
         }
@@ -42461,9 +42736,6 @@ function parseAndCheckHttpResponse(operations) {
         }
     })
         .then(function (result) {
-        if (response.status >= 300) {
-            utils.throwServerError(response, result, "Response not successful: Received status code ".concat(response.status));
-        }
         if (!Array.isArray(result) &&
             !hasOwnProperty.call(result, 'data') &&
             !hasOwnProperty.call(result, 'errors')) {
@@ -43224,7 +43496,7 @@ var InternalState = (function () {
     InternalState.prototype.createWatchQueryOptions = function (_a) {
         var _b;
         if (_a === void 0) { _a = {}; }
-        var skip = _a.skip; _a.ssr; _a.onCompleted; _a.onError; _a.displayName; _a.defaultOptions; var otherOptions = tslib.__rest(_a, ["skip", "ssr", "onCompleted", "onError", "displayName", "defaultOptions"]);
+        var skip = _a.skip; _a.ssr; _a.onCompleted; _a.onError; _a.defaultOptions; var otherOptions = tslib.__rest(_a, ["skip", "ssr", "onCompleted", "onError", "defaultOptions"]);
         var watchQueryOptions = Object.assign(otherOptions, { query: this.query });
         if (this.renderPromises &&
             (watchQueryOptions.fetchPolicy === 'network-only' ||
@@ -43408,7 +43680,7 @@ function useMutation(mutation, options) {
         if (executeOptions === void 0) { executeOptions = {}; }
         var _a = ref.current, client = _a.client, options = _a.options, mutation = _a.mutation;
         var baseOptions = tslib.__assign(tslib.__assign({}, options), { mutation: mutation });
-        if (!ref.current.result.loading && !baseOptions.ignoreResults) {
+        if (!ref.current.result.loading && !baseOptions.ignoreResults && ref.current.isMounted) {
             setResult(ref.current.result = {
                 loading: true,
                 error: void 0,
@@ -43438,8 +43710,8 @@ function useMutation(mutation, options) {
                     setResult(ref.current.result = result_1);
                 }
             }
-            (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onCompleted) === null || _b === void 0 ? void 0 : _b.call(_a, response.data);
-            (_c = executeOptions.onCompleted) === null || _c === void 0 ? void 0 : _c.call(executeOptions, response.data);
+            (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onCompleted) === null || _b === void 0 ? void 0 : _b.call(_a, response.data, clientOptions);
+            (_c = executeOptions.onCompleted) === null || _c === void 0 ? void 0 : _c.call(executeOptions, response.data, clientOptions);
             return response;
         }).catch(function (error) {
             var _a, _b, _c, _d;
@@ -43457,15 +43729,17 @@ function useMutation(mutation, options) {
                 }
             }
             if (((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) || clientOptions.onError) {
-                (_c = (_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onError) === null || _c === void 0 ? void 0 : _c.call(_b, error);
-                (_d = executeOptions.onError) === null || _d === void 0 ? void 0 : _d.call(executeOptions, error);
+                (_c = (_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onError) === null || _c === void 0 ? void 0 : _c.call(_b, error, clientOptions);
+                (_d = executeOptions.onError) === null || _d === void 0 ? void 0 : _d.call(executeOptions, error, clientOptions);
                 return { data: void 0, errors: error };
             }
             throw error;
         });
     }, []);
     var reset = React.useCallback(function () {
-        setResult({ called: false, loading: false, client: client });
+        if (ref.current.isMounted) {
+            setResult({ called: false, loading: false, client: client });
+        }
     }, []);
     React.useEffect(function () {
         ref.current.isMounted = true;
