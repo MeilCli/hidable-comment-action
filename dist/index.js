@@ -38067,6 +38067,7 @@ var optimism = __nccwpck_require__(6864);
 var utilities = __nccwpck_require__(3150);
 var equality = __nccwpck_require__(9969);
 var trie = __nccwpck_require__(1653);
+var graphql = __nccwpck_require__(6155);
 var context = __nccwpck_require__(3037);
 
 var ApolloCache = (function () {
@@ -38087,6 +38088,9 @@ var ApolloCache = (function () {
     ApolloCache.prototype.transformDocument = function (document) {
         return document;
     };
+    ApolloCache.prototype.transformForLink = function (document) {
+        return document;
+    };
     ApolloCache.prototype.identify = function (object) {
         return;
     };
@@ -38095,9 +38099,6 @@ var ApolloCache = (function () {
     };
     ApolloCache.prototype.modify = function (options) {
         return false;
-    };
-    ApolloCache.prototype.transformForLink = function (document) {
-        return document;
     };
     ApolloCache.prototype.readQuery = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = !!options.optimistic; }
@@ -38156,11 +38157,21 @@ exports.Cache = void 0;
 var MissingFieldError = (function (_super) {
     tslib.__extends(MissingFieldError, _super);
     function MissingFieldError(message, path, query, variables) {
+        var _a;
         var _this = _super.call(this, message) || this;
         _this.message = message;
         _this.path = path;
         _this.query = query;
         _this.variables = variables;
+        if (Array.isArray(_this.path)) {
+            _this.missing = _this.message;
+            for (var i = _this.path.length - 1; i >= 0; --i) {
+                _this.missing = (_a = {}, _a[_this.path[i]] = _this.missing, _a);
+            }
+        }
+        else {
+            _this.missing = _this.path;
+        }
         _this.__proto__ = MissingFieldError.prototype;
         return _this;
     }
@@ -38168,18 +38179,23 @@ var MissingFieldError = (function (_super) {
 }(Error));
 
 var hasOwn = Object.prototype.hasOwnProperty;
+function isNullish(value) {
+    return value === null || value === void 0;
+}
+var isArray = Array.isArray;
 function defaultDataIdFromObject(_a, context) {
     var __typename = _a.__typename, id = _a.id, _id = _a._id;
     if (typeof __typename === "string") {
         if (context) {
             context.keyObject =
-                id !== void 0 ? { id: id } :
-                    _id !== void 0 ? { _id: _id } :
+                !isNullish(id) ? { id: id } :
+                    !isNullish(_id) ? { _id: _id } :
                         void 0;
         }
-        if (id === void 0)
+        if (isNullish(id) && !isNullish(_id)) {
             id = _id;
-        if (id !== void 0) {
+        }
+        if (!isNullish(id)) {
             return "".concat(__typename, ":").concat((typeof id === "number" ||
                 typeof id === "string") ? id : JSON.stringify(id));
         }
@@ -38232,7 +38248,19 @@ function storeValueIsStoreObject(value) {
 function makeProcessedFieldsMerger() {
     return new utilities.DeepMerger;
 }
-var isArray = function (a) { return Array.isArray(a); };
+function extractFragmentContext(document, fragments) {
+    var fragmentMap = utilities.createFragmentMap(utilities.getFragmentDefinitions(document));
+    return {
+        fragmentMap: fragmentMap,
+        lookupFragment: function (name) {
+            var def = fragmentMap[name];
+            if (!def && fragments) {
+                def = fragments.lookup(name);
+            }
+            return def || null;
+        },
+    };
+}
 
 var DELETE = Object.create(null);
 var delModifier = function () { return DELETE; };
@@ -38872,15 +38900,7 @@ var StoreReader = (function () {
             selectionSet: utilities.getMainDefinition(query).selectionSet,
             objectOrReference: rootRef,
             enclosingRef: rootRef,
-            context: {
-                store: store,
-                query: query,
-                policies: policies,
-                variables: variables,
-                varString: canonicalStringify(variables),
-                canonizeResults: canonizeResults,
-                fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(query)),
-            },
+            context: tslib.__assign({ store: store, query: query, policies: policies, variables: variables, varString: canonicalStringify(variables), canonizeResults: canonizeResults }, extractFragmentContext(query, this.config.fragments)),
         });
         var missing;
         if (execResult.missing) {
@@ -38981,7 +39001,10 @@ var StoreReader = (function () {
                 }
             }
             else {
-                var fragment = utilities.getFragmentFromSelection(selection, context.fragmentMap);
+                var fragment = utilities.getFragmentFromSelection(selection, context.lookupFragment);
+                if (!fragment && selection.kind === graphql.Kind.FRAGMENT_SPREAD) {
+                    throw __DEV__ ? new globals.InvariantError("No fragment named ".concat(selection.name.value)) : new globals.InvariantError(5);
+                }
                 if (fragment && policies.fragmentMatches(fragment, typename)) {
                     fragment.selectionSet.selections.forEach(workSet.add, workSet);
                 }
@@ -39061,7 +39084,7 @@ function assertSelectionSetForIdValue(store, field, fieldValue) {
         var workSet_1 = new Set([fieldValue]);
         workSet_1.forEach(function (value) {
             if (utilities.isNonNullObject(value)) {
-                __DEV__ ? globals.invariant(!utilities.isReference(value), "Missing selection set for object of type ".concat(getTypenameFromStoreObject(store, value), " returned for query field ").concat(field.name.value)) : globals.invariant(!utilities.isReference(value), 5);
+                __DEV__ ? globals.invariant(!utilities.isReference(value), "Missing selection set for object of type ".concat(getTypenameFromStoreObject(store, value), " returned for query field ").concat(field.name.value)) : globals.invariant(!utilities.isReference(value), 6);
                 Object.values(value).forEach(workSet_1.add, workSet_1);
             }
         });
@@ -39664,9 +39687,10 @@ function getContextFlavor(context, clientOnly, deferred) {
     return flavored;
 }
 var StoreWriter = (function () {
-    function StoreWriter(cache, reader) {
+    function StoreWriter(cache, reader, fragments) {
         this.cache = cache;
         this.reader = reader;
+        this.fragments = fragments;
     }
     StoreWriter.prototype.writeToStore = function (store, _a) {
         var _this = this;
@@ -39674,21 +39698,9 @@ var StoreWriter = (function () {
         var operationDefinition = utilities.getOperationDefinition(query);
         var merger = makeProcessedFieldsMerger();
         variables = tslib.__assign(tslib.__assign({}, utilities.getDefaultValues(operationDefinition)), variables);
-        var context = {
-            store: store,
-            written: Object.create(null),
-            merge: function (existing, incoming) {
+        var context = tslib.__assign(tslib.__assign({ store: store, written: Object.create(null), merge: function (existing, incoming) {
                 return merger.merge(existing, incoming);
-            },
-            variables: variables,
-            varString: canonicalStringify(variables),
-            fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(query)),
-            overwrite: !!overwrite,
-            incomingById: new Map,
-            clientOnly: false,
-            deferred: false,
-            flavors: new Map,
-        };
+            }, variables: variables, varString: canonicalStringify(variables) }, extractFragmentContext(query, this.fragments)), { overwrite: !!overwrite, incomingById: new Map, clientOnly: false, deferred: false, flavors: new Map });
         var ref = this.processSelectionSet({
             result: result || Object.create(null),
             dataId: dataId,
@@ -39697,7 +39709,7 @@ var StoreWriter = (function () {
             context: context,
         });
         if (!utilities.isReference(ref)) {
-            throw __DEV__ ? new globals.InvariantError("Could not identify object ".concat(JSON.stringify(result))) : new globals.InvariantError(6);
+            throw __DEV__ ? new globals.InvariantError("Could not identify object ".concat(JSON.stringify(result))) : new globals.InvariantError(7);
         }
         context.incomingById.forEach(function (_a, dataId) {
             var storeObject = _a.storeObject, mergeTree = _a.mergeTree, fieldNodeSet = _a.fieldNodeSet;
@@ -39904,7 +39916,10 @@ var StoreWriter = (function () {
                     fieldMap.set(selection, getContextFlavor(context, clientOnly, deferred));
                 }
                 else {
-                    var fragment = utilities.getFragmentFromSelection(selection, context.fragmentMap);
+                    var fragment = utilities.getFragmentFromSelection(selection, context.lookupFragment);
+                    if (!fragment && selection.kind === graphql.Kind.FRAGMENT_SPREAD) {
+                        throw __DEV__ ? new globals.InvariantError("No fragment named ".concat(selection.name.value)) : new globals.InvariantError(8);
+                    }
                     if (fragment &&
                         policies.fragmentMatches(fragment, typename, result, context.variables)) {
                         flatten(fragment.selectionSet, getContextFlavor(context, clientOnly, deferred));
@@ -40076,6 +40091,7 @@ var InMemoryCache = (function (_super) {
     InMemoryCache.prototype.resetResultCache = function (resetResultIdentities) {
         var _this = this;
         var previousReader = this.storeReader;
+        var fragments = this.config.fragments;
         this.storeWriter = new StoreWriter(this, this.storeReader = new StoreReader({
             cache: this,
             addTypename: this.addTypename,
@@ -40084,7 +40100,8 @@ var InMemoryCache = (function (_super) {
             canon: resetResultIdentities
                 ? void 0
                 : previousReader && previousReader.canon,
-        }));
+            fragments: fragments,
+        }), fragments);
         this.maybeBroadcastWatch = optimism.wrap(function (c, options) {
             return _this.broadcastWatch(c, options);
         }, {
@@ -40092,8 +40109,8 @@ var InMemoryCache = (function (_super) {
             makeCacheKey: function (c) {
                 var store = c.optimistic ? _this.optimisticData : _this.data;
                 if (supportsResultCaching(store)) {
-                    var optimistic = c.optimistic, rootId = c.rootId, variables = c.variables;
-                    return store.makeCacheKey(c.query, c.callback, canonicalStringify({ optimistic: optimistic, rootId: rootId, variables: variables }));
+                    var optimistic = c.optimistic, id = c.id, variables = c.variables;
+                    return store.makeCacheKey(c.query, c.callback, canonicalStringify({ optimistic: optimistic, id: id, variables: variables }));
                 }
             }
         });
@@ -40311,6 +40328,12 @@ var InMemoryCache = (function (_super) {
         }
         return document;
     };
+    InMemoryCache.prototype.transformForLink = function (document) {
+        var fragments = this.config.fragments;
+        return fragments
+            ? fragments.transform(document)
+            : document;
+    };
     InMemoryCache.prototype.broadcastWatches = function (options) {
         var _this = this;
         if (!this.txCount) {
@@ -40337,6 +40360,115 @@ var InMemoryCache = (function (_super) {
     return InMemoryCache;
 }(ApolloCache));
 
+function createFragmentRegistry() {
+    var fragments = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        fragments[_i] = arguments[_i];
+    }
+    return new (FragmentRegistry.bind.apply(FragmentRegistry, tslib.__spreadArray([void 0], fragments, false)))();
+}
+var arrayLikeForEach = Array.prototype.forEach;
+var FragmentRegistry = (function () {
+    function FragmentRegistry() {
+        var fragments = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            fragments[_i] = arguments[_i];
+        }
+        this.registry = Object.create(null);
+        this.resetCaches();
+        if (fragments.length) {
+            this.register.apply(this, fragments);
+        }
+    }
+    FragmentRegistry.prototype.register = function () {
+        var _this = this;
+        var definitions = new Map();
+        arrayLikeForEach.call(arguments, function (doc) {
+            utilities.getFragmentDefinitions(doc).forEach(function (node) {
+                definitions.set(node.name.value, node);
+            });
+        });
+        definitions.forEach(function (node, name) {
+            if (node !== _this.registry[name]) {
+                _this.registry[name] = node;
+                _this.invalidate(name);
+            }
+        });
+        return this;
+    };
+    FragmentRegistry.prototype.invalidate = function (name) { };
+    FragmentRegistry.prototype.resetCaches = function () {
+        this.invalidate = (this.lookup = this.cacheUnaryMethod("lookup")).dirty;
+        this.transform = this.cacheUnaryMethod("transform");
+        this.findFragmentSpreads = this.cacheUnaryMethod("findFragmentSpreads");
+    };
+    FragmentRegistry.prototype.cacheUnaryMethod = function (name) {
+        var registry = this;
+        var originalMethod = FragmentRegistry.prototype[name];
+        return optimism.wrap(function () {
+            return originalMethod.apply(registry, arguments);
+        }, {
+            makeCacheKey: function (arg) { return arg; },
+        });
+    };
+    FragmentRegistry.prototype.lookup = function (fragmentName) {
+        return this.registry[fragmentName] || null;
+    };
+    FragmentRegistry.prototype.transform = function (document) {
+        var _this = this;
+        var defined = new Map();
+        utilities.getFragmentDefinitions(document).forEach(function (def) {
+            defined.set(def.name.value, def);
+        });
+        var unbound = new Set();
+        var enqueue = function (spreadName) {
+            if (!defined.has(spreadName)) {
+                unbound.add(spreadName);
+            }
+        };
+        var enqueueChildSpreads = function (node) { return Object.keys(_this.findFragmentSpreads(node)).forEach(enqueue); };
+        enqueueChildSpreads(document);
+        var missing = [];
+        var map = Object.create(null);
+        unbound.forEach(function (fragmentName) {
+            var knownFragmentDef = defined.get(fragmentName);
+            if (knownFragmentDef) {
+                enqueueChildSpreads(map[fragmentName] = knownFragmentDef);
+            }
+            else {
+                missing.push(fragmentName);
+                var def = _this.lookup(fragmentName);
+                if (def) {
+                    enqueueChildSpreads(map[fragmentName] = def);
+                }
+            }
+        });
+        if (missing.length) {
+            var defsToAppend_1 = [];
+            missing.forEach(function (name) {
+                var def = map[name];
+                if (def) {
+                    defsToAppend_1.push(def);
+                }
+            });
+            if (defsToAppend_1.length) {
+                document = tslib.__assign(tslib.__assign({}, document), { definitions: document.definitions.concat(defsToAppend_1) });
+            }
+        }
+        return document;
+    };
+    FragmentRegistry.prototype.findFragmentSpreads = function (root) {
+        var spreads = Object.create(null);
+        graphql.visit(root, {
+            FragmentSpread: function (node) {
+                spreads[node.name.value] = node;
+            },
+        });
+        return spreads;
+    };
+    return FragmentRegistry;
+}());
+
 exports.isReference = utilities.isReference;
 exports.makeReference = utilities.makeReference;
 exports.ApolloCache = ApolloCache;
@@ -40345,6 +40477,7 @@ exports.MissingFieldError = MissingFieldError;
 exports.Policies = Policies;
 exports.cacheSlot = cacheSlot;
 exports.canonicalStringify = canonicalStringify;
+exports.createFragmentRegistry = createFragmentRegistry;
 exports.defaultDataIdFromObject = defaultDataIdFromObject;
 exports.fieldNameFromStoreName = fieldNameFromStoreName;
 exports.makeVar = makeVar;
@@ -40374,7 +40507,11 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.6.10';
+var version = '3.7.0';
+
+function isExecutionPatchIncrementalResult(value) {
+    return !!value.incremental;
+}
 
 exports.NetworkStatus = void 0;
 (function (NetworkStatus) {
@@ -40739,14 +40876,14 @@ var ObservableQuery = (function (_super) {
             pollingInfo.interval === pollInterval) {
             return;
         }
-        __DEV__ ? globals.invariant(pollInterval, 'Attempted to start a polling query without a polling interval.') : globals.invariant(pollInterval, 10);
+        __DEV__ ? globals.invariant(pollInterval, 'Attempted to start a polling query without a polling interval.') : globals.invariant(pollInterval, 12);
         var info = pollingInfo || (this.pollingInfo = {});
         info.interval = pollInterval;
         var maybeFetch = function () {
             if (_this.pollingInfo) {
                 if (!isNetworkRequestInFlight(_this.queryInfo.networkStatus)) {
                     _this.reobserve({
-                        fetchPolicy: "network-only",
+                        fetchPolicy: _this.options.initialFetchPolicy === 'no-cache' ? 'no-cache' : 'network-only',
                     }, exports.NetworkStatus.poll).then(poll, poll);
                 }
                 else {
@@ -41051,7 +41188,7 @@ var LocalState = (function () {
                         }
                         else {
                             fragment = fragmentMap[selection.name.value];
-                            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(selection.name.value)) : globals.invariant(fragment, 9);
+                            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(selection.name.value)) : globals.invariant(fragment, 11);
                         }
                         if (fragment && fragment.typeCondition) {
                             typeCondition = fragment.typeCondition.name.value;
@@ -41205,7 +41342,6 @@ var QueryInfo = (function () {
     };
     QueryInfo.prototype.reset = function () {
         cancelNotifyTimeout(this);
-        this.lastDiff = void 0;
         this.dirty = false;
     };
     QueryInfo.prototype.getDiff = function (variables) {
@@ -41335,10 +41471,32 @@ var QueryInfo = (function () {
             equality.equal(variables, lastWrite.variables) &&
             equality.equal(result.data, lastWrite.result.data));
     };
-    QueryInfo.prototype.markResult = function (result, options, cacheWriteBehavior) {
+    QueryInfo.prototype.markResult = function (result, document, options, cacheWriteBehavior) {
         var _this = this;
-        this.graphQLErrors = utilities.isNonEmptyArray(result.errors) ? result.errors : [];
+        var graphQLErrors = utilities.isNonEmptyArray(result.errors)
+            ? result.errors.slice(0)
+            : [];
         this.reset();
+        if ('incremental' in result && utilities.isNonEmptyArray(result.incremental)) {
+            var mergedData_1 = this.getDiff().result;
+            var merger_1 = new utilities.DeepMerger();
+            result.incremental.forEach(function (_a) {
+                var data = _a.data, path = _a.path, errors = _a.errors;
+                for (var i = path.length - 1; i >= 0; --i) {
+                    var key = path[i];
+                    var isNumericKey = !isNaN(+key);
+                    var parent_1 = isNumericKey ? [] : {};
+                    parent_1[key] = data;
+                    data = parent_1;
+                }
+                if (errors) {
+                    graphQLErrors.push.apply(graphQLErrors, errors);
+                }
+                mergedData_1 = merger_1.merge(mergedData_1, data);
+            });
+            result.data = mergedData_1;
+        }
+        this.graphQLErrors = graphQLErrors;
         if (options.fetchPolicy === 'no-cache') {
             this.updateLastDiff({ result: result.data, complete: true }, this.getDiffOptions(options.variables));
         }
@@ -41347,7 +41505,7 @@ var QueryInfo = (function () {
                 this.cache.performTransaction(function (cache) {
                     if (_this.shouldWrite(result, options.variables)) {
                         cache.writeQuery({
-                            query: _this.document,
+                            query: document,
                             data: result.data,
                             variables: options.variables,
                             overwrite: cacheWriteBehavior === 1,
@@ -41439,7 +41597,7 @@ var QueryManager = (function () {
         this.queries.forEach(function (_info, queryId) {
             _this.stopQueryNoBroadcast(queryId);
         });
-        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('QueryManager stopped while query was in flight') : new globals.InvariantError(11));
+        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('QueryManager stopped while query was in flight') : new globals.InvariantError(13));
     };
     QueryManager.prototype.cancelPendingFetches = function (error) {
         this.fetchCancelFns.forEach(function (cancel) { return cancel(error); });
@@ -41449,22 +41607,23 @@ var QueryManager = (function () {
         var _b, _c;
         var mutation = _a.mutation, variables = _a.variables, optimisticResponse = _a.optimisticResponse, updateQueries = _a.updateQueries, _d = _a.refetchQueries, refetchQueries = _d === void 0 ? [] : _d, _e = _a.awaitRefetchQueries, awaitRefetchQueries = _e === void 0 ? false : _e, updateWithProxyFn = _a.update, onQueryUpdated = _a.onQueryUpdated, _f = _a.fetchPolicy, fetchPolicy = _f === void 0 ? ((_b = this.defaultOptions.mutate) === null || _b === void 0 ? void 0 : _b.fetchPolicy) || "network-only" : _f, _g = _a.errorPolicy, errorPolicy = _g === void 0 ? ((_c = this.defaultOptions.mutate) === null || _c === void 0 ? void 0 : _c.errorPolicy) || "none" : _g, keepRootFields = _a.keepRootFields, context = _a.context;
         return tslib.__awaiter(this, void 0, void 0, function () {
-            var mutationId, mutationStoreValue, self;
-            return tslib.__generator(this, function (_h) {
-                switch (_h.label) {
+            var mutationId, _h, document, hasClientExports, mutationStoreValue, self;
+            return tslib.__generator(this, function (_j) {
+                switch (_j.label) {
                     case 0:
-                        __DEV__ ? globals.invariant(mutation, 'mutation option is required. You must specify your GraphQL document in the mutation option.') : globals.invariant(mutation, 12);
+                        __DEV__ ? globals.invariant(mutation, 'mutation option is required. You must specify your GraphQL document in the mutation option.') : globals.invariant(mutation, 14);
                         __DEV__ ? globals.invariant(fetchPolicy === 'network-only' ||
                             fetchPolicy === 'no-cache', "Mutations support only 'network-only' or 'no-cache' fetchPolicy strings. The default `network-only` behavior automatically writes mutation results to the cache. Passing `no-cache` skips the cache write.") : globals.invariant(fetchPolicy === 'network-only' ||
-                            fetchPolicy === 'no-cache', 13);
+                            fetchPolicy === 'no-cache', 15);
                         mutationId = this.generateMutationId();
-                        mutation = this.transform(mutation).document;
+                        _h = this.transform(mutation), document = _h.document, hasClientExports = _h.hasClientExports;
+                        mutation = this.cache.transformForLink(document);
                         variables = this.getVariables(mutation, variables);
-                        if (!this.transform(mutation).hasClientExports) return [3, 2];
+                        if (!hasClientExports) return [3, 2];
                         return [4, this.localState.addExportedVariables(mutation, variables, context)];
                     case 1:
-                        variables = (_h.sent());
-                        _h.label = 2;
+                        variables = (_j.sent());
+                        _j.label = 2;
                     case 2:
                         mutationStoreValue = this.mutationStore &&
                             (this.mutationStore[mutationId] = {
@@ -41615,7 +41774,7 @@ var QueryManager = (function () {
                                 optimistic: false,
                                 returnPartialData: true,
                             });
-                            if (diff.complete) {
+                            if (diff.complete && !(isExecutionPatchIncrementalResult(result))) {
                                 result = tslib.__assign(tslib.__assign({}, result), { data: diff.result });
                             }
                         }
@@ -41685,9 +41844,9 @@ var QueryManager = (function () {
         var transformCache = this.transformCache;
         if (!transformCache.has(document)) {
             var transformed = this.cache.transformDocument(document);
-            var forLink = utilities.removeConnectionDirectiveFromDocument(this.cache.transformForLink(transformed));
+            var noConnection = utilities.removeConnectionDirectiveFromDocument(transformed);
             var clientQuery = this.localState.clientQuery(transformed);
-            var serverQuery = forLink && this.localState.serverQuery(forLink);
+            var serverQuery = noConnection && this.localState.serverQuery(noConnection);
             var cacheEntry_1 = {
                 document: transformed,
                 hasClientExports: utilities.hasClientExports(transformed),
@@ -41741,10 +41900,10 @@ var QueryManager = (function () {
         var _this = this;
         if (queryId === void 0) { queryId = this.generateQueryId(); }
         __DEV__ ? globals.invariant(options.query, 'query option is required. You must specify your GraphQL document ' +
-            'in the query option.') : globals.invariant(options.query, 14);
-        __DEV__ ? globals.invariant(options.query.kind === 'Document', 'You must wrap the query string in a "gql" tag.') : globals.invariant(options.query.kind === 'Document', 15);
-        __DEV__ ? globals.invariant(!options.returnPartialData, 'returnPartialData option only supported on watchQuery.') : globals.invariant(!options.returnPartialData, 16);
-        __DEV__ ? globals.invariant(!options.pollInterval, 'pollInterval option only supported on watchQuery.') : globals.invariant(!options.pollInterval, 17);
+            'in the query option.') : globals.invariant(options.query, 16);
+        __DEV__ ? globals.invariant(options.query.kind === 'Document', 'You must wrap the query string in a "gql" tag.') : globals.invariant(options.query.kind === 'Document', 17);
+        __DEV__ ? globals.invariant(!options.returnPartialData, 'returnPartialData option only supported on watchQuery.') : globals.invariant(!options.returnPartialData, 18);
+        __DEV__ ? globals.invariant(!options.pollInterval, 'pollInterval option only supported on watchQuery.') : globals.invariant(!options.pollInterval, 19);
         return this.fetchQuery(queryId, options).finally(function () { return _this.stopQuery(queryId); });
     };
     QueryManager.prototype.generateQueryId = function () {
@@ -41769,7 +41928,7 @@ var QueryManager = (function () {
         if (options === void 0) { options = {
             discardWatches: true,
         }; }
-        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('Store reset while query was in flight (not completed in link chain)') : new globals.InvariantError(18));
+        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('Store reset while query was in flight (not completed in link chain)') : new globals.InvariantError(20));
         this.queries.forEach(function (queryInfo) {
             if (queryInfo.observableQuery) {
                 queryInfo.networkStatus = exports.NetworkStatus.loading;
@@ -41955,7 +42114,7 @@ var QueryManager = (function () {
                         core.execute(link, operation)
                     ]);
                     byVariables_1.set(varJson_1, observable = concast);
-                    concast.cleanup(function () {
+                    concast.beforeNext(function () {
                         if (byVariables_1.delete(varJson_1) &&
                             byVariables_1.size < 1) {
                             inFlightLinkObservables_1.delete(serverQuery);
@@ -41990,15 +42149,27 @@ var QueryManager = (function () {
     };
     QueryManager.prototype.getResultsFromLink = function (queryInfo, cacheWriteBehavior, options) {
         var requestId = queryInfo.lastRequestId = this.generateRequestId();
-        return utilities.asyncMap(this.getObservableFromLink(queryInfo.document, options.context, options.variables), function (result) {
-            var hasErrors = utilities.isNonEmptyArray(result.errors);
+        options = utilities.cloneDeep(options);
+        var linkDocument = this.cache.transformForLink(this.transform(queryInfo.document).document);
+        return utilities.asyncMap(this.getObservableFromLink(linkDocument, options.context, options.variables), function (result) {
+            var graphQLErrors = utilities.isNonEmptyArray(result.errors)
+                ? result.errors.slice(0)
+                : [];
+            if ('incremental' in result && utilities.isNonEmptyArray(result.incremental)) {
+                result.incremental.forEach(function (incrementalResult) {
+                    if (incrementalResult.errors) {
+                        graphQLErrors.push.apply(graphQLErrors, incrementalResult.errors);
+                    }
+                });
+            }
+            var hasErrors = utilities.isNonEmptyArray(graphQLErrors);
             if (requestId >= queryInfo.lastRequestId) {
                 if (hasErrors && options.errorPolicy === "none") {
                     throw queryInfo.markError(new errors.ApolloError({
-                        graphQLErrors: result.errors,
+                        graphQLErrors: graphQLErrors,
                     }));
                 }
-                queryInfo.markResult(result, options, cacheWriteBehavior);
+                queryInfo.markResult(result, linkDocument, options, cacheWriteBehavior);
                 queryInfo.markReady();
             }
             var aqr = {
@@ -42007,7 +42178,7 @@ var QueryManager = (function () {
                 networkStatus: exports.NetworkStatus.ready,
             };
             if (hasErrors && options.errorPolicy !== "ignore") {
-                aqr.errors = result.errors;
+                aqr.errors = graphQLErrors;
                 aqr.networkStatus = exports.NetworkStatus.error;
             }
             return aqr;
@@ -42258,7 +42429,7 @@ var ApolloClient = (function () {
         if (!cache) {
             throw __DEV__ ? new globals.InvariantError("To initialize Apollo Client, you must specify a 'cache' property " +
                 "in the options object. \n" +
-                "For more information, please visit: https://go.apollo.dev/c/docs") : new globals.InvariantError(7);
+                "For more information, please visit: https://go.apollo.dev/c/docs") : new globals.InvariantError(9);
         }
         this.link = link;
         this.cache = cache;
@@ -42355,7 +42526,7 @@ var ApolloClient = (function () {
         __DEV__ ? globals.invariant(options.fetchPolicy !== 'cache-and-network', 'The cache-and-network fetchPolicy does not work with client.query, because ' +
             'client.query can only return a single result. Please use client.watchQuery ' +
             'to receive multiple results from the cache and the network, or consider ' +
-            'using a different fetchPolicy, such as cache-first or network-only.') : globals.invariant(options.fetchPolicy !== 'cache-and-network', 8);
+            'using a different fetchPolicy, such as cache-first or network-only.') : globals.invariant(options.fetchPolicy !== 'cache-and-network', 10);
         if (this.disableNetworkFetches && options.fetchPolicy === 'network-only') {
             options = tslib.__assign(tslib.__assign({}, options), { fetchPolicy: 'cache-first' });
         }
@@ -42655,7 +42826,7 @@ var ApolloLink = (function () {
         return ApolloLink.concat(this, next);
     };
     ApolloLink.prototype.request = function (operation, forward) {
-        throw __DEV__ ? new globals.InvariantError('request is not implemented') : new globals.InvariantError(19);
+        throw __DEV__ ? new globals.InvariantError('request is not implemented') : new globals.InvariantError(21);
     };
     ApolloLink.prototype.onError = function (error, observer) {
         if (observer && observer.error) {
@@ -42701,50 +42872,326 @@ exports.split = split;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var globals = __nccwpck_require__(8869);
-var utils = __nccwpck_require__(6922);
 var tslib = __nccwpck_require__(4351);
+var utilities = __nccwpck_require__(3150);
+var utils = __nccwpck_require__(6922);
 var graphql = __nccwpck_require__(6155);
 var core = __nccwpck_require__(6784);
-var utilities = __nccwpck_require__(3150);
+
+typeof WeakMap === 'function' &&
+    globals.maybe(function () { return navigator.product; }) !== 'ReactNative';
+var canUseSymbol = typeof Symbol === 'function' &&
+    typeof Symbol.for === 'function';
+var canUseAsyncIteratorSymbol = canUseSymbol && Symbol.asyncIterator;
+typeof globals.maybe(function () { return window.document.createElement; }) === "function";
+globals.maybe(function () { return navigator.userAgent.indexOf("jsdom") >= 0; }) || false;
+
+function isNodeResponse(value) {
+    return !!value.body;
+}
+function isReadableStream(value) {
+    return !!value.getReader;
+}
+function isAsyncIterableIterator(value) {
+    return !!(canUseAsyncIteratorSymbol &&
+        value[Symbol.asyncIterator]);
+}
+function isStreamableBlob(value) {
+    return !!value.stream;
+}
+function isBlob(value) {
+    return !!value.arrayBuffer;
+}
+function isNodeReadableStream(value) {
+    return !!value.pipe;
+}
+
+function asyncIterator(source) {
+    var _a;
+    var iterator = source[Symbol.asyncIterator]();
+    return _a = {
+            next: function () {
+                return iterator.next();
+            }
+        },
+        _a[Symbol.asyncIterator] = function () {
+            return this;
+        },
+        _a;
+}
+
+function nodeStreamIterator(stream) {
+    var cleanup = null;
+    var error = null;
+    var done = false;
+    var data = [];
+    var waiting = [];
+    function onData(chunk) {
+        if (error)
+            return;
+        if (waiting.length) {
+            var shiftedArr = waiting.shift();
+            if (Array.isArray(shiftedArr) && shiftedArr[0]) {
+                return shiftedArr[0]({ value: chunk, done: false });
+            }
+        }
+        data.push(chunk);
+    }
+    function onError(err) {
+        error = err;
+        var all = waiting.slice();
+        all.forEach(function (pair) {
+            pair[1](err);
+        });
+        !cleanup || cleanup();
+    }
+    function onEnd() {
+        done = true;
+        var all = waiting.slice();
+        all.forEach(function (pair) {
+            pair[0]({ value: undefined, done: true });
+        });
+        !cleanup || cleanup();
+    }
+    cleanup = function () {
+        cleanup = null;
+        stream.removeListener("data", onData);
+        stream.removeListener("error", onError);
+        stream.removeListener("end", onEnd);
+        stream.removeListener("finish", onEnd);
+        stream.removeListener("close", onEnd);
+    };
+    stream.on("data", onData);
+    stream.on("error", onError);
+    stream.on("end", onEnd);
+    stream.on("finish", onEnd);
+    stream.on("close", onEnd);
+    function getNext() {
+        return new Promise(function (resolve, reject) {
+            if (error)
+                return reject(error);
+            if (data.length)
+                return resolve({ value: data.shift(), done: false });
+            if (done)
+                return resolve({ value: undefined, done: true });
+            waiting.push([resolve, reject]);
+        });
+    }
+    var iterator = {
+        next: function () {
+            return getNext();
+        },
+    };
+    if (utilities.canUseAsyncIteratorSymbol) {
+        iterator[Symbol.asyncIterator] = function () {
+            return this;
+        };
+    }
+    return iterator;
+}
+
+function promiseIterator(promise) {
+    var resolved = false;
+    var iterator = {
+        next: function () {
+            if (resolved)
+                return Promise.resolve({
+                    value: undefined,
+                    done: true,
+                });
+            resolved = true;
+            return new Promise(function (resolve, reject) {
+                promise
+                    .then(function (value) {
+                    resolve({ value: value, done: false });
+                })
+                    .catch(reject);
+            });
+        },
+    };
+    if (utilities.canUseAsyncIteratorSymbol) {
+        iterator[Symbol.asyncIterator] = function () {
+            return this;
+        };
+    }
+    return iterator;
+}
+
+function readerIterator(reader) {
+    var iterator = {
+        next: function () {
+            return reader.read();
+        },
+    };
+    if (utilities.canUseAsyncIteratorSymbol) {
+        iterator[Symbol.asyncIterator] = function () {
+            return this;
+        };
+    }
+    return iterator;
+}
+
+function responseIterator(response) {
+    var body = response;
+    if (isNodeResponse(response))
+        body = response.body;
+    if (isAsyncIterableIterator(body))
+        return asyncIterator(body);
+    if (isReadableStream(body))
+        return readerIterator(body.getReader());
+    if (isStreamableBlob(body)) {
+        return readerIterator(body.stream().getReader());
+    }
+    if (isBlob(body))
+        return promiseIterator(body.arrayBuffer());
+    if (isNodeReadableStream(body))
+        return nodeStreamIterator(body);
+    throw new Error("Unknown body type for responseIterator. Please pass a streamable response.");
+}
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-function parseAndCheckHttpResponse(operations) {
-    return function (response) { return response
-        .text()
-        .then(function (bodyText) {
-        if (response.status >= 300) {
-            var getResult = function () {
-                try {
-                    return JSON.parse(bodyText);
-                }
-                catch (err) {
-                    return bodyText;
-                }
-            };
-            utils.throwServerError(response, getResult(), "Response not successful: Received status code ".concat(response.status));
+function readMultipartBody(response, observer) {
+    var _a, _b, _c;
+    return tslib.__awaiter(this, void 0, void 0, function () {
+        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _d, value, done, chunk, bi, message, i, headers, contentType_1, body, result;
+        var _e;
+        return tslib.__generator(this, function (_f) {
+            switch (_f.label) {
+                case 0:
+                    if (TextDecoder === undefined) {
+                        throw new Error("TextDecoder must be defined in the environment: please import a polyfill.");
+                    }
+                    decoder = new TextDecoder("utf-8");
+                    contentType = (_a = response.headers) === null || _a === void 0 ? void 0 : _a.get('content-type');
+                    delimiter = "boundary=";
+                    boundaryVal = (contentType === null || contentType === void 0 ? void 0 : contentType.includes(delimiter))
+                        ? contentType === null || contentType === void 0 ? void 0 : contentType.substring((contentType === null || contentType === void 0 ? void 0 : contentType.indexOf(delimiter)) + delimiter.length).replace(/['"]/g, "").replace(/\;(.*)/gm, "").trim()
+                        : "-";
+                    boundary = "--".concat(boundaryVal);
+                    buffer = "";
+                    iterator = responseIterator(response);
+                    running = true;
+                    _f.label = 1;
+                case 1:
+                    if (!running) return [3, 3];
+                    return [4, iterator.next()];
+                case 2:
+                    _d = _f.sent(), value = _d.value, done = _d.done;
+                    chunk = typeof value === "string" ? value : decoder.decode(value);
+                    running = !done;
+                    buffer += chunk;
+                    bi = buffer.indexOf(boundary);
+                    while (bi > -1) {
+                        message = void 0;
+                        _e = [
+                            buffer.slice(0, bi),
+                            buffer.slice(bi + boundary.length),
+                        ], message = _e[0], buffer = _e[1];
+                        if (message.trim()) {
+                            i = message.indexOf("\r\n\r\n");
+                            headers = parseHeaders(message.slice(0, i));
+                            contentType_1 = headers["content-type"];
+                            if (contentType_1 &&
+                                contentType_1.toLowerCase().indexOf("application/json") === -1) {
+                                throw new Error("Unsupported patch content type: application/json is required.");
+                            }
+                            body = message.slice(i);
+                            try {
+                                result = parseJsonBody(response, body.replace("\r\n", ""));
+                                if (Object.keys(result).length > 1 ||
+                                    "data" in result ||
+                                    "incremental" in result ||
+                                    "errors" in result) {
+                                    (_b = observer.next) === null || _b === void 0 ? void 0 : _b.call(observer, result);
+                                }
+                            }
+                            catch (err) {
+                                handleError(err, observer);
+                            }
+                        }
+                        bi = buffer.indexOf(boundary);
+                    }
+                    return [3, 1];
+                case 3:
+                    (_c = observer.complete) === null || _c === void 0 ? void 0 : _c.call(observer);
+                    return [2];
+            }
+        });
+    });
+}
+function parseHeaders(headerText) {
+    var headersInit = {};
+    headerText.split("\n").forEach(function (line) {
+        var i = line.indexOf(":");
+        if (i > -1) {
+            var name_1 = line.slice(0, i).trim().toLowerCase();
+            var value = line.slice(i + 1).trim();
+            headersInit[name_1] = value;
         }
-        try {
-            return JSON.parse(bodyText);
-        }
-        catch (err) {
-            var parseError = err;
-            parseError.name = 'ServerParseError';
-            parseError.response = response;
-            parseError.statusCode = response.status;
-            parseError.bodyText = bodyText;
-            throw parseError;
-        }
-    })
+    });
+    return headersInit;
+}
+function parseJsonBody(response, bodyText) {
+    if (response.status >= 300) {
+        var getResult = function () {
+            try {
+                return JSON.parse(bodyText);
+            }
+            catch (err) {
+                return bodyText;
+            }
+        };
+        utils.throwServerError(response, getResult(), "Response not successful: Received status code ".concat(response.status));
+    }
+    try {
+        return JSON.parse(bodyText);
+    }
+    catch (err) {
+        var parseError = err;
+        parseError.name = "ServerParseError";
+        parseError.response = response;
+        parseError.statusCode = response.status;
+        parseError.bodyText = bodyText;
+        throw parseError;
+    }
+}
+function handleError(err, observer) {
+    var _a, _b;
+    if (err.name === "AbortError")
+        return;
+    if (err.result && err.result.errors && err.result.data) {
+        (_a = observer.next) === null || _a === void 0 ? void 0 : _a.call(observer, err.result);
+    }
+    (_b = observer.error) === null || _b === void 0 ? void 0 : _b.call(observer, err);
+}
+function readJsonBody(response, operation, observer) {
+    parseAndCheckHttpResponse(operation)(response)
         .then(function (result) {
-        if (!Array.isArray(result) &&
-            !hasOwnProperty.call(result, 'data') &&
-            !hasOwnProperty.call(result, 'errors')) {
-            utils.throwServerError(response, result, "Server response was missing for query '".concat(Array.isArray(operations)
-                ? operations.map(function (op) { return op.operationName; })
-                : operations.operationName, "'."));
-        }
-        return result;
-    }); };
+        var _a, _b;
+        (_a = observer.next) === null || _a === void 0 ? void 0 : _a.call(observer, result);
+        (_b = observer.complete) === null || _b === void 0 ? void 0 : _b.call(observer);
+    })
+        .catch(function (err) { return handleError(err, observer); });
+}
+function parseAndCheckHttpResponse(operations) {
+    return function (response) {
+        return response
+            .text()
+            .then(function (bodyText) { return parseJsonBody(response, bodyText); })
+            .then(function (result) {
+            if (response.status >= 300) {
+                utils.throwServerError(response, result, "Response not successful: Received status code ".concat(response.status));
+            }
+            if (!Array.isArray(result) &&
+                !hasOwnProperty.call(result, "data") &&
+                !hasOwnProperty.call(result, "errors")) {
+                utils.throwServerError(response, result, "Server response was missing for query '".concat(Array.isArray(operations)
+                    ? operations.map(function (op) { return op.operationName; })
+                    : operations.operationName, "'."));
+            }
+            return result;
+        });
+    };
 }
 
 var serializeFetchParameter = function (p, label) {
@@ -42753,7 +43200,7 @@ var serializeFetchParameter = function (p, label) {
         serialized = JSON.stringify(p);
     }
     catch (e) {
-        var parseError = __DEV__ ? new globals.InvariantError("Network request failed. ".concat(label, " is not serializable: ").concat(e.message)) : new globals.InvariantError(21);
+        var parseError = __DEV__ ? new globals.InvariantError("Network request failed. ".concat(label, " is not serializable: ").concat(e.message)) : new globals.InvariantError(23);
         parseError.parseError = e;
         throw parseError;
     }
@@ -42763,6 +43210,7 @@ var serializeFetchParameter = function (p, label) {
 var defaultHttpOptions = {
     includeQuery: true,
     includeExtensions: false,
+    preserveHeaderCase: false,
 };
 var defaultHeaders = {
     accept: '*/*',
@@ -42794,12 +43242,13 @@ function selectHttpOptionsAndBodyInternal(operation, printer) {
     var options = {};
     var http = {};
     configs.forEach(function (config) {
-        options = tslib.__assign(tslib.__assign(tslib.__assign({}, options), config.options), { headers: tslib.__assign(tslib.__assign({}, options.headers), headersToLowerCase(config.headers)) });
+        options = tslib.__assign(tslib.__assign(tslib.__assign({}, options), config.options), { headers: tslib.__assign(tslib.__assign({}, options.headers), config.headers) });
         if (config.credentials) {
             options.credentials = config.credentials;
         }
         http = tslib.__assign(tslib.__assign({}, http), config.http);
     });
+    options.headers = removeDuplicateHeaders(options.headers, http.preserveHeaderCase);
     var operationName = operation.operationName, extensions = operation.extensions, variables = operation.variables, query = operation.query;
     var body = { operationName: operationName, variables: variables };
     if (http.includeExtensions)
@@ -42811,20 +43260,28 @@ function selectHttpOptionsAndBodyInternal(operation, printer) {
         body: body,
     };
 }
-function headersToLowerCase(headers) {
-    if (headers) {
-        var normalized_1 = Object.create(null);
+function removeDuplicateHeaders(headers, preserveHeaderCase) {
+    if (!preserveHeaderCase) {
+        var normalizedHeaders_1 = Object.create(null);
         Object.keys(Object(headers)).forEach(function (name) {
-            normalized_1[name.toLowerCase()] = headers[name];
+            normalizedHeaders_1[name.toLowerCase()] = headers[name];
         });
-        return normalized_1;
+        return normalizedHeaders_1;
     }
-    return headers;
+    var headerData = Object.create(null);
+    Object.keys(Object(headers)).forEach(function (name) {
+        headerData[name.toLowerCase()] = { originalName: name, value: headers[name] };
+    });
+    var normalizedHeaders = Object.create(null);
+    Object.keys(headerData).forEach(function (name) {
+        normalizedHeaders[headerData[name].originalName] = headerData[name].value;
+    });
+    return normalizedHeaders;
 }
 
 var checkFetcher = function (fetcher) {
     if (!fetcher && typeof fetch === 'undefined') {
-        throw __DEV__ ? new globals.InvariantError("\n\"fetch\" has not been found globally and no fetcher has been configured. To fix this, install a fetch package (like https://www.npmjs.com/package/cross-fetch), instantiate the fetcher, and pass it into your HttpLink constructor. For example:\n\nimport fetch from 'cross-fetch';\nimport { ApolloClient, HttpLink } from '@apollo/client';\nconst client = new ApolloClient({\n  link: new HttpLink({ uri: '/graphql', fetch })\n});\n    ") : new globals.InvariantError(20);
+        throw __DEV__ ? new globals.InvariantError("\n\"fetch\" has not been found globally and no fetcher has been configured. To fix this, install a fetch package (like https://www.npmjs.com/package/cross-fetch), instantiate the fetcher, and pass it into your HttpLink constructor. For example:\n\nimport fetch from 'cross-fetch';\nimport { ApolloClient, HttpLink } from '@apollo/client';\nconst client = new ApolloClient({\n  link: new HttpLink({ uri: '/graphql', fetch })\n});\n    ") : new globals.InvariantError(22);
     }
 };
 
@@ -42895,12 +43352,12 @@ function rewriteURIForGET(chosenURI, body) {
 var backupFetch = utilities.maybe(function () { return fetch; });
 var createHttpLink = function (linkOptions) {
     if (linkOptions === void 0) { linkOptions = {}; }
-    var _a = linkOptions.uri, uri = _a === void 0 ? '/graphql' : _a, preferredFetch = linkOptions.fetch, _b = linkOptions.print, print = _b === void 0 ? defaultPrinter : _b, includeExtensions = linkOptions.includeExtensions, useGETForQueries = linkOptions.useGETForQueries, _c = linkOptions.includeUnusedVariables, includeUnusedVariables = _c === void 0 ? false : _c, requestOptions = tslib.__rest(linkOptions, ["uri", "fetch", "print", "includeExtensions", "useGETForQueries", "includeUnusedVariables"]);
+    var _a = linkOptions.uri, uri = _a === void 0 ? '/graphql' : _a, preferredFetch = linkOptions.fetch, _b = linkOptions.print, print = _b === void 0 ? defaultPrinter : _b, includeExtensions = linkOptions.includeExtensions, preserveHeaderCase = linkOptions.preserveHeaderCase, useGETForQueries = linkOptions.useGETForQueries, _c = linkOptions.includeUnusedVariables, includeUnusedVariables = _c === void 0 ? false : _c, requestOptions = tslib.__rest(linkOptions, ["uri", "fetch", "print", "includeExtensions", "preserveHeaderCase", "useGETForQueries", "includeUnusedVariables"]);
     if (__DEV__) {
         checkFetcher(preferredFetch || backupFetch);
     }
     var linkConfig = {
-        http: { includeExtensions: includeExtensions },
+        http: { includeExtensions: includeExtensions, preserveHeaderCase: preserveHeaderCase },
         options: requestOptions.fetchOptions,
         credentials: requestOptions.credentials,
         headers: requestOptions.headers,
@@ -42956,6 +43413,9 @@ var createHttpLink = function (linkOptions) {
             !operation.query.definitions.some(definitionIsMutation)) {
             options.method = 'GET';
         }
+        if (utilities.hasDirectives(['defer'], operation.query)) {
+            options.headers.accept = "multipart/mixed; deferSpec=20220824, application/json";
+        }
         if (options.method === 'GET') {
             var _d = rewriteURIForGET(chosenURI, body), newURI = _d.newURI, parseError = _d.parseError;
             if (parseError) {
@@ -42975,23 +43435,17 @@ var createHttpLink = function (linkOptions) {
             var currentFetch = preferredFetch || utilities.maybe(function () { return fetch; }) || backupFetch;
             currentFetch(chosenURI, options)
                 .then(function (response) {
+                var _a;
                 operation.setContext({ response: response });
-                return response;
-            })
-                .then(parseAndCheckHttpResponse(operation))
-                .then(function (result) {
-                observer.next(result);
-                observer.complete();
-                return result;
-            })
-                .catch(function (err) {
-                if (err.name === 'AbortError')
-                    return;
-                if (err.result && err.result.errors && err.result.data) {
-                    observer.next(err.result);
+                var ctype = (_a = response.headers) === null || _a === void 0 ? void 0 : _a.get('content-type');
+                if (ctype !== null && /^multipart\/mixed/i.test(ctype)) {
+                    return readMultipartBody(response, observer);
                 }
-                observer.error(err);
-            });
+                else {
+                    return readJsonBody(response, operation, observer);
+                }
+            })
+                .catch(function (err) { return handleError(err, observer); });
             return function () {
                 if (controller)
                     controller.abort();
@@ -43095,7 +43549,7 @@ function validateOperation(operation) {
     for (var _i = 0, _a = Object.keys(operation); _i < _a.length; _i++) {
         var key = _a[_i];
         if (OPERATION_FIELDS.indexOf(key) < 0) {
-            throw __DEV__ ? new globals.InvariantError("illegal argument: ".concat(key)) : new globals.InvariantError(24);
+            throw __DEV__ ? new globals.InvariantError("illegal argument: ".concat(key)) : new globals.InvariantError(26);
         }
     }
     return operation;
@@ -43222,7 +43676,7 @@ var ApolloConsumer = function (props) {
     var ApolloContext = getApolloContext();
     return (React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
         __DEV__ ? globals.invariant(context && context.client, 'Could not find "client" in the context of ApolloConsumer. ' +
-            'Wrap the root component in an <ApolloProvider>.') : globals.invariant(context && context.client, 25);
+            'Wrap the root component in an <ApolloProvider>.') : globals.invariant(context && context.client, 27);
         return props.children(context.client);
     }));
 };
@@ -43236,7 +43690,7 @@ var ApolloProvider = function (_a) {
             context = Object.assign({}, context, { client: client });
         }
         __DEV__ ? globals.invariant(context.client, 'ApolloProvider was not passed a client instance. Make ' +
-            'sure you pass in your client via the "client" prop.') : globals.invariant(context.client, 26);
+            'sure you pass in your client via the "client" prop.') : globals.invariant(context.client, 28);
         return (React__namespace.createElement(ApolloContext.Provider, { value: context }, children));
     }));
 };
@@ -43287,7 +43741,7 @@ function useApolloClient(override) {
     var client = override || context$1.client;
     __DEV__ ? globals.invariant(!!client, 'Could not find "client" in the context or passed in as an option. ' +
         'Wrap the root component in an <ApolloProvider>, or pass an ApolloClient ' +
-        'instance in via options.') : globals.invariant(!!client, 29);
+        'instance in via options.') : globals.invariant(!!client, 31);
     return client;
 }
 
@@ -43563,13 +44017,18 @@ var InternalState = (function () {
         this.handleErrorOrCompleted(nextResult);
     };
     InternalState.prototype.handleErrorOrCompleted = function (result) {
+        var _this = this;
         if (!result.loading) {
-            if (result.error) {
-                this.onError(result.error);
-            }
-            else if (result.data) {
-                this.onCompleted(result.data);
-            }
+            Promise.resolve().then(function () {
+                if (result.error) {
+                    _this.onError(result.error);
+                }
+                else if (result.data) {
+                    _this.onCompleted(result.data);
+                }
+            }).catch(function (error) {
+                __DEV__ && globals.invariant.warn(error);
+            });
         }
     };
     InternalState.prototype.getCurrentResult = function () {
@@ -43751,6 +44210,7 @@ function useMutation(mutation, options) {
 }
 
 function useSubscription(subscription, options) {
+    var hasIssuedDeprecationWarningRef = React.useRef(false);
     var client = useApolloClient(options === null || options === void 0 ? void 0 : options.client);
     parser.verifyDocumentType(subscription, parser.DocumentType.Subscription);
     var _a = React.useState({
@@ -43759,6 +44219,19 @@ function useSubscription(subscription, options) {
         data: void 0,
         variables: options === null || options === void 0 ? void 0 : options.variables,
     }), result = _a[0], setResult = _a[1];
+    if (!hasIssuedDeprecationWarningRef.current) {
+        hasIssuedDeprecationWarningRef.current = true;
+        if (options === null || options === void 0 ? void 0 : options.onSubscriptionData) {
+            __DEV__ && globals.invariant.warn(options.onData
+                ? "'useSubscription' supports only the 'onSubscriptionData' or 'onData' option, but not both. Only the 'onData' option will be used."
+                : "'onSubscriptionData' is deprecated and will be removed in a future major version. Please use the 'onData' option instead.");
+        }
+        if (options === null || options === void 0 ? void 0 : options.onSubscriptionComplete) {
+            __DEV__ && globals.invariant.warn(options.onComplete
+                ? "'useSubscription' supports only the 'onSubscriptionComplete' or 'onComplete' option, but not both. Only the 'onComplete' option will be used."
+                : "'onSubscriptionComplete' is deprecated and will be removed in a future major version. Please use the 'onComplete' option instead.");
+        }
+    }
     var _b = React.useState(function () {
         if (options === null || options === void 0 ? void 0 : options.skip) {
             return null;
@@ -43832,22 +44305,37 @@ function useSubscription(subscription, options) {
                     variables: options === null || options === void 0 ? void 0 : options.variables,
                 };
                 setResult(result);
-                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onSubscriptionData) === null || _b === void 0 ? void 0 : _b.call(_a, {
-                    client: client,
-                    subscriptionData: result
-                });
+                if ((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onData) {
+                    ref.current.options.onData({
+                        client: client,
+                        data: result
+                    });
+                }
+                else if ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onSubscriptionData) {
+                    ref.current.options.onSubscriptionData({
+                        client: client,
+                        subscriptionData: result
+                    });
+                }
             },
             error: function (error) {
+                var _a, _b;
                 setResult({
                     loading: false,
                     data: void 0,
                     error: error,
                     variables: options === null || options === void 0 ? void 0 : options.variables,
                 });
+                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) === null || _b === void 0 ? void 0 : _b.call(_a, error);
             },
             complete: function () {
                 var _a, _b;
-                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onSubscriptionComplete) === null || _b === void 0 ? void 0 : _b.call(_a);
+                if ((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onComplete) {
+                    ref.current.options.onComplete();
+                }
+                else if ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onSubscriptionComplete) {
+                    ref.current.options.onSubscriptionComplete();
+                }
             },
         });
         return function () {
@@ -43872,7 +44360,42 @@ function useReactiveVar(rv) {
     return value;
 }
 
+function useFragment_experimental(options) {
+    var cache = useApolloClient().cache;
+    var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, rest = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
+    var diffOptions = tslib.__assign(tslib.__assign({}, rest), { id: typeof from === "string" ? from : cache.identify(from), query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic });
+    var resultRef = React.useRef();
+    var latestDiff = cache.diff(diffOptions);
+    return useSyncExternalStore(function (forceUpdate) {
+        var immediate = true;
+        return cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: immediate, callback: function (diff) {
+                if (!immediate && !equality.equal(diff, latestDiff)) {
+                    resultRef.current = diffToResult(latestDiff = diff);
+                    forceUpdate();
+                }
+                immediate = false;
+            } }));
+    }, function () {
+        var latestDiffToResult = diffToResult(latestDiff);
+        return resultRef.current &&
+            equality.equal(resultRef.current.data, latestDiffToResult.data)
+            ? resultRef.current
+            : (resultRef.current = latestDiffToResult);
+    });
+}
+function diffToResult(diff) {
+    var result = {
+        data: diff.result,
+        complete: !!diff.complete,
+    };
+    if (diff.missing) {
+        result.missing = utilities.mergeDeepArray(diff.missing.map(function (error) { return error.missing; }));
+    }
+    return result;
+}
+
 exports.useApolloClient = useApolloClient;
+exports.useFragment_experimental = useFragment_experimental;
 exports.useLazyQuery = useLazyQuery;
 exports.useMutation = useMutation;
 exports.useQuery = useQuery;
@@ -43922,7 +44445,7 @@ function parser(document) {
     var variables, type, name;
     __DEV__ ? globals.invariant(!!document && !!document.kind, "Argument of ".concat(document, " passed to parser was not a valid GraphQL ") +
         "DocumentNode. You may need to use 'graphql-tag' or another method " +
-        "to convert your operation into a document") : globals.invariant(!!document && !!document.kind, 30);
+        "to convert your operation into a document") : globals.invariant(!!document && !!document.kind, 32);
     var fragments = [];
     var queries = [];
     var mutations = [];
@@ -43950,11 +44473,11 @@ function parser(document) {
     __DEV__ ? globals.invariant(!fragments.length ||
         (queries.length || mutations.length || subscriptions.length), "Passing only a fragment to 'graphql' is not yet supported. " +
         "You must include a query, subscription or mutation as well") : globals.invariant(!fragments.length ||
-        (queries.length || mutations.length || subscriptions.length), 31);
+        (queries.length || mutations.length || subscriptions.length), 33);
     __DEV__ ? globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, "react-apollo only supports a query, subscription, or a mutation per HOC. " +
         "".concat(document, " had ").concat(queries.length, " queries, ").concat(subscriptions.length, " ") +
         "subscriptions and ".concat(mutations.length, " mutations. ") +
-        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, 32);
+        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, 34);
     type = queries.length ? exports.DocumentType.Query : exports.DocumentType.Mutation;
     if (!queries.length && !mutations.length)
         type = exports.DocumentType.Subscription;
@@ -43965,7 +44488,7 @@ function parser(document) {
             : subscriptions;
     __DEV__ ? globals.invariant(definitions.length === 1, "react-apollo only supports one definition per HOC. ".concat(document, " had ") +
         "".concat(definitions.length, " definitions. ") +
-        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(definitions.length === 1, 33);
+        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(definitions.length === 1, 35);
     var definition = definitions[0];
     variables = definition.variableDefinitions || [];
     if (definition.name && definition.name.kind === 'Name') {
@@ -43983,7 +44506,7 @@ function verifyDocumentType(document, type) {
     var requiredOperationName = operationName(type);
     var usedOperationName = operationName(operation.type);
     __DEV__ ? globals.invariant(operation.type === type, "Running a ".concat(requiredOperationName, " requires a graphql ") +
-        "".concat(requiredOperationName, ", but a ").concat(usedOperationName, " was used instead.")) : globals.invariant(operation.type === type, 34);
+        "".concat(requiredOperationName, ", but a ").concat(usedOperationName, " was used instead.")) : globals.invariant(operation.type === type, 36);
 }
 
 exports.operationName = operationName;
@@ -44072,7 +44595,7 @@ function removeTemporaryGlobals() {
 }
 
 function checkDEV() {
-    __DEV__ ? tsInvariant.invariant("boolean" === typeof DEV, DEV) : tsInvariant.invariant("boolean" === typeof DEV, 36);
+    __DEV__ ? tsInvariant.invariant("boolean" === typeof DEV, DEV) : tsInvariant.invariant("boolean" === typeof DEV, 38);
 }
 removeTemporaryGlobals();
 checkDEV();
@@ -44112,7 +44635,7 @@ function shouldInclude(_a, variables) {
         var evaledValue = false;
         if (ifArgument.value.kind === 'Variable') {
             evaledValue = variables && variables[ifArgument.value.name.value];
-            __DEV__ ? globals.invariant(evaledValue !== void 0, "Invalid variable referenced in @".concat(directive.name.value, " directive.")) : globals.invariant(evaledValue !== void 0, 37);
+            __DEV__ ? globals.invariant(evaledValue !== void 0, "Invalid variable referenced in @".concat(directive.name.value, " directive.")) : globals.invariant(evaledValue !== void 0, 39);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -44129,13 +44652,23 @@ function getDirectiveNames(root) {
     });
     return names;
 }
-function hasDirectives(names, root) {
-    return getDirectiveNames(root).some(function (name) { return names.indexOf(name) > -1; });
+var hasAnyDirectives = function (names, root) { return hasDirectives(names, root, false); };
+var hasAllDirectives = function (names, root) { return hasDirectives(names, root, true); };
+function hasDirectives(names, root, all) {
+    var nameSet = new Set(names);
+    var uniqueCount = nameSet.size;
+    graphql.visit(root, {
+        Directive: function (node) {
+            if (nameSet.delete(node.name.value) &&
+                (!all || !nameSet.size)) {
+                return graphql.BREAK;
+            }
+        },
+    });
+    return all ? !nameSet.size : nameSet.size < uniqueCount;
 }
 function hasClientExports(document) {
-    return (document &&
-        hasDirectives(['client'], document) &&
-        hasDirectives(['export'], document));
+    return document && hasDirectives(['client', 'export'], document, true);
 }
 function isInclusionDirective(_a) {
     var value = _a.name.value;
@@ -44149,13 +44682,13 @@ function getInclusionDirectives(directives) {
                 return;
             var directiveArguments = directive.arguments;
             var directiveName = directive.name.value;
-            __DEV__ ? globals.invariant(directiveArguments && directiveArguments.length === 1, "Incorrect number of arguments for the @".concat(directiveName, " directive.")) : globals.invariant(directiveArguments && directiveArguments.length === 1, 38);
+            __DEV__ ? globals.invariant(directiveArguments && directiveArguments.length === 1, "Incorrect number of arguments for the @".concat(directiveName, " directive.")) : globals.invariant(directiveArguments && directiveArguments.length === 1, 40);
             var ifArgument = directiveArguments[0];
-            __DEV__ ? globals.invariant(ifArgument.name && ifArgument.name.value === 'if', "Invalid argument for the @".concat(directiveName, " directive.")) : globals.invariant(ifArgument.name && ifArgument.name.value === 'if', 39);
+            __DEV__ ? globals.invariant(ifArgument.name && ifArgument.name.value === 'if', "Invalid argument for the @".concat(directiveName, " directive.")) : globals.invariant(ifArgument.name && ifArgument.name.value === 'if', 41);
             var ifValue = ifArgument.value;
             __DEV__ ? globals.invariant(ifValue &&
                 (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), "Argument for the @".concat(directiveName, " directive must be a variable or a boolean value.")) : globals.invariant(ifValue &&
-                (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), 40);
+                (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), 42);
             result.push({ directive: directive, ifArgument: ifArgument });
         });
     }
@@ -44168,14 +44701,14 @@ function getFragmentQueryDocument(document, fragmentName) {
     document.definitions.forEach(function (definition) {
         if (definition.kind === 'OperationDefinition') {
             throw __DEV__ ? new globals.InvariantError("Found a ".concat(definition.operation, " operation").concat(definition.name ? " named '".concat(definition.name.value, "'") : '', ". ") +
-                'No operations are allowed when using a fragment as a query. Only fragments are allowed.') : new globals.InvariantError(41);
+                'No operations are allowed when using a fragment as a query. Only fragments are allowed.') : new globals.InvariantError(43);
         }
         if (definition.kind === 'FragmentDefinition') {
             fragments.push(definition);
         }
     });
     if (typeof actualFragmentName === 'undefined') {
-        __DEV__ ? globals.invariant(fragments.length === 1, "Found ".concat(fragments.length, " fragments. `fragmentName` must be provided when there is not exactly 1 fragment.")) : globals.invariant(fragments.length === 1, 42);
+        __DEV__ ? globals.invariant(fragments.length === 1, "Found ".concat(fragments.length, " fragments. `fragmentName` must be provided when there is not exactly 1 fragment.")) : globals.invariant(fragments.length === 1, 44);
         actualFragmentName = fragments[0].name.value;
     }
     var query = tslib.__assign(tslib.__assign({}, document), { definitions: tslib.__spreadArray([
@@ -44211,9 +44744,13 @@ function getFragmentFromSelection(selection, fragmentMap) {
         case 'InlineFragment':
             return selection;
         case 'FragmentSpread': {
-            var fragment = fragmentMap && fragmentMap[selection.name.value];
-            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(selection.name.value, ".")) : globals.invariant(fragment, 43);
-            return fragment;
+            var fragmentName = selection.name.value;
+            if (typeof fragmentMap === "function") {
+                return fragmentMap(fragmentName);
+            }
+            var fragment = fragmentMap && fragmentMap[fragmentName];
+            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(fragmentName)) : globals.invariant(fragment, 45);
+            return fragment || null;
         }
         default:
             return null;
@@ -44296,7 +44833,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
     else {
         throw __DEV__ ? new globals.InvariantError("The inline argument \"".concat(name.value, "\" of kind \"").concat(value.kind, "\"") +
             'is not supported. Use variables instead of inline arguments to ' +
-            'overcome this limitation.') : new globals.InvariantError(52);
+            'overcome this limitation.') : new globals.InvariantError(54);
     }
 }
 function storeKeyNameFromField(field, variables) {
@@ -44430,16 +44967,16 @@ function isInlineFragment(selection) {
 }
 
 function checkDocument(doc) {
-    __DEV__ ? globals.invariant(doc && doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc && doc.kind === 'Document', 44);
+    __DEV__ ? globals.invariant(doc && doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc && doc.kind === 'Document', 46);
     var operations = doc.definitions
         .filter(function (d) { return d.kind !== 'FragmentDefinition'; })
         .map(function (definition) {
         if (definition.kind !== 'OperationDefinition') {
-            throw __DEV__ ? new globals.InvariantError("Schema type definitions not allowed in queries. Found: \"".concat(definition.kind, "\"")) : new globals.InvariantError(45);
+            throw __DEV__ ? new globals.InvariantError("Schema type definitions not allowed in queries. Found: \"".concat(definition.kind, "\"")) : new globals.InvariantError(47);
         }
         return definition;
     });
-    __DEV__ ? globals.invariant(operations.length <= 1, "Ambiguous GraphQL document: contains ".concat(operations.length, " operations")) : globals.invariant(operations.length <= 1, 46);
+    __DEV__ ? globals.invariant(operations.length <= 1, "Ambiguous GraphQL document: contains ".concat(operations.length, " operations")) : globals.invariant(operations.length <= 1, 48);
     return doc;
 }
 function getOperationDefinition(doc) {
@@ -44458,14 +44995,14 @@ function getFragmentDefinitions(doc) {
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
-    __DEV__ ? globals.invariant(queryDef && queryDef.operation === 'query', 'Must contain a query definition.') : globals.invariant(queryDef && queryDef.operation === 'query', 47);
+    __DEV__ ? globals.invariant(queryDef && queryDef.operation === 'query', 'Must contain a query definition.') : globals.invariant(queryDef && queryDef.operation === 'query', 49);
     return queryDef;
 }
 function getFragmentDefinition(doc) {
-    __DEV__ ? globals.invariant(doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc.kind === 'Document', 48);
-    __DEV__ ? globals.invariant(doc.definitions.length <= 1, 'Fragment must have exactly one definition.') : globals.invariant(doc.definitions.length <= 1, 49);
+    __DEV__ ? globals.invariant(doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc.kind === 'Document', 50);
+    __DEV__ ? globals.invariant(doc.definitions.length <= 1, 'Fragment must have exactly one definition.') : globals.invariant(doc.definitions.length <= 1, 51);
     var fragmentDef = doc.definitions[0];
-    __DEV__ ? globals.invariant(fragmentDef.kind === 'FragmentDefinition', 'Must be a fragment definition.') : globals.invariant(fragmentDef.kind === 'FragmentDefinition', 50);
+    __DEV__ ? globals.invariant(fragmentDef.kind === 'FragmentDefinition', 'Must be a fragment definition.') : globals.invariant(fragmentDef.kind === 'FragmentDefinition', 52);
     return fragmentDef;
 }
 function getMainDefinition(queryDoc) {
@@ -44488,7 +45025,7 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw __DEV__ ? new globals.InvariantError('Expected a parsed GraphQL query with a query, mutation, subscription, or a fragment.') : new globals.InvariantError(51);
+    throw __DEV__ ? new globals.InvariantError('Expected a parsed GraphQL query with a query, mutation, subscription, or a fragment.') : new globals.InvariantError(53);
 }
 function getDefaultValues(definition) {
     var defaultValues = Object.create(null);
@@ -44521,11 +45058,9 @@ var TYPENAME_FIELD = {
         value: '__typename',
     },
 };
-function isEmpty(op, fragments) {
-    return op.selectionSet.selections.every(function (selection) {
-        return selection.kind === 'FragmentSpread' &&
-            isEmpty(fragments[selection.name.value], fragments);
-    });
+function isEmpty(op, fragmentMap) {
+    return !op || op.selectionSet.selections.every(function (selection) { return selection.kind === 'FragmentSpread' &&
+        isEmpty(fragmentMap[selection.name.value], fragmentMap); });
 }
 function nullIfDocIsEmpty(doc) {
     return isEmpty(getOperationDefinition(doc) || getFragmentDefinition(doc), createFragmentMap(getFragmentDefinitions(doc)))
@@ -45115,6 +45650,7 @@ var canUseWeakMap = typeof WeakMap === 'function' &&
 var canUseWeakSet = typeof WeakSet === 'function';
 var canUseSymbol = typeof Symbol === 'function' &&
     typeof Symbol.for === 'function';
+var canUseAsyncIteratorSymbol = canUseSymbol && Symbol.asyncIterator;
 var canUseDOM = typeof globals.maybe(function () { return window.document.createElement; }) === "function";
 var usingJSDOM = globals.maybe(function () { return navigator.userAgent.indexOf("jsdom") >= 0; }) || false;
 var canUseLayoutEffect = canUseDOM && !usingJSDOM;
@@ -45141,7 +45677,6 @@ var Concast = (function (_super) {
             return function () { return _this.removeObserver(observer); };
         }) || this;
         _this.observers = new Set();
-        _this.addCount = 0;
         _this.promise = new Promise(function (resolve, reject) {
             _this.resolve = resolve;
             _this.reject = reject;
@@ -45150,6 +45685,7 @@ var Concast = (function (_super) {
             next: function (result) {
                 if (_this.sub !== null) {
                     _this.latest = ["next", result];
+                    _this.notify("next", result);
                     iterateObserversSafely(_this.observers, "next", result);
                 }
             },
@@ -45161,6 +45697,7 @@ var Concast = (function (_super) {
                     _this.sub = null;
                     _this.latest = ["error", error];
                     _this.reject(error);
+                    _this.notify("error", error);
                     iterateObserversSafely(_this.observers, "error", error);
                 }
             },
@@ -45179,6 +45716,7 @@ var Concast = (function (_super) {
                         else {
                             _this.resolve();
                         }
+                        _this.notify("complete");
                         iterateObserversSafely(_this.observers, "complete");
                     }
                     else if (isPromiseLike(value)) {
@@ -45190,6 +45728,7 @@ var Concast = (function (_super) {
                 }
             },
         };
+        _this.nextResultListeners = new Set();
         _this.cancel = function (reason) {
             _this.reject(reason);
             _this.sources = [];
@@ -45231,34 +45770,29 @@ var Concast = (function (_super) {
         if (!this.observers.has(observer)) {
             this.deliverLastMessage(observer);
             this.observers.add(observer);
-            ++this.addCount;
         }
     };
-    Concast.prototype.removeObserver = function (observer, quietly) {
+    Concast.prototype.removeObserver = function (observer) {
         if (this.observers.delete(observer) &&
-            --this.addCount < 1 &&
-            !quietly) {
+            this.observers.size < 1) {
             this.handlers.complete();
         }
     };
-    Concast.prototype.cleanup = function (callback) {
-        var _this = this;
+    Concast.prototype.notify = function (method, arg) {
+        var nextResultListeners = this.nextResultListeners;
+        if (nextResultListeners.size) {
+            this.nextResultListeners = new Set;
+            nextResultListeners.forEach(function (listener) { return listener(method, arg); });
+        }
+    };
+    Concast.prototype.beforeNext = function (callback) {
         var called = false;
-        var once = function () {
+        this.nextResultListeners.add(function (method, arg) {
             if (!called) {
                 called = true;
-                _this.observers.delete(observer);
-                callback();
+                callback(method, arg);
             }
-        };
-        var observer = {
-            next: once,
-            error: once,
-            complete: once,
-        };
-        var count = this.addCount;
-        this.addObserver(observer);
-        this.addCount = count;
+        });
     };
     return Concast;
 }(zenObservableTs.Observable));
@@ -45320,6 +45854,7 @@ exports.addTypenameToDocument = addTypenameToDocument;
 exports.argumentsObjectFromField = argumentsObjectFromField;
 exports.asyncMap = asyncMap;
 exports.buildQueryFromSelectionSet = buildQueryFromSelectionSet;
+exports.canUseAsyncIteratorSymbol = canUseAsyncIteratorSymbol;
 exports.canUseDOM = canUseDOM;
 exports.canUseLayoutEffect = canUseLayoutEffect;
 exports.canUseSymbol = canUseSymbol;
@@ -45345,6 +45880,8 @@ exports.getQueryDefinition = getQueryDefinition;
 exports.getStoreKeyName = getStoreKeyName;
 exports.getTypenameFromResult = getTypenameFromResult;
 exports.graphQLResultHasError = graphQLResultHasError;
+exports.hasAllDirectives = hasAllDirectives;
+exports.hasAnyDirectives = hasAnyDirectives;
 exports.hasClientExports = hasClientExports;
 exports.hasDirectives = hasDirectives;
 exports.isDocumentNode = isDocumentNode;
