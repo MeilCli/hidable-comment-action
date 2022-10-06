@@ -4247,6 +4247,8 @@ export enum DependencyGraphEcosystem {
   Nuget = 'NUGET',
   /** Python packages hosted at PyPI.org */
   Pip = 'PIP',
+  /** Dart packages hosted at pub.dev */
+  Pub = 'PUB',
   /** Ruby gems hosted at RubyGems.org */
   Rubygems = 'RUBYGEMS',
   /** Rust crates */
@@ -21149,6 +21151,8 @@ export enum SecurityAdvisoryEcosystem {
   Nuget = 'NUGET',
   /** Python packages hosted at PyPI.org */
   Pip = 'PIP',
+  /** Dart packages hosted at pub.dev */
+  Pub = 'PUB',
   /** Ruby gems hosted at RubyGems.org */
   Rubygems = 'RUBYGEMS',
   /** Rust crates */
