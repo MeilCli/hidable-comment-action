@@ -216,6 +216,8 @@ var DependencyGraphEcosystem;
     DependencyGraphEcosystem["Nuget"] = "NUGET";
     /** Python packages hosted at PyPI.org */
     DependencyGraphEcosystem["Pip"] = "PIP";
+    /** Dart packages hosted at pub.dev */
+    DependencyGraphEcosystem["Pub"] = "PUB";
     /** Ruby gems hosted at RubyGems.org */
     DependencyGraphEcosystem["Rubygems"] = "RUBYGEMS";
     /** Rust crates */
@@ -1984,6 +1986,8 @@ var SecurityAdvisoryEcosystem;
     SecurityAdvisoryEcosystem["Nuget"] = "NUGET";
     /** Python packages hosted at PyPI.org */
     SecurityAdvisoryEcosystem["Pip"] = "PIP";
+    /** Dart packages hosted at pub.dev */
+    SecurityAdvisoryEcosystem["Pub"] = "PUB";
     /** Ruby gems hosted at RubyGems.org */
     SecurityAdvisoryEcosystem["Rubygems"] = "RUBYGEMS";
     /** Rust crates */
