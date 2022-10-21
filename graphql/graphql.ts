@@ -5330,11 +5330,11 @@ export type EnablePullRequestAutoMergeInput = {
   authorEmail?: InputMaybe<Scalars['String']>;
   /** A unique identifier for the client performing the mutation. */
   clientMutationId?: InputMaybe<Scalars['String']>;
-  /** Commit body to use for the commit when the PR is mergable; if omitted, a default message will be used. */
+  /** Commit body to use for the commit when the PR is mergable; if omitted, a default message will be used. NOTE: when merging with a merge queue any input value for commit message is ignored. */
   commitBody?: InputMaybe<Scalars['String']>;
-  /** Commit headline to use for the commit when the PR is mergable; if omitted, a default message will be used. */
+  /** Commit headline to use for the commit when the PR is mergable; if omitted, a default message will be used. NOTE: when merging with a merge queue any input value for commit headline is ignored. */
   commitHeadline?: InputMaybe<Scalars['String']>;
-  /** The merge method to use. If omitted, defaults to `MERGE` */
+  /** The merge method to use. If omitted, defaults to `MERGE`. NOTE: when merging with a merge queue any input value for merge method is ignored. */
   mergeMethod?: InputMaybe<PullRequestMergeMethod>;
   /** ID of the pull request to enable auto-merge on. */
   pullRequestId: Scalars['ID'];
@@ -23595,6 +23595,8 @@ export type TreeEntry = {
   extension?: Maybe<Scalars['String']>;
   /** Whether or not this tree entry is generated */
   isGenerated: Scalars['Boolean'];
+  /** The programming language this file is written in. */
+  language?: Maybe<Language>;
   /** Number of lines in the file. */
   lineCount?: Maybe<Scalars['Int']>;
   /** Entry file mode. */
@@ -37129,6 +37131,7 @@ export type TreeResolvers<ContextType = any, ParentType extends ResolversParentT
 export type TreeEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['TreeEntry'] = ResolversParentTypes['TreeEntry']> = {
   extension?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isGenerated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType>;
   lineCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   mode?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
