@@ -40523,7 +40523,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.0';
+var version = '3.7.1';
 
 function isExecutionPatchIncrementalResult(value) {
     return !!value.incremental;
@@ -40667,8 +40667,10 @@ var ObservableQuery = (function (_super) {
         }
         return result;
     };
-    ObservableQuery.prototype.isDifferentFromLastResult = function (newResult) {
-        return !this.last || !equality.equal(this.last.result, newResult);
+    ObservableQuery.prototype.isDifferentFromLastResult = function (newResult, variables) {
+        return (!this.last ||
+            !equality.equal(this.last.result, newResult) ||
+            (variables && !equality.equal(this.last.variables, variables)));
     };
     ObservableQuery.prototype.getLast = function (key, variablesMustMatch) {
         var last = this.last;
@@ -40976,7 +40978,7 @@ var ObservableQuery = (function (_super) {
     };
     ObservableQuery.prototype.reportResult = function (result, variables) {
         var lastError = this.getLastError();
-        if (lastError || this.isDifferentFromLastResult(result)) {
+        if (lastError || this.isDifferentFromLastResult(result, variables)) {
             if (lastError || !result.partial || this.options.returnPartialData) {
                 this.updateLastResult(result, variables);
             }
@@ -44383,13 +44385,11 @@ function useFragment_experimental(options) {
     var resultRef = React.useRef();
     var latestDiff = cache.diff(diffOptions);
     return useSyncExternalStore(function (forceUpdate) {
-        var immediate = true;
-        return cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: immediate, callback: function (diff) {
-                if (!immediate && !equality.equal(diff, latestDiff)) {
+        return cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
+                if (!equality.equal(diff, latestDiff)) {
                     resultRef.current = diffToResult(latestDiff = diff);
                     forceUpdate();
                 }
-                immediate = false;
             } }));
     }, function () {
         var latestDiffToResult = diffToResult(latestDiff);
