@@ -1032,6 +1032,10 @@ export type BranchProtectionRule = Node & {
   id: Scalars['ID'];
   /** Can admins overwrite branch protection. */
   isAdminEnforced: Scalars['Boolean'];
+  /** Whether users can pull changes from upstream when the branch is locked. Set to `true` to allow fork syncing. Set to `false` to prevent fork syncing. */
+  lockAllowsFetchAndMerge: Scalars['Boolean'];
+  /** Whether to set the branch as read-only. If this is true, users will not be able to push to the branch. */
+  lockBranch: Scalars['Boolean'];
   /** Repository refs that are protected by this rule */
   matchingRefs: RefConnection;
   /** Identifies the protection rule pattern. */
@@ -1040,6 +1044,8 @@ export type BranchProtectionRule = Node & {
   pushAllowances: PushAllowanceConnection;
   /** The repository associated with this branch protection rule. */
   repository?: Maybe<Repository>;
+  /** Whether someone other than the person who last pushed to the branch must approve this pull request */
+  requireLastPushApproval: Scalars['Boolean'];
   /** Number of approving reviews required to update matching branches. */
   requiredApprovingReviewCount?: Maybe<Scalars['Int']>;
   /** List of required status check contexts that must pass for commits to be accepted to matching branches. */
@@ -3037,12 +3043,18 @@ export type CreateBranchProtectionRuleInput = {
   dismissesStaleReviews?: InputMaybe<Scalars['Boolean']>;
   /** Can admins overwrite branch protection. */
   isAdminEnforced?: InputMaybe<Scalars['Boolean']>;
+  /** Whether users can pull changes from upstream when the branch is locked. Set to `true` to allow fork syncing. Set to `false` to prevent fork syncing. */
+  lockAllowsFetchAndMerge?: InputMaybe<Scalars['Boolean']>;
+  /** Whether to set the branch as read-only. If this is true, users will not be able to push to the branch. */
+  lockBranch?: InputMaybe<Scalars['Boolean']>;
   /** The glob-like pattern used to determine matching branches. */
   pattern: Scalars['String'];
   /** A list of User, Team, or App IDs allowed to push to matching branches. */
   pushActorIds?: InputMaybe<Array<Scalars['ID']>>;
   /** The global relay id of the repository in which a new branch protection rule should be created in. */
   repositoryId: Scalars['ID'];
+  /** Whether someone other than the person who last pushed to the branch must approve this pull request */
+  requireLastPushApproval?: InputMaybe<Scalars['Boolean']>;
   /** Number of approving reviews required to update matching branches. */
   requiredApprovingReviewCount?: InputMaybe<Scalars['Int']>;
   /** List of required status check contexts that must pass for commits to be accepted to matching branches. */
@@ -8045,6 +8057,8 @@ export type IssueTemplate = {
   about?: Maybe<Scalars['String']>;
   /** The suggested issue body. */
   body?: Maybe<Scalars['String']>;
+  /** The template filename. */
+  filename: Scalars['String'];
   /** The template name. */
   name: Scalars['String'];
   /** The suggested issue title. */
@@ -14770,6 +14784,8 @@ export type ProjectV2 = Closable & Node & Updatable & {
   resourcePath: Scalars['URI'];
   /** The project's short description. */
   shortDescription?: Maybe<Scalars['String']>;
+  /** The teams the project is linked to. */
+  teams: TeamConnection;
   /** The project's name. */
   title: Scalars['String'];
   /** Identifies the date and time when the object was last updated. */
@@ -14818,6 +14834,16 @@ export type ProjectV2RepositoriesArgs = {
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<RepositoryOrder>;
+};
+
+
+/** New projects that manage issues, pull requests and drafts using tables and boards. */
+export type ProjectV2TeamsArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<TeamOrder>;
 };
 
 
@@ -22605,6 +22631,10 @@ export type Team = MemberStatusable & Node & Subscribable & {
   parentTeam?: Maybe<Team>;
   /** The level of privacy the team has. */
   privacy: TeamPrivacy;
+  /** Finds and returns the project according to the provided project number. */
+  projectV2?: Maybe<ProjectV2>;
+  /** List of projects this team has collaborator access to. */
+  projectsV2: ProjectV2Connection;
   /** A list of repositories this team has access to. */
   repositories: TeamRepositoryConnection;
   /** The HTTP path for this team's repositories */
@@ -22705,6 +22735,22 @@ export type TeamMembersArgs = {
   orderBy?: InputMaybe<TeamMemberOrder>;
   query?: InputMaybe<Scalars['String']>;
   role?: InputMaybe<TeamMemberRole>;
+};
+
+
+/** A team of users in an organization. */
+export type TeamProjectV2Args = {
+  number: Scalars['Int'];
+};
+
+
+/** A team of users in an organization. */
+export type TeamProjectsV2Args = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ProjectV2Order>;
 };
 
 
@@ -23960,10 +24006,16 @@ export type UpdateBranchProtectionRuleInput = {
   dismissesStaleReviews?: InputMaybe<Scalars['Boolean']>;
   /** Can admins overwrite branch protection. */
   isAdminEnforced?: InputMaybe<Scalars['Boolean']>;
+  /** Whether users can pull changes from upstream when the branch is locked. Set to `true` to allow fork syncing. Set to `false` to prevent fork syncing. */
+  lockAllowsFetchAndMerge?: InputMaybe<Scalars['Boolean']>;
+  /** Whether to set the branch as read-only. If this is true, users will not be able to push to the branch. */
+  lockBranch?: InputMaybe<Scalars['Boolean']>;
   /** The glob-like pattern used to determine matching branches. */
   pattern?: InputMaybe<Scalars['String']>;
   /** A list of User, Team, or App IDs allowed to push to matching branches. */
   pushActorIds?: InputMaybe<Array<Scalars['ID']>>;
+  /** Whether someone other than the person who last pushed to the branch must approve this pull request */
+  requireLastPushApproval?: InputMaybe<Scalars['Boolean']>;
   /** Number of approving reviews required to update matching branches. */
   requiredApprovingReviewCount?: InputMaybe<Scalars['Int']>;
   /** List of required status check contexts that must pass for commits to be accepted to matching branches. */
@@ -29228,10 +29280,13 @@ export type BranchProtectionRuleResolvers<ContextType = any, ParentType extends 
   dismissesStaleReviews?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isAdminEnforced?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  lockAllowsFetchAndMerge?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  lockBranch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   matchingRefs?: Resolver<ResolversTypes['RefConnection'], ParentType, ContextType, Partial<BranchProtectionRuleMatchingRefsArgs>>;
   pattern?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pushAllowances?: Resolver<ResolversTypes['PushAllowanceConnection'], ParentType, ContextType, Partial<BranchProtectionRulePushAllowancesArgs>>;
   repository?: Resolver<Maybe<ResolversTypes['Repository']>, ParentType, ContextType>;
+  requireLastPushApproval?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   requiredApprovingReviewCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   requiredStatusCheckContexts?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   requiredStatusChecks?: Resolver<Maybe<Array<ResolversTypes['RequiredStatusCheckDescription']>>, ParentType, ContextType>;
@@ -31614,6 +31669,7 @@ export type IssueOrPullRequestResolvers<ContextType = any, ParentType extends Re
 export type IssueTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['IssueTemplate'] = ResolversParentTypes['IssueTemplate']> = {
   about?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   body?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -33836,6 +33892,7 @@ export type ProjectV2Resolvers<ContextType = any, ParentType extends ResolversPa
   repositories?: Resolver<ResolversTypes['RepositoryConnection'], ParentType, ContextType, RequireFields<ProjectV2RepositoriesArgs, 'orderBy'>>;
   resourcePath?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   shortDescription?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  teams?: Resolver<ResolversTypes['TeamConnection'], ParentType, ContextType, RequireFields<ProjectV2TeamsArgs, 'orderBy'>>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
@@ -36752,6 +36809,8 @@ export type TeamResolvers<ContextType = any, ParentType extends ResolversParentT
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTeam?: Resolver<Maybe<ResolversTypes['Team']>, ParentType, ContextType>;
   privacy?: Resolver<ResolversTypes['TeamPrivacy'], ParentType, ContextType>;
+  projectV2?: Resolver<Maybe<ResolversTypes['ProjectV2']>, ParentType, ContextType, RequireFields<TeamProjectV2Args, 'number'>>;
+  projectsV2?: Resolver<ResolversTypes['ProjectV2Connection'], ParentType, ContextType, RequireFields<TeamProjectsV2Args, 'orderBy'>>;
   repositories?: Resolver<ResolversTypes['TeamRepositoryConnection'], ParentType, ContextType, Partial<TeamRepositoriesArgs>>;
   repositoriesResourcePath?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   repositoriesUrl?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
