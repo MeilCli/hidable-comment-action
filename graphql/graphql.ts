@@ -19475,7 +19475,7 @@ export type Repository = Node & PackageOwner & ProjectOwner & ProjectV2Recent & 
   forks: RepositoryConnection;
   /** The funding links for this repository */
   fundingLinks: Array<FundingLink>;
-  /** Are discussions available on this repository? */
+  /** Indicates if the repository has the Discussions feature enabled. */
   hasDiscussionsEnabled: Scalars['Boolean'];
   /** Indicates if the repository has issues feature enabled. */
   hasIssuesEnabled: Scalars['Boolean'];
@@ -20257,6 +20257,8 @@ export type RepositoryInfo = {
   descriptionHTML: Scalars['HTML'];
   /** Returns how many forks there are of this repository in the whole network. */
   forkCount: Scalars['Int'];
+  /** Indicates if the repository has the Discussions feature enabled. */
+  hasDiscussionsEnabled: Scalars['Boolean'];
   /** Indicates if the repository has issues feature enabled. */
   hasIssuesEnabled: Scalars['Boolean'];
   /** Indicates if the repository has the Projects feature enabled. */
@@ -36010,6 +36012,7 @@ export type RepositoryInfoResolvers<ContextType = any, ParentType extends Resolv
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   descriptionHTML?: Resolver<ResolversTypes['HTML'], ParentType, ContextType>;
   forkCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  hasDiscussionsEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasIssuesEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasProjectsEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasWikiEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
