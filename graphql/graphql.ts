@@ -15107,6 +15107,12 @@ export type ProjectV2FieldValue = {
   text?: InputMaybe<Scalars['String']>;
 };
 
+/** Ways in which to filter lists of projects. */
+export type ProjectV2Filters = {
+  /** List project v2 filtered by the state given. */
+  state?: InputMaybe<ProjectV2State>;
+};
+
 /** An item within a Project. */
 export type ProjectV2Item = Node & {
   __typename?: 'ProjectV2Item';
@@ -15660,6 +15666,14 @@ export type ProjectV2SortByFieldEdge = {
   /** The item at the end of the edge. */
   node?: Maybe<ProjectV2SortByField>;
 };
+
+/** The possible states of a project v2. */
+export enum ProjectV2State {
+  /** A project v2 that has been closed */
+  Closed = 'CLOSED',
+  /** A project v2 that is still open */
+  Open = 'OPEN'
+}
 
 /** A view within a ProjectV2. */
 export type ProjectV2View = Node & {
@@ -22833,9 +22847,11 @@ export type TeamProjectV2Args = {
 export type TeamProjectsV2Args = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
+  filterBy?: InputMaybe<ProjectV2Filters>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<ProjectV2Order>;
+  query?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -27267,6 +27283,7 @@ export type ResolversTypes = {
   ProjectV2FieldOrderField: ProjectV2FieldOrderField;
   ProjectV2FieldType: ProjectV2FieldType;
   ProjectV2FieldValue: ProjectV2FieldValue;
+  ProjectV2Filters: ProjectV2Filters;
   ProjectV2Item: ResolverTypeWrapper<Omit<ProjectV2Item, 'content' | 'fieldValueByName'> & { content?: Maybe<ResolversTypes['ProjectV2ItemContent']>, fieldValueByName?: Maybe<ResolversTypes['ProjectV2ItemFieldValue']> }>;
   ProjectV2ItemConnection: ResolverTypeWrapper<ProjectV2ItemConnection>;
   ProjectV2ItemContent: ResolversTypes['DraftIssue'] | ResolversTypes['Issue'] | ResolversTypes['PullRequest'];
@@ -27306,6 +27323,7 @@ export type ResolversTypes = {
   ProjectV2SortByField: ResolverTypeWrapper<Omit<ProjectV2SortByField, 'field'> & { field: ResolversTypes['ProjectV2FieldConfiguration'] }>;
   ProjectV2SortByFieldConnection: ResolverTypeWrapper<ProjectV2SortByFieldConnection>;
   ProjectV2SortByFieldEdge: ResolverTypeWrapper<ProjectV2SortByFieldEdge>;
+  ProjectV2State: ProjectV2State;
   ProjectV2View: ResolverTypeWrapper<ProjectV2View>;
   ProjectV2ViewConnection: ResolverTypeWrapper<ProjectV2ViewConnection>;
   ProjectV2ViewEdge: ResolverTypeWrapper<ProjectV2ViewEdge>;
@@ -28507,6 +28525,7 @@ export type ResolversParentTypes = {
   ProjectV2FieldEdge: ProjectV2FieldEdge;
   ProjectV2FieldOrder: ProjectV2FieldOrder;
   ProjectV2FieldValue: ProjectV2FieldValue;
+  ProjectV2Filters: ProjectV2Filters;
   ProjectV2Item: Omit<ProjectV2Item, 'content' | 'fieldValueByName'> & { content?: Maybe<ResolversParentTypes['ProjectV2ItemContent']>, fieldValueByName?: Maybe<ResolversParentTypes['ProjectV2ItemFieldValue']> };
   ProjectV2ItemConnection: ProjectV2ItemConnection;
   ProjectV2ItemContent: ResolversParentTypes['DraftIssue'] | ResolversParentTypes['Issue'] | ResolversParentTypes['PullRequest'];
@@ -36971,7 +36990,7 @@ export type TeamResolvers<ContextType = any, ParentType extends ResolversParentT
   parentTeam?: Resolver<Maybe<ResolversTypes['Team']>, ParentType, ContextType>;
   privacy?: Resolver<ResolversTypes['TeamPrivacy'], ParentType, ContextType>;
   projectV2?: Resolver<Maybe<ResolversTypes['ProjectV2']>, ParentType, ContextType, RequireFields<TeamProjectV2Args, 'number'>>;
-  projectsV2?: Resolver<ResolversTypes['ProjectV2Connection'], ParentType, ContextType, RequireFields<TeamProjectsV2Args, 'orderBy'>>;
+  projectsV2?: Resolver<ResolversTypes['ProjectV2Connection'], ParentType, ContextType, RequireFields<TeamProjectsV2Args, 'filterBy' | 'orderBy' | 'query'>>;
   repositories?: Resolver<ResolversTypes['TeamRepositoryConnection'], ParentType, ContextType, Partial<TeamRepositoriesArgs>>;
   repositoriesResourcePath?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   repositoriesUrl?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
