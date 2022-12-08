@@ -13542,9 +13542,15 @@ export enum PackageType {
   Docker = 'DOCKER',
   /** A maven package. */
   Maven = 'MAVEN',
-  /** An npm package. */
+  /**
+   * An npm package.
+   * @deprecated NPM will be removed from this enum as this type will be migrated to only be used by the Packages REST API. Removal on 2022-11-21 UTC.
+   */
   Npm = 'NPM',
-  /** A nuget package. */
+  /**
+   * A nuget package.
+   * @deprecated NUGET will be removed from this enum as this type will be migrated to only be used by the Packages REST API. Removal on 2022-11-21 UTC.
+   */
   Nuget = 'NUGET',
   /** A python package. */
   Pypi = 'PYPI',
@@ -22083,6 +22089,8 @@ export type SponsorsListing = Node & {
   dashboardUrl: Scalars['URI'];
   /** The records featured on the GitHub Sponsors profile. */
   featuredItems: Array<SponsorsListingFeaturedItem>;
+  /** The fiscal host used for payments, if any. Will only return a value when queried by the maintainer themselves, or by an admin of the sponsorable organization. */
+  fiscalHost?: Maybe<Organization>;
   /** The full description of the listing. */
   fullDescription: Scalars['String'];
   /** The full description of the listing rendered to HTML. */
@@ -26570,7 +26578,7 @@ export type WorkflowRunsArgs = {
 };
 
 /** A workflow run. */
-export type WorkflowRun = Node & {
+export type WorkflowRun = Node & UniformResourceLocatable & {
   __typename?: 'WorkflowRun';
   /** The check suite this workflow run belongs to. */
   checkSuite: CheckSuite;
@@ -27904,7 +27912,7 @@ export type ResolversTypes = {
   UnfollowOrganizationPayload: ResolverTypeWrapper<UnfollowOrganizationPayload>;
   UnfollowUserInput: UnfollowUserInput;
   UnfollowUserPayload: ResolverTypeWrapper<UnfollowUserPayload>;
-  UniformResourceLocatable: ResolversTypes['Bot'] | ResolversTypes['CheckRun'] | ResolversTypes['ClosedEvent'] | ResolversTypes['Commit'] | ResolversTypes['ConvertToDraftEvent'] | ResolversTypes['CrossReferencedEvent'] | ResolversTypes['Gist'] | ResolversTypes['Issue'] | ResolversTypes['Mannequin'] | ResolversTypes['MergedEvent'] | ResolversTypes['Milestone'] | ResolversTypes['Organization'] | ResolversTypes['PullRequest'] | ResolversTypes['PullRequestCommit'] | ResolversTypes['ReadyForReviewEvent'] | ResolversTypes['Release'] | ResolversTypes['Repository'] | ResolversTypes['RepositoryTopic'] | ResolversTypes['ReviewDismissedEvent'] | ResolversTypes['TeamDiscussion'] | ResolversTypes['TeamDiscussionComment'] | ResolversTypes['User'];
+  UniformResourceLocatable: ResolversTypes['Bot'] | ResolversTypes['CheckRun'] | ResolversTypes['ClosedEvent'] | ResolversTypes['Commit'] | ResolversTypes['ConvertToDraftEvent'] | ResolversTypes['CrossReferencedEvent'] | ResolversTypes['Gist'] | ResolversTypes['Issue'] | ResolversTypes['Mannequin'] | ResolversTypes['MergedEvent'] | ResolversTypes['Milestone'] | ResolversTypes['Organization'] | ResolversTypes['PullRequest'] | ResolversTypes['PullRequestCommit'] | ResolversTypes['ReadyForReviewEvent'] | ResolversTypes['Release'] | ResolversTypes['Repository'] | ResolversTypes['RepositoryTopic'] | ResolversTypes['ReviewDismissedEvent'] | ResolversTypes['TeamDiscussion'] | ResolversTypes['TeamDiscussionComment'] | ResolversTypes['User'] | ResolversTypes['WorkflowRun'];
   UnknownSignature: ResolverTypeWrapper<UnknownSignature>;
   UnlabeledEvent: ResolverTypeWrapper<UnlabeledEvent>;
   UnlinkProjectV2FromRepositoryInput: UnlinkProjectV2FromRepositoryInput;
@@ -29074,7 +29082,7 @@ export type ResolversParentTypes = {
   UnfollowOrganizationPayload: UnfollowOrganizationPayload;
   UnfollowUserInput: UnfollowUserInput;
   UnfollowUserPayload: UnfollowUserPayload;
-  UniformResourceLocatable: ResolversParentTypes['Bot'] | ResolversParentTypes['CheckRun'] | ResolversParentTypes['ClosedEvent'] | ResolversParentTypes['Commit'] | ResolversParentTypes['ConvertToDraftEvent'] | ResolversParentTypes['CrossReferencedEvent'] | ResolversParentTypes['Gist'] | ResolversParentTypes['Issue'] | ResolversParentTypes['Mannequin'] | ResolversParentTypes['MergedEvent'] | ResolversParentTypes['Milestone'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PullRequest'] | ResolversParentTypes['PullRequestCommit'] | ResolversParentTypes['ReadyForReviewEvent'] | ResolversParentTypes['Release'] | ResolversParentTypes['Repository'] | ResolversParentTypes['RepositoryTopic'] | ResolversParentTypes['ReviewDismissedEvent'] | ResolversParentTypes['TeamDiscussion'] | ResolversParentTypes['TeamDiscussionComment'] | ResolversParentTypes['User'];
+  UniformResourceLocatable: ResolversParentTypes['Bot'] | ResolversParentTypes['CheckRun'] | ResolversParentTypes['ClosedEvent'] | ResolversParentTypes['Commit'] | ResolversParentTypes['ConvertToDraftEvent'] | ResolversParentTypes['CrossReferencedEvent'] | ResolversParentTypes['Gist'] | ResolversParentTypes['Issue'] | ResolversParentTypes['Mannequin'] | ResolversParentTypes['MergedEvent'] | ResolversParentTypes['Milestone'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PullRequest'] | ResolversParentTypes['PullRequestCommit'] | ResolversParentTypes['ReadyForReviewEvent'] | ResolversParentTypes['Release'] | ResolversParentTypes['Repository'] | ResolversParentTypes['RepositoryTopic'] | ResolversParentTypes['ReviewDismissedEvent'] | ResolversParentTypes['TeamDiscussion'] | ResolversParentTypes['TeamDiscussionComment'] | ResolversParentTypes['User'] | ResolversParentTypes['WorkflowRun'];
   UnknownSignature: UnknownSignature;
   UnlabeledEvent: UnlabeledEvent;
   UnlinkProjectV2FromRepositoryInput: UnlinkProjectV2FromRepositoryInput;
@@ -36895,6 +36903,7 @@ export type SponsorsListingResolvers<ContextType = any, ParentType extends Resol
   dashboardResourcePath?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   dashboardUrl?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   featuredItems?: Resolver<Array<ResolversTypes['SponsorsListingFeaturedItem']>, ParentType, ContextType, RequireFields<SponsorsListingFeaturedItemsArgs, 'featureableTypes'>>;
+  fiscalHost?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   fullDescription?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fullDescriptionHTML?: Resolver<ResolversTypes['HTML'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -37670,7 +37679,7 @@ export type UnfollowUserPayloadResolvers<ContextType = any, ParentType extends R
 };
 
 export type UniformResourceLocatableResolvers<ContextType = any, ParentType extends ResolversParentTypes['UniformResourceLocatable'] = ResolversParentTypes['UniformResourceLocatable']> = {
-  __resolveType: TypeResolveFn<'Bot' | 'CheckRun' | 'ClosedEvent' | 'Commit' | 'ConvertToDraftEvent' | 'CrossReferencedEvent' | 'Gist' | 'Issue' | 'Mannequin' | 'MergedEvent' | 'Milestone' | 'Organization' | 'PullRequest' | 'PullRequestCommit' | 'ReadyForReviewEvent' | 'Release' | 'Repository' | 'RepositoryTopic' | 'ReviewDismissedEvent' | 'TeamDiscussion' | 'TeamDiscussionComment' | 'User', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Bot' | 'CheckRun' | 'ClosedEvent' | 'Commit' | 'ConvertToDraftEvent' | 'CrossReferencedEvent' | 'Gist' | 'Issue' | 'Mannequin' | 'MergedEvent' | 'Milestone' | 'Organization' | 'PullRequest' | 'PullRequestCommit' | 'ReadyForReviewEvent' | 'Release' | 'Repository' | 'RepositoryTopic' | 'ReviewDismissedEvent' | 'TeamDiscussion' | 'TeamDiscussionComment' | 'User' | 'WorkflowRun', ParentType, ContextType>;
   resourcePath?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['URI'], ParentType, ContextType>;
 };

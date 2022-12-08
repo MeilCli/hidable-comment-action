@@ -40548,7 +40548,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.1';
+var version = '3.7.2';
 
 function isExecutionPatchIncrementalResult(value) {
     return !!value.incremental;
@@ -42192,7 +42192,6 @@ var QueryManager = (function () {
     };
     QueryManager.prototype.getResultsFromLink = function (queryInfo, cacheWriteBehavior, options) {
         var requestId = queryInfo.lastRequestId = this.generateRequestId();
-        options = utilities.cloneDeep(options);
         var linkDocument = this.cache.transformForLink(this.transform(queryInfo.document).document);
         return utilities.asyncMap(this.getObservableFromLink(linkDocument, options.context, options.variables), function (result) {
             var graphQLErrors = utilities.isNonEmptyArray(result.errors)
@@ -42491,7 +42490,7 @@ var ApolloClient = (function () {
         if (connectToDevTools && typeof window === 'object') {
             window.__APOLLO_CLIENT__ = this;
         }
-        if (!hasSuggestedDevtools && __DEV__) {
+        if (!hasSuggestedDevtools && connectToDevTools && __DEV__) {
             hasSuggestedDevtools = true;
             if (typeof window !== 'undefined' &&
                 window.document &&
@@ -42759,6 +42758,7 @@ var ApolloError = (function (_super) {
     function ApolloError(_a) {
         var graphQLErrors = _a.graphQLErrors, clientErrors = _a.clientErrors, networkError = _a.networkError, errorMessage = _a.errorMessage, extraInfo = _a.extraInfo;
         var _this = _super.call(this, errorMessage) || this;
+        _this.name = 'ApolloError';
         _this.graphQLErrors = graphQLErrors || [];
         _this.clientErrors = clientErrors || [];
         _this.networkError = networkError || null;
