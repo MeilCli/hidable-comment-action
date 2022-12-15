@@ -3485,6 +3485,8 @@ export type CreatePullRequestInput = {
    *
    */
   headRefName: Scalars['String'];
+  /** The Node ID of the head repository. */
+  headRepositoryId?: InputMaybe<Scalars['ID']>;
   /** Indicates whether maintainers can modify the pull request. */
   maintainerCanModify?: InputMaybe<Scalars['Boolean']>;
   /** The Node ID of the repository. */
@@ -13663,7 +13665,10 @@ export enum PackageType {
    * @deprecated DOCKER will be removed from this enum as this type will be migrated to only be used by the Packages REST API. Removal on 2021-06-21 UTC.
    */
   Docker = 'DOCKER',
-  /** A maven package. */
+  /**
+   * A maven package.
+   * @deprecated MAVEN will be removed from this enum as this type will be migrated to only be used by the Packages REST API. Removal on 2023-02-10 UTC.
+   */
   Maven = 'MAVEN',
   /**
    * An npm package.
@@ -13677,7 +13682,10 @@ export enum PackageType {
   Nuget = 'NUGET',
   /** A python package. */
   Pypi = 'PYPI',
-  /** A rubygems package. */
+  /**
+   * A rubygems package.
+   * @deprecated RUBYGEMS will be removed from this enum as this type will be migrated to only be used by the Packages REST API. Removal on 2022-12-28 UTC.
+   */
   Rubygems = 'RUBYGEMS'
 }
 
@@ -19708,6 +19716,8 @@ export type Repository = Node & PackageOwner & ProjectOwner & ProjectV2Recent & 
   hasIssuesEnabled: Scalars['Boolean'];
   /** Indicates if the repository has the Projects feature enabled. */
   hasProjectsEnabled: Scalars['Boolean'];
+  /** Whether vulnerability alerts are enabled for the repository. */
+  hasVulnerabilityAlertsEnabled: Scalars['Boolean'];
   /** Indicates if the repository has wiki feature enabled. */
   hasWikiEnabled: Scalars['Boolean'];
   /** The repository's URL. */
@@ -36768,6 +36778,7 @@ export type RepositoryResolvers<ContextType = any, ParentType extends ResolversP
   hasDiscussionsEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasIssuesEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasProjectsEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasVulnerabilityAlertsEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasWikiEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   homepageUrl?: Resolver<Maybe<ResolversTypes['URI']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
