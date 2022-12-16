@@ -41058,10 +41058,99 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.2';
+var version = '3.7.3';
+
+function isNonEmptyArray(value) {
+    return Array.isArray(value) && value.length > 0;
+}
+
+function isNonNullObject(obj) {
+    return obj !== null && typeof obj === 'object';
+}
+
+var hasOwnProperty$2 = Object.prototype.hasOwnProperty;
+var defaultReconciler = function (target, source, property) {
+    return this.merge(target[property], source[property]);
+};
+var DeepMerger = (function () {
+    function DeepMerger(reconciler) {
+        if (reconciler === void 0) { reconciler = defaultReconciler; }
+        this.reconciler = reconciler;
+        this.isObject = isNonNullObject;
+        this.pastCopies = new Set();
+    }
+    DeepMerger.prototype.merge = function (target, source) {
+        var _this = this;
+        var context = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            context[_i - 2] = arguments[_i];
+        }
+        if (isNonNullObject(source) && isNonNullObject(target)) {
+            Object.keys(source).forEach(function (sourceKey) {
+                if (hasOwnProperty$2.call(target, sourceKey)) {
+                    var targetValue = target[sourceKey];
+                    if (source[sourceKey] !== targetValue) {
+                        var result = _this.reconciler.apply(_this, tslib.__spreadArray([target, source, sourceKey], context, false));
+                        if (result !== targetValue) {
+                            target = _this.shallowCopyForMerge(target);
+                            target[sourceKey] = result;
+                        }
+                    }
+                }
+                else {
+                    target = _this.shallowCopyForMerge(target);
+                    target[sourceKey] = source[sourceKey];
+                }
+            });
+            return target;
+        }
+        return source;
+    };
+    DeepMerger.prototype.shallowCopyForMerge = function (value) {
+        if (isNonNullObject(value)) {
+            if (!this.pastCopies.has(value)) {
+                if (Array.isArray(value)) {
+                    value = value.slice(0);
+                }
+                else {
+                    value = tslib.__assign({ __proto__: Object.getPrototypeOf(value) }, value);
+                }
+                this.pastCopies.add(value);
+            }
+        }
+        return value;
+    };
+    return DeepMerger;
+}());
 
 function isExecutionPatchIncrementalResult(value) {
-    return !!value.incremental;
+    return "incremental" in value;
+}
+function isExecutionPatchInitialResult(value) {
+    return "hasNext" in value && "data" in value;
+}
+function isExecutionPatchResult(value) {
+    return (isExecutionPatchIncrementalResult(value) ||
+        isExecutionPatchInitialResult(value));
+}
+function mergeIncrementalData(prevResult, result) {
+    var mergedData = prevResult;
+    var merger = new DeepMerger();
+    if (isExecutionPatchIncrementalResult(result) &&
+        isNonEmptyArray(result.incremental)) {
+        result.incremental.forEach(function (_a) {
+            var data = _a.data, path = _a.path;
+            for (var i = path.length - 1; i >= 0; --i) {
+                var key = path[i];
+                var isNumericKey = !isNaN(+key);
+                var parent_1 = isNumericKey ? [] : {};
+                parent_1[key] = data;
+                data = parent_1;
+            }
+            mergedData = merger.merge(mergedData, data);
+        });
+    }
+    return mergedData;
 }
 
 exports.NetworkStatus = void 0;
@@ -42026,28 +42115,18 @@ var QueryInfo = (function () {
     };
     QueryInfo.prototype.markResult = function (result, document, options, cacheWriteBehavior) {
         var _this = this;
+        var merger = new utilities.DeepMerger();
         var graphQLErrors = utilities.isNonEmptyArray(result.errors)
             ? result.errors.slice(0)
             : [];
         this.reset();
         if ('incremental' in result && utilities.isNonEmptyArray(result.incremental)) {
-            var mergedData_1 = this.getDiff().result;
-            var merger_1 = new utilities.DeepMerger();
-            result.incremental.forEach(function (_a) {
-                var data = _a.data, path = _a.path, errors = _a.errors;
-                for (var i = path.length - 1; i >= 0; --i) {
-                    var key = path[i];
-                    var isNumericKey = !isNaN(+key);
-                    var parent_1 = isNumericKey ? [] : {};
-                    parent_1[key] = data;
-                    data = parent_1;
-                }
-                if (errors) {
-                    graphQLErrors.push.apply(graphQLErrors, errors);
-                }
-                mergedData_1 = merger_1.merge(mergedData_1, data);
-            });
-            result.data = mergedData_1;
+            var mergedData = mergeIncrementalData(this.getDiff().result, result);
+            result.data = mergedData;
+        }
+        else if ('hasNext' in result && result.hasNext) {
+            var diff = this.getDiff();
+            result.data = merger.merge(diff.result, result.data);
         }
         this.graphQLErrors = graphQLErrors;
         if (options.fetchPolicy === 'no-cache') {
@@ -42204,7 +42283,7 @@ var QueryManager = (function () {
                                 return utilities.asyncMap(self.getObservableFromLink(mutation, tslib.__assign(tslib.__assign({}, context), { optimisticResponse: optimisticResponse }), variables, false), function (result) {
                                     if (utilities.graphQLResultHasError(result) && errorPolicy === 'none') {
                                         throw new errors.ApolloError({
-                                            graphQLErrors: result.errors,
+                                            graphQLErrors: utilities.getGraphQLErrorsFromResult(result),
                                         });
                                     }
                                     if (mutationStoreValue) {
@@ -42238,7 +42317,9 @@ var QueryManager = (function () {
                                 }).subscribe({
                                     next: function (storeResult) {
                                         self.broadcastQueries();
-                                        resolve(storeResult);
+                                        if (!('hasNext' in storeResult) || storeResult.hasNext === false) {
+                                            resolve(storeResult);
+                                        }
                                     },
                                     error: function (err) {
                                         if (mutationStoreValue) {
@@ -42266,12 +42347,33 @@ var QueryManager = (function () {
         var cacheWrites = [];
         var skipCache = mutation.fetchPolicy === "no-cache";
         if (!skipCache && shouldWriteResult(result, mutation.errorPolicy)) {
-            cacheWrites.push({
-                result: result.data,
-                dataId: 'ROOT_MUTATION',
-                query: mutation.document,
-                variables: mutation.variables,
-            });
+            if (!isExecutionPatchIncrementalResult(result)) {
+                cacheWrites.push({
+                    result: result.data,
+                    dataId: 'ROOT_MUTATION',
+                    query: mutation.document,
+                    variables: mutation.variables,
+                });
+            }
+            if (isExecutionPatchIncrementalResult(result) && utilities.isNonEmptyArray(result.incremental)) {
+                var diff = cache.diff({
+                    id: "ROOT_MUTATION",
+                    query: this.transform(mutation.document).asQuery,
+                    variables: mutation.variables,
+                    optimistic: false,
+                    returnPartialData: true,
+                });
+                var mergedData = mergeIncrementalData(diff.result, result);
+                if (typeof mergedData !== 'undefined') {
+                    result.data = mergedData;
+                    cacheWrites.push({
+                        result: mergedData,
+                        dataId: 'ROOT_MUTATION',
+                        query: mutation.document,
+                        variables: mutation.variables,
+                    });
+                }
+            }
             var updateQueries_1 = mutation.updateQueries;
             if (updateQueries_1) {
                 this.queries.forEach(function (_a, queryId) {
@@ -42318,6 +42420,8 @@ var QueryManager = (function () {
                         cacheWrites.forEach(function (write) { return cache.write(write); });
                     }
                     var update = mutation.update;
+                    var isFinalResult = !isExecutionPatchResult(result) ||
+                        (isExecutionPatchIncrementalResult(result) && !result.hasNext);
                     if (update) {
                         if (!skipCache) {
                             var diff = cache.diff({
@@ -42327,16 +42431,24 @@ var QueryManager = (function () {
                                 optimistic: false,
                                 returnPartialData: true,
                             });
-                            if (diff.complete && !(isExecutionPatchIncrementalResult(result))) {
+                            if (diff.complete) {
                                 result = tslib.__assign(tslib.__assign({}, result), { data: diff.result });
+                                if ('incremental' in result) {
+                                    delete result.incremental;
+                                }
+                                if ('hasNext' in result) {
+                                    delete result.hasNext;
+                                }
                             }
                         }
-                        update(cache, result, {
-                            context: mutation.context,
-                            variables: mutation.variables,
-                        });
+                        if (isFinalResult) {
+                            update(cache, result, {
+                                context: mutation.context,
+                                variables: mutation.variables,
+                            });
+                        }
                     }
-                    if (!skipCache && !mutation.keepRootFields) {
+                    if (!skipCache && !mutation.keepRootFields && isFinalResult) {
                         cache.modify({
                             id: 'ROOT_MUTATION',
                             fields: function (value, _a) {
@@ -42704,17 +42816,8 @@ var QueryManager = (function () {
         var requestId = queryInfo.lastRequestId = this.generateRequestId();
         var linkDocument = this.cache.transformForLink(this.transform(queryInfo.document).document);
         return utilities.asyncMap(this.getObservableFromLink(linkDocument, options.context, options.variables), function (result) {
-            var graphQLErrors = utilities.isNonEmptyArray(result.errors)
-                ? result.errors.slice(0)
-                : [];
-            if ('incremental' in result && utilities.isNonEmptyArray(result.incremental)) {
-                result.incremental.forEach(function (incrementalResult) {
-                    if (incrementalResult.errors) {
-                        graphQLErrors.push.apply(graphQLErrors, incrementalResult.errors);
-                    }
-                });
-            }
-            var hasErrors = utilities.isNonEmptyArray(graphQLErrors);
+            var graphQLErrors = utilities.getGraphQLErrorsFromResult(result);
+            var hasErrors = graphQLErrors.length > 0;
             if (requestId >= queryInfo.lastRequestId) {
                 if (hasErrors && options.errorPolicy === "none") {
                     throw queryInfo.markError(new errors.ApolloError({
@@ -46353,8 +46456,27 @@ function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
 }
 
+function isExecutionPatchIncrementalResult(value) {
+    return "incremental" in value;
+}
+
 function graphQLResultHasError(result) {
-    return (result.errors && result.errors.length > 0) || false;
+    var errors = getGraphQLErrorsFromResult(result);
+    return isNonEmptyArray(errors);
+}
+function getGraphQLErrorsFromResult(result) {
+    var graphQLErrors = isNonEmptyArray(result.errors)
+        ? result.errors.slice(0)
+        : [];
+    if (isExecutionPatchIncrementalResult(result) &&
+        isNonEmptyArray(result.incremental)) {
+        result.incremental.forEach(function (incrementalResult) {
+            if (incrementalResult.errors) {
+                graphQLErrors.push.apply(graphQLErrors, incrementalResult.errors);
+            }
+        });
+    }
+    return graphQLErrors;
 }
 
 function compact() {
@@ -46423,6 +46545,7 @@ exports.getFragmentDefinition = getFragmentDefinition;
 exports.getFragmentDefinitions = getFragmentDefinitions;
 exports.getFragmentFromSelection = getFragmentFromSelection;
 exports.getFragmentQueryDocument = getFragmentQueryDocument;
+exports.getGraphQLErrorsFromResult = getGraphQLErrorsFromResult;
 exports.getInclusionDirectives = getInclusionDirectives;
 exports.getMainDefinition = getMainDefinition;
 exports.getOperationDefinition = getOperationDefinition;
