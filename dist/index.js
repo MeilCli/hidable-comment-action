@@ -41064,7 +41064,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.4';
+var version = '3.7.5';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -42987,6 +42987,11 @@ var QueryManager = (function () {
                     onlyRunForcedResolvers: true,
                 }).then(function (resolved) { return fromData(resolved.data || void 0); });
             }
+            if (errorPolicy === 'none' &&
+                networkStatus === exports.NetworkStatus.refetch &&
+                Array.isArray(diff.missing)) {
+                return fromData(void 0);
+            }
             return fromData(data);
         };
         var cacheWriteBehavior = fetchPolicy === "no-cache" ? 0 :
@@ -43910,7 +43915,9 @@ function selectHttpOptionsAndBodyInternal(operation, printer) {
         }
         http = tslib.__assign(tslib.__assign({}, http), config.http);
     });
-    options.headers = removeDuplicateHeaders(options.headers, http.preserveHeaderCase);
+    if (options.headers) {
+        options.headers = removeDuplicateHeaders(options.headers, http.preserveHeaderCase);
+    }
     var operationName = operation.operationName, extensions = operation.extensions, variables = operation.variables, query = operation.query;
     var body = { operationName: operationName, variables: variables };
     if (http.includeExtensions)
@@ -44076,6 +44083,7 @@ var createHttpLink = function (linkOptions) {
             options.method = 'GET';
         }
         if (utilities.hasDirectives(['defer'], operation.query)) {
+            options.headers = options.headers || {};
             options.headers.accept = "multipart/mixed; deferSpec=20220824, application/json";
         }
         if (options.method === 'GET') {
@@ -45057,20 +45065,21 @@ function useFragment_experimental(options) {
     var diffOptions = tslib.__assign(tslib.__assign({}, rest), { id: typeof from === "string" ? from : cache.identify(from), query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic });
     var resultRef = React.useRef();
     var latestDiff = cache.diff(diffOptions);
-    return useSyncExternalStore(function (forceUpdate) {
-        return cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
-                if (!equality.equal(diff, latestDiff)) {
-                    resultRef.current = diffToResult(latestDiff = diff);
-                    forceUpdate();
-                }
-            } }));
-    }, function () {
+    var getSnapshot = function () {
         var latestDiffToResult = diffToResult(latestDiff);
         return resultRef.current &&
             equality.equal(resultRef.current.data, latestDiffToResult.data)
             ? resultRef.current
             : (resultRef.current = latestDiffToResult);
-    });
+    };
+    return useSyncExternalStore(function (forceUpdate) {
+        return cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
+                if (!equality.equal(diff, latestDiff)) {
+                    resultRef.current = diffToResult((latestDiff = diff));
+                    forceUpdate();
+                }
+            } }));
+    }, getSnapshot, getSnapshot);
 }
 function diffToResult(diff) {
     var result = {
