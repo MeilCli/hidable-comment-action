@@ -41,7 +41,7 @@
         "prettier": "^2.8.3",
         "react": "^18.2.0",
         "ts-jest": "^28.0.8",
-        "typescript": "^4.9.4"
+        "typescript": "^4.9.5"
     },
     "jest": {
         "clearMocks": true,
