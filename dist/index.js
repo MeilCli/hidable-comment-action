@@ -40966,7 +40966,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.5';
+var version = '3.7.6';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -41426,7 +41426,7 @@ var ObservableQuery = (function (_super) {
             pollingInfo.interval === pollInterval) {
             return;
         }
-        __DEV__ ? globals.invariant(pollInterval, 'Attempted to start a polling query without a polling interval.') : globals.invariant(pollInterval, 12);
+        __DEV__ ? globals.invariant(pollInterval, 'Attempted to start a polling query without a polling interval.') : globals.invariant(pollInterval, 13);
         var info = pollingInfo || (this.pollingInfo = {});
         info.interval = pollInterval;
         var maybeFetch = function () {
@@ -41572,6 +41572,7 @@ function logMissingFieldErrors(missing) {
 var LocalState = (function () {
     function LocalState(_a) {
         var cache = _a.cache, client = _a.client, resolvers = _a.resolvers, fragmentMatcher = _a.fragmentMatcher;
+        this.selectionsToResolveCache = new WeakMap();
         this.cache = cache;
         if (client) {
             this.client = client;
@@ -41682,13 +41683,13 @@ var LocalState = (function () {
         if (fragmentMatcher === void 0) { fragmentMatcher = function () { return true; }; }
         if (onlyRunForcedResolvers === void 0) { onlyRunForcedResolvers = false; }
         return tslib.__awaiter(this, void 0, void 0, function () {
-            var mainDefinition, fragments, fragmentMap, definitionOperation, defaultOperationType, _a, cache, client, execContext;
+            var mainDefinition, fragments, fragmentMap, selectionsToResolve, definitionOperation, defaultOperationType, _a, cache, client, execContext, isClientFieldDescendant;
             return tslib.__generator(this, function (_b) {
                 mainDefinition = utilities.getMainDefinition(document);
                 fragments = utilities.getFragmentDefinitions(document);
                 fragmentMap = utilities.createFragmentMap(fragments);
-                definitionOperation = mainDefinition
-                    .operation;
+                selectionsToResolve = this.collectSelectionsToResolve(mainDefinition, fragmentMap);
+                definitionOperation = mainDefinition.operation;
                 defaultOperationType = definitionOperation
                     ? definitionOperation.charAt(0).toUpperCase() +
                         definitionOperation.slice(1)
@@ -41701,16 +41702,18 @@ var LocalState = (function () {
                     fragmentMatcher: fragmentMatcher,
                     defaultOperationType: defaultOperationType,
                     exportedVariables: {},
+                    selectionsToResolve: selectionsToResolve,
                     onlyRunForcedResolvers: onlyRunForcedResolvers,
                 };
-                return [2, this.resolveSelectionSet(mainDefinition.selectionSet, rootValue, execContext).then(function (result) { return ({
+                isClientFieldDescendant = false;
+                return [2, this.resolveSelectionSet(mainDefinition.selectionSet, isClientFieldDescendant, rootValue, execContext).then(function (result) { return ({
                         result: result,
                         exportedVariables: execContext.exportedVariables,
                     }); })];
             });
         });
     };
-    LocalState.prototype.resolveSelectionSet = function (selectionSet, rootValue, execContext) {
+    LocalState.prototype.resolveSelectionSet = function (selectionSet, isClientFieldDescendant, rootValue, execContext) {
         return tslib.__awaiter(this, void 0, void 0, function () {
             var fragmentMap, context, variables, resultsToMerge, execute;
             var _this = this;
@@ -41720,11 +41723,14 @@ var LocalState = (function () {
                 execute = function (selection) { return tslib.__awaiter(_this, void 0, void 0, function () {
                     var fragment, typeCondition;
                     return tslib.__generator(this, function (_a) {
+                        if (!isClientFieldDescendant && !execContext.selectionsToResolve.has(selection)) {
+                            return [2];
+                        }
                         if (!utilities.shouldInclude(selection, variables)) {
                             return [2];
                         }
                         if (utilities.isField(selection)) {
-                            return [2, this.resolveField(selection, rootValue, execContext).then(function (fieldResult) {
+                            return [2, this.resolveField(selection, isClientFieldDescendant, rootValue, execContext).then(function (fieldResult) {
                                     var _a;
                                     if (typeof fieldResult !== 'undefined') {
                                         resultsToMerge.push((_a = {},
@@ -41743,7 +41749,7 @@ var LocalState = (function () {
                         if (fragment && fragment.typeCondition) {
                             typeCondition = fragment.typeCondition.name.value;
                             if (execContext.fragmentMatcher(rootValue, typeCondition, context)) {
-                                return [2, this.resolveSelectionSet(fragment.selectionSet, rootValue, execContext).then(function (fragmentResult) {
+                                return [2, this.resolveSelectionSet(fragment.selectionSet, isClientFieldDescendant, rootValue, execContext).then(function (fragmentResult) {
                                         resultsToMerge.push(fragmentResult);
                                     })];
                             }
@@ -41757,7 +41763,7 @@ var LocalState = (function () {
             });
         });
     };
-    LocalState.prototype.resolveField = function (field, rootValue, execContext) {
+    LocalState.prototype.resolveField = function (field, isClientFieldDescendant, rootValue, execContext) {
         return tslib.__awaiter(this, void 0, void 0, function () {
             var variables, fieldName, aliasedFieldName, aliasUsed, defaultResult, resultPromise, resolverType, resolverMap, resolve;
             var _this = this;
@@ -41785,6 +41791,7 @@ var LocalState = (function () {
                     }
                 }
                 return [2, resultPromise.then(function (result) {
+                        var _a, _b;
                         if (result === void 0) { result = defaultResult; }
                         if (field.directives) {
                             field.directives.forEach(function (directive) {
@@ -41803,29 +41810,69 @@ var LocalState = (function () {
                         if (result == null) {
                             return result;
                         }
+                        var isClientField = (_b = (_a = field.directives) === null || _a === void 0 ? void 0 : _a.some(function (d) { return d.name.value === 'client'; })) !== null && _b !== void 0 ? _b : false;
                         if (Array.isArray(result)) {
-                            return _this.resolveSubSelectedArray(field, result, execContext);
+                            return _this.resolveSubSelectedArray(field, isClientFieldDescendant || isClientField, result, execContext);
                         }
                         if (field.selectionSet) {
-                            return _this.resolveSelectionSet(field.selectionSet, result, execContext);
+                            return _this.resolveSelectionSet(field.selectionSet, isClientFieldDescendant || isClientField, result, execContext);
                         }
                     })];
             });
         });
     };
-    LocalState.prototype.resolveSubSelectedArray = function (field, result, execContext) {
+    LocalState.prototype.resolveSubSelectedArray = function (field, isClientFieldDescendant, result, execContext) {
         var _this = this;
         return Promise.all(result.map(function (item) {
             if (item === null) {
                 return null;
             }
             if (Array.isArray(item)) {
-                return _this.resolveSubSelectedArray(field, item, execContext);
+                return _this.resolveSubSelectedArray(field, isClientFieldDescendant, item, execContext);
             }
             if (field.selectionSet) {
-                return _this.resolveSelectionSet(field.selectionSet, item, execContext);
+                return _this.resolveSelectionSet(field.selectionSet, isClientFieldDescendant, item, execContext);
             }
         }));
+    };
+    LocalState.prototype.collectSelectionsToResolve = function (mainDefinition, fragmentMap) {
+        var isSingleASTNode = function (node) { return !Array.isArray(node); };
+        var selectionsToResolveCache = this.selectionsToResolveCache;
+        function collectByDefinition(definitionNode) {
+            if (!selectionsToResolveCache.has(definitionNode)) {
+                var matches_1 = new Set();
+                selectionsToResolveCache.set(definitionNode, matches_1);
+                graphql.visit(definitionNode, {
+                    Directive: function (node, _, __, ___, ancestors) {
+                        if (node.name.value === 'client') {
+                            ancestors.forEach(function (node) {
+                                if (isSingleASTNode(node) && graphql.isSelectionNode(node)) {
+                                    matches_1.add(node);
+                                }
+                            });
+                        }
+                    },
+                    FragmentSpread: function (spread, _, __, ___, ancestors) {
+                        var fragment = fragmentMap[spread.name.value];
+                        __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(spread.name.value)) : globals.invariant(fragment, 12);
+                        var fragmentSelections = collectByDefinition(fragment);
+                        if (fragmentSelections.size > 0) {
+                            ancestors.forEach(function (node) {
+                                if (isSingleASTNode(node) && graphql.isSelectionNode(node)) {
+                                    matches_1.add(node);
+                                }
+                            });
+                            matches_1.add(spread);
+                            fragmentSelections.forEach(function (selection) {
+                                matches_1.add(selection);
+                            });
+                        }
+                    }
+                });
+            }
+            return selectionsToResolveCache.get(definitionNode);
+        }
+        return collectByDefinition(mainDefinition);
     };
     return LocalState;
 }());
@@ -42137,7 +42184,7 @@ var QueryManager = (function () {
         this.queries.forEach(function (_info, queryId) {
             _this.stopQueryNoBroadcast(queryId);
         });
-        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('QueryManager stopped while query was in flight') : new globals.InvariantError(13));
+        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('QueryManager stopped while query was in flight') : new globals.InvariantError(14));
     };
     QueryManager.prototype.cancelPendingFetches = function (error) {
         this.fetchCancelFns.forEach(function (cancel) { return cancel(error); });
@@ -42151,10 +42198,10 @@ var QueryManager = (function () {
             return tslib.__generator(this, function (_j) {
                 switch (_j.label) {
                     case 0:
-                        __DEV__ ? globals.invariant(mutation, 'mutation option is required. You must specify your GraphQL document in the mutation option.') : globals.invariant(mutation, 14);
+                        __DEV__ ? globals.invariant(mutation, 'mutation option is required. You must specify your GraphQL document in the mutation option.') : globals.invariant(mutation, 15);
                         __DEV__ ? globals.invariant(fetchPolicy === 'network-only' ||
                             fetchPolicy === 'no-cache', "Mutations support only 'network-only' or 'no-cache' fetchPolicy strings. The default `network-only` behavior automatically writes mutation results to the cache. Passing `no-cache` skips the cache write.") : globals.invariant(fetchPolicy === 'network-only' ||
-                            fetchPolicy === 'no-cache', 15);
+                            fetchPolicy === 'no-cache', 16);
                         mutationId = this.generateMutationId();
                         _h = this.transform(mutation), document = _h.document, hasClientExports = _h.hasClientExports;
                         mutation = this.cache.transformForLink(document);
@@ -42271,7 +42318,10 @@ var QueryManager = (function () {
                     optimistic: false,
                     returnPartialData: true,
                 });
-                var mergedData = mergeIncrementalData(diff.result, result);
+                var mergedData = void 0;
+                if (diff.result) {
+                    mergedData = mergeIncrementalData(diff.result, result);
+                }
                 if (typeof mergedData !== 'undefined') {
                     result.data = mergedData;
                     cacheWrites.push({
@@ -42473,10 +42523,10 @@ var QueryManager = (function () {
         var _this = this;
         if (queryId === void 0) { queryId = this.generateQueryId(); }
         __DEV__ ? globals.invariant(options.query, 'query option is required. You must specify your GraphQL document ' +
-            'in the query option.') : globals.invariant(options.query, 16);
-        __DEV__ ? globals.invariant(options.query.kind === 'Document', 'You must wrap the query string in a "gql" tag.') : globals.invariant(options.query.kind === 'Document', 17);
-        __DEV__ ? globals.invariant(!options.returnPartialData, 'returnPartialData option only supported on watchQuery.') : globals.invariant(!options.returnPartialData, 18);
-        __DEV__ ? globals.invariant(!options.pollInterval, 'pollInterval option only supported on watchQuery.') : globals.invariant(!options.pollInterval, 19);
+            'in the query option.') : globals.invariant(options.query, 17);
+        __DEV__ ? globals.invariant(options.query.kind === 'Document', 'You must wrap the query string in a "gql" tag.') : globals.invariant(options.query.kind === 'Document', 18);
+        __DEV__ ? globals.invariant(!options.returnPartialData, 'returnPartialData option only supported on watchQuery.') : globals.invariant(!options.returnPartialData, 19);
+        __DEV__ ? globals.invariant(!options.pollInterval, 'pollInterval option only supported on watchQuery.') : globals.invariant(!options.pollInterval, 20);
         return this.fetchQuery(queryId, options).finally(function () { return _this.stopQuery(queryId); });
     };
     QueryManager.prototype.generateQueryId = function () {
@@ -42501,7 +42551,7 @@ var QueryManager = (function () {
         if (options === void 0) { options = {
             discardWatches: true,
         }; }
-        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('Store reset while query was in flight (not completed in link chain)') : new globals.InvariantError(20));
+        this.cancelPendingFetches(__DEV__ ? new globals.InvariantError('Store reset while query was in flight (not completed in link chain)') : new globals.InvariantError(21));
         this.queries.forEach(function (queryInfo) {
             if (queryInfo.observableQuery) {
                 queryInfo.networkStatus = exports.NetworkStatus.loading;
@@ -43395,7 +43445,7 @@ var ApolloLink = (function () {
         return ApolloLink.concat(this, next);
     };
     ApolloLink.prototype.request = function (operation, forward) {
-        throw __DEV__ ? new globals.InvariantError('request is not implemented') : new globals.InvariantError(21);
+        throw __DEV__ ? new globals.InvariantError('request is not implemented') : new globals.InvariantError(22);
     };
     ApolloLink.prototype.onError = function (error, observer) {
         if (observer && observer.error) {
@@ -43769,7 +43819,7 @@ var serializeFetchParameter = function (p, label) {
         serialized = JSON.stringify(p);
     }
     catch (e) {
-        var parseError = __DEV__ ? new globals.InvariantError("Network request failed. ".concat(label, " is not serializable: ").concat(e.message)) : new globals.InvariantError(23);
+        var parseError = __DEV__ ? new globals.InvariantError("Network request failed. ".concat(label, " is not serializable: ").concat(e.message)) : new globals.InvariantError(24);
         parseError.parseError = e;
         throw parseError;
     }
@@ -43852,7 +43902,7 @@ function removeDuplicateHeaders(headers, preserveHeaderCase) {
 
 var checkFetcher = function (fetcher) {
     if (!fetcher && typeof fetch === 'undefined') {
-        throw __DEV__ ? new globals.InvariantError("\n\"fetch\" has not been found globally and no fetcher has been configured. To fix this, install a fetch package (like https://www.npmjs.com/package/cross-fetch), instantiate the fetcher, and pass it into your HttpLink constructor. For example:\n\nimport fetch from 'cross-fetch';\nimport { ApolloClient, HttpLink } from '@apollo/client';\nconst client = new ApolloClient({\n  link: new HttpLink({ uri: '/graphql', fetch })\n});\n    ") : new globals.InvariantError(22);
+        throw __DEV__ ? new globals.InvariantError("\n\"fetch\" has not been found globally and no fetcher has been configured. To fix this, install a fetch package (like https://www.npmjs.com/package/cross-fetch), instantiate the fetcher, and pass it into your HttpLink constructor. For example:\n\nimport fetch from 'cross-fetch';\nimport { ApolloClient, HttpLink } from '@apollo/client';\nconst client = new ApolloClient({\n  link: new HttpLink({ uri: '/graphql', fetch })\n});\n    ") : new globals.InvariantError(23);
     }
 };
 
@@ -44121,7 +44171,7 @@ function validateOperation(operation) {
     for (var _i = 0, _a = Object.keys(operation); _i < _a.length; _i++) {
         var key = _a[_i];
         if (OPERATION_FIELDS.indexOf(key) < 0) {
-            throw __DEV__ ? new globals.InvariantError("illegal argument: ".concat(key)) : new globals.InvariantError(26);
+            throw __DEV__ ? new globals.InvariantError("illegal argument: ".concat(key)) : new globals.InvariantError(27);
         }
     }
     return operation;
@@ -44248,7 +44298,7 @@ var ApolloConsumer = function (props) {
     var ApolloContext = getApolloContext();
     return (React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
         __DEV__ ? globals.invariant(context && context.client, 'Could not find "client" in the context of ApolloConsumer. ' +
-            'Wrap the root component in an <ApolloProvider>.') : globals.invariant(context && context.client, 27);
+            'Wrap the root component in an <ApolloProvider>.') : globals.invariant(context && context.client, 28);
         return props.children(context.client);
     }));
 };
@@ -44262,7 +44312,7 @@ var ApolloProvider = function (_a) {
             context = Object.assign({}, context, { client: client });
         }
         __DEV__ ? globals.invariant(context.client, 'ApolloProvider was not passed a client instance. Make ' +
-            'sure you pass in your client via the "client" prop.') : globals.invariant(context.client, 28);
+            'sure you pass in your client via the "client" prop.') : globals.invariant(context.client, 29);
         return (React__namespace.createElement(ApolloContext.Provider, { value: context }, children));
     }));
 };
@@ -44313,7 +44363,7 @@ function useApolloClient(override) {
     var client = override || context$1.client;
     __DEV__ ? globals.invariant(!!client, 'Could not find "client" in the context or passed in as an option. ' +
         'Wrap the root component in an <ApolloProvider>, or pass an ApolloClient ' +
-        'instance in via options.') : globals.invariant(!!client, 31);
+        'instance in via options.') : globals.invariant(!!client, 32);
     return client;
 }
 
@@ -45045,7 +45095,7 @@ function parser(document) {
     var variables, type, name;
     __DEV__ ? globals.invariant(!!document && !!document.kind, "Argument of ".concat(document, " passed to parser was not a valid GraphQL ") +
         "DocumentNode. You may need to use 'graphql-tag' or another method " +
-        "to convert your operation into a document") : globals.invariant(!!document && !!document.kind, 32);
+        "to convert your operation into a document") : globals.invariant(!!document && !!document.kind, 33);
     var fragments = [];
     var queries = [];
     var mutations = [];
@@ -45073,11 +45123,11 @@ function parser(document) {
     __DEV__ ? globals.invariant(!fragments.length ||
         (queries.length || mutations.length || subscriptions.length), "Passing only a fragment to 'graphql' is not yet supported. " +
         "You must include a query, subscription or mutation as well") : globals.invariant(!fragments.length ||
-        (queries.length || mutations.length || subscriptions.length), 33);
+        (queries.length || mutations.length || subscriptions.length), 34);
     __DEV__ ? globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, "react-apollo only supports a query, subscription, or a mutation per HOC. " +
         "".concat(document, " had ").concat(queries.length, " queries, ").concat(subscriptions.length, " ") +
         "subscriptions and ".concat(mutations.length, " mutations. ") +
-        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, 34);
+        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(queries.length + mutations.length + subscriptions.length <= 1, 35);
     type = queries.length ? exports.DocumentType.Query : exports.DocumentType.Mutation;
     if (!queries.length && !mutations.length)
         type = exports.DocumentType.Subscription;
@@ -45088,7 +45138,7 @@ function parser(document) {
             : subscriptions;
     __DEV__ ? globals.invariant(definitions.length === 1, "react-apollo only supports one definition per HOC. ".concat(document, " had ") +
         "".concat(definitions.length, " definitions. ") +
-        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(definitions.length === 1, 35);
+        "You can use 'compose' to join multiple operation types to a component") : globals.invariant(definitions.length === 1, 36);
     var definition = definitions[0];
     variables = definition.variableDefinitions || [];
     if (definition.name && definition.name.kind === 'Name') {
@@ -45106,7 +45156,7 @@ function verifyDocumentType(document, type) {
     var requiredOperationName = operationName(type);
     var usedOperationName = operationName(operation.type);
     __DEV__ ? globals.invariant(operation.type === type, "Running a ".concat(requiredOperationName, " requires a graphql ") +
-        "".concat(requiredOperationName, ", but a ").concat(usedOperationName, " was used instead.")) : globals.invariant(operation.type === type, 36);
+        "".concat(requiredOperationName, ", but a ").concat(usedOperationName, " was used instead.")) : globals.invariant(operation.type === type, 37);
 }
 
 exports.operationName = operationName;
@@ -45195,7 +45245,7 @@ function removeTemporaryGlobals() {
 }
 
 function checkDEV() {
-    __DEV__ ? tsInvariant.invariant("boolean" === typeof DEV, DEV) : tsInvariant.invariant("boolean" === typeof DEV, 38);
+    __DEV__ ? tsInvariant.invariant("boolean" === typeof DEV, DEV) : tsInvariant.invariant("boolean" === typeof DEV, 39);
 }
 removeTemporaryGlobals();
 checkDEV();
@@ -45235,7 +45285,7 @@ function shouldInclude(_a, variables) {
         var evaledValue = false;
         if (ifArgument.value.kind === 'Variable') {
             evaledValue = variables && variables[ifArgument.value.name.value];
-            __DEV__ ? globals.invariant(evaledValue !== void 0, "Invalid variable referenced in @".concat(directive.name.value, " directive.")) : globals.invariant(evaledValue !== void 0, 39);
+            __DEV__ ? globals.invariant(evaledValue !== void 0, "Invalid variable referenced in @".concat(directive.name.value, " directive.")) : globals.invariant(evaledValue !== void 0, 40);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -45282,13 +45332,13 @@ function getInclusionDirectives(directives) {
                 return;
             var directiveArguments = directive.arguments;
             var directiveName = directive.name.value;
-            __DEV__ ? globals.invariant(directiveArguments && directiveArguments.length === 1, "Incorrect number of arguments for the @".concat(directiveName, " directive.")) : globals.invariant(directiveArguments && directiveArguments.length === 1, 40);
+            __DEV__ ? globals.invariant(directiveArguments && directiveArguments.length === 1, "Incorrect number of arguments for the @".concat(directiveName, " directive.")) : globals.invariant(directiveArguments && directiveArguments.length === 1, 41);
             var ifArgument = directiveArguments[0];
-            __DEV__ ? globals.invariant(ifArgument.name && ifArgument.name.value === 'if', "Invalid argument for the @".concat(directiveName, " directive.")) : globals.invariant(ifArgument.name && ifArgument.name.value === 'if', 41);
+            __DEV__ ? globals.invariant(ifArgument.name && ifArgument.name.value === 'if', "Invalid argument for the @".concat(directiveName, " directive.")) : globals.invariant(ifArgument.name && ifArgument.name.value === 'if', 42);
             var ifValue = ifArgument.value;
             __DEV__ ? globals.invariant(ifValue &&
                 (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), "Argument for the @".concat(directiveName, " directive must be a variable or a boolean value.")) : globals.invariant(ifValue &&
-                (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), 42);
+                (ifValue.kind === 'Variable' || ifValue.kind === 'BooleanValue'), 43);
             result.push({ directive: directive, ifArgument: ifArgument });
         });
     }
@@ -45301,14 +45351,14 @@ function getFragmentQueryDocument(document, fragmentName) {
     document.definitions.forEach(function (definition) {
         if (definition.kind === 'OperationDefinition') {
             throw __DEV__ ? new globals.InvariantError("Found a ".concat(definition.operation, " operation").concat(definition.name ? " named '".concat(definition.name.value, "'") : '', ". ") +
-                'No operations are allowed when using a fragment as a query. Only fragments are allowed.') : new globals.InvariantError(43);
+                'No operations are allowed when using a fragment as a query. Only fragments are allowed.') : new globals.InvariantError(44);
         }
         if (definition.kind === 'FragmentDefinition') {
             fragments.push(definition);
         }
     });
     if (typeof actualFragmentName === 'undefined') {
-        __DEV__ ? globals.invariant(fragments.length === 1, "Found ".concat(fragments.length, " fragments. `fragmentName` must be provided when there is not exactly 1 fragment.")) : globals.invariant(fragments.length === 1, 44);
+        __DEV__ ? globals.invariant(fragments.length === 1, "Found ".concat(fragments.length, " fragments. `fragmentName` must be provided when there is not exactly 1 fragment.")) : globals.invariant(fragments.length === 1, 45);
         actualFragmentName = fragments[0].name.value;
     }
     var query = tslib.__assign(tslib.__assign({}, document), { definitions: tslib.__spreadArray([
@@ -45349,7 +45399,7 @@ function getFragmentFromSelection(selection, fragmentMap) {
                 return fragmentMap(fragmentName);
             }
             var fragment = fragmentMap && fragmentMap[fragmentName];
-            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(fragmentName)) : globals.invariant(fragment, 45);
+            __DEV__ ? globals.invariant(fragment, "No fragment named ".concat(fragmentName)) : globals.invariant(fragment, 46);
             return fragment || null;
         }
         default:
@@ -45433,7 +45483,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
     else {
         throw __DEV__ ? new globals.InvariantError("The inline argument \"".concat(name.value, "\" of kind \"").concat(value.kind, "\"") +
             'is not supported. Use variables instead of inline arguments to ' +
-            'overcome this limitation.') : new globals.InvariantError(54);
+            'overcome this limitation.') : new globals.InvariantError(55);
     }
 }
 function storeKeyNameFromField(field, variables) {
@@ -45567,16 +45617,16 @@ function isInlineFragment(selection) {
 }
 
 function checkDocument(doc) {
-    __DEV__ ? globals.invariant(doc && doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc && doc.kind === 'Document', 46);
+    __DEV__ ? globals.invariant(doc && doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc && doc.kind === 'Document', 47);
     var operations = doc.definitions
         .filter(function (d) { return d.kind !== 'FragmentDefinition'; })
         .map(function (definition) {
         if (definition.kind !== 'OperationDefinition') {
-            throw __DEV__ ? new globals.InvariantError("Schema type definitions not allowed in queries. Found: \"".concat(definition.kind, "\"")) : new globals.InvariantError(47);
+            throw __DEV__ ? new globals.InvariantError("Schema type definitions not allowed in queries. Found: \"".concat(definition.kind, "\"")) : new globals.InvariantError(48);
         }
         return definition;
     });
-    __DEV__ ? globals.invariant(operations.length <= 1, "Ambiguous GraphQL document: contains ".concat(operations.length, " operations")) : globals.invariant(operations.length <= 1, 48);
+    __DEV__ ? globals.invariant(operations.length <= 1, "Ambiguous GraphQL document: contains ".concat(operations.length, " operations")) : globals.invariant(operations.length <= 1, 49);
     return doc;
 }
 function getOperationDefinition(doc) {
@@ -45595,14 +45645,14 @@ function getFragmentDefinitions(doc) {
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
-    __DEV__ ? globals.invariant(queryDef && queryDef.operation === 'query', 'Must contain a query definition.') : globals.invariant(queryDef && queryDef.operation === 'query', 49);
+    __DEV__ ? globals.invariant(queryDef && queryDef.operation === 'query', 'Must contain a query definition.') : globals.invariant(queryDef && queryDef.operation === 'query', 50);
     return queryDef;
 }
 function getFragmentDefinition(doc) {
-    __DEV__ ? globals.invariant(doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc.kind === 'Document', 50);
-    __DEV__ ? globals.invariant(doc.definitions.length <= 1, 'Fragment must have exactly one definition.') : globals.invariant(doc.definitions.length <= 1, 51);
+    __DEV__ ? globals.invariant(doc.kind === 'Document', "Expecting a parsed GraphQL document. Perhaps you need to wrap the query string in a \"gql\" tag? http://docs.apollostack.com/apollo-client/core.html#gql") : globals.invariant(doc.kind === 'Document', 51);
+    __DEV__ ? globals.invariant(doc.definitions.length <= 1, 'Fragment must have exactly one definition.') : globals.invariant(doc.definitions.length <= 1, 52);
     var fragmentDef = doc.definitions[0];
-    __DEV__ ? globals.invariant(fragmentDef.kind === 'FragmentDefinition', 'Must be a fragment definition.') : globals.invariant(fragmentDef.kind === 'FragmentDefinition', 52);
+    __DEV__ ? globals.invariant(fragmentDef.kind === 'FragmentDefinition', 'Must be a fragment definition.') : globals.invariant(fragmentDef.kind === 'FragmentDefinition', 53);
     return fragmentDef;
 }
 function getMainDefinition(queryDoc) {
@@ -45625,7 +45675,7 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw __DEV__ ? new globals.InvariantError('Expected a parsed GraphQL query with a query, mutation, subscription, or a fragment.') : new globals.InvariantError(53);
+    throw __DEV__ ? new globals.InvariantError('Expected a parsed GraphQL query with a query, mutation, subscription, or a fragment.') : new globals.InvariantError(54);
 }
 function getDefaultValues(definition) {
     var defaultValues = Object.create(null);
