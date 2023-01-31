@@ -5596,6 +5596,30 @@ export enum EnterpriseEnabledSettingValue {
   NoPolicy = 'NO_POLICY'
 }
 
+/** The connection type for OrganizationInvitation. */
+export type EnterpriseFailedInvitationConnection = {
+  __typename?: 'EnterpriseFailedInvitationConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<EnterpriseFailedInvitationEdge>>>;
+  /** A list of nodes. */
+  nodes?: Maybe<Array<Maybe<OrganizationInvitation>>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int'];
+  /** Identifies the total count of unique users in the connection. */
+  totalUniqueUserCount: Scalars['Int'];
+};
+
+/** A failed invitation to be a member in an enterprise organization. */
+export type EnterpriseFailedInvitationEdge = {
+  __typename?: 'EnterpriseFailedInvitationEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String'];
+  /** The item at the end of the edge. */
+  node?: Maybe<OrganizationInvitation>;
+};
+
 /** An identity provider configured to provision identities for an enterprise. */
 export type EnterpriseIdentityProvider = Node & {
   __typename?: 'EnterpriseIdentityProvider';
@@ -5774,6 +5798,8 @@ export type EnterpriseOwnerInfo = {
   domains: VerifiableDomainConnection;
   /** Enterprise Server installations owned by the enterprise. */
   enterpriseServerInstallations: EnterpriseServerInstallationConnection;
+  /** A list of failed invitations in the enterprise. */
+  failedInvitations: EnterpriseFailedInvitationConnection;
   /** The setting value for whether the enterprise has an IP allow list enabled. */
   ipAllowListEnabledSetting: IpAllowListEnabledSettingValue;
   /** The IP addresses that are allowed to access resources owned by the enterprise. */
@@ -5926,6 +5952,16 @@ export type EnterpriseOwnerInfoEnterpriseServerInstallationsArgs = {
 
 
 /** Enterprise information only visible to enterprise owners. */
+export type EnterpriseOwnerInfoFailedInvitationsArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
+};
+
+
+/** Enterprise information only visible to enterprise owners. */
 export type EnterpriseOwnerInfoIpAllowListEntriesArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
@@ -6066,6 +6102,7 @@ export type EnterpriseOwnerInfoPendingMemberInvitationsArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
+  invitationSource?: InputMaybe<OrganizationInvitationSource>;
   last?: InputMaybe<Scalars['Int']>;
   organizationLogins?: InputMaybe<Array<Scalars['String']>>;
   query?: InputMaybe<Scalars['String']>;
@@ -13148,6 +13185,8 @@ export type OrganizationInvitation = Node & {
   /** The email address of the user invited to the organization. */
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
+  /** The source of the invitation. */
+  invitationSource: OrganizationInvitationSource;
   /** The type of invitation that was sent (e.g. email, user). */
   invitationType: OrganizationInvitationType;
   /** The user who was invited to the organization. */
@@ -13192,6 +13231,16 @@ export enum OrganizationInvitationRole {
   DirectMember = 'DIRECT_MEMBER',
   /** The user's previous role will be reinstated. */
   Reinstate = 'REINSTATE'
+}
+
+/** The possible organization invitation sources. */
+export enum OrganizationInvitationSource {
+  /** The invitation was created from the web interface or from API */
+  Member = 'MEMBER',
+  /** The invitation was created from SCIM */
+  Scim = 'SCIM',
+  /** The invitation was sent before this feature was added */
+  Unknown = 'UNKNOWN'
 }
 
 /** The possible organization invitation types. */
@@ -26888,6 +26937,8 @@ export type ResolversTypes = {
   EnterpriseDefaultRepositoryPermissionSettingValue: EnterpriseDefaultRepositoryPermissionSettingValue;
   EnterpriseEnabledDisabledSettingValue: EnterpriseEnabledDisabledSettingValue;
   EnterpriseEnabledSettingValue: EnterpriseEnabledSettingValue;
+  EnterpriseFailedInvitationConnection: ResolverTypeWrapper<EnterpriseFailedInvitationConnection>;
+  EnterpriseFailedInvitationEdge: ResolverTypeWrapper<EnterpriseFailedInvitationEdge>;
   EnterpriseIdentityProvider: ResolverTypeWrapper<EnterpriseIdentityProvider>;
   EnterpriseMember: ResolversTypes['EnterpriseUserAccount'] | ResolversTypes['User'];
   EnterpriseMemberConnection: ResolverTypeWrapper<Omit<EnterpriseMemberConnection, 'nodes'> & { nodes?: Maybe<Array<Maybe<ResolversTypes['EnterpriseMember']>>> }>;
@@ -27165,6 +27216,7 @@ export type ResolversTypes = {
   OrganizationInvitationConnection: ResolverTypeWrapper<OrganizationInvitationConnection>;
   OrganizationInvitationEdge: ResolverTypeWrapper<OrganizationInvitationEdge>;
   OrganizationInvitationRole: OrganizationInvitationRole;
+  OrganizationInvitationSource: OrganizationInvitationSource;
   OrganizationInvitationType: OrganizationInvitationType;
   OrganizationMemberConnection: ResolverTypeWrapper<OrganizationMemberConnection>;
   OrganizationMemberEdge: ResolverTypeWrapper<OrganizationMemberEdge>;
@@ -28205,6 +28257,8 @@ export type ResolversParentTypes = {
   EnterpriseAdministratorInvitationOrder: EnterpriseAdministratorInvitationOrder;
   EnterpriseAuditEntryData: ResolversParentTypes['MembersCanDeleteReposClearAuditEntry'] | ResolversParentTypes['MembersCanDeleteReposDisableAuditEntry'] | ResolversParentTypes['MembersCanDeleteReposEnableAuditEntry'] | ResolversParentTypes['OrgInviteToBusinessAuditEntry'] | ResolversParentTypes['PrivateRepositoryForkingDisableAuditEntry'] | ResolversParentTypes['PrivateRepositoryForkingEnableAuditEntry'] | ResolversParentTypes['RepositoryVisibilityChangeDisableAuditEntry'] | ResolversParentTypes['RepositoryVisibilityChangeEnableAuditEntry'];
   EnterpriseBillingInfo: EnterpriseBillingInfo;
+  EnterpriseFailedInvitationConnection: EnterpriseFailedInvitationConnection;
+  EnterpriseFailedInvitationEdge: EnterpriseFailedInvitationEdge;
   EnterpriseIdentityProvider: EnterpriseIdentityProvider;
   EnterpriseMember: ResolversParentTypes['EnterpriseUserAccount'] | ResolversParentTypes['User'];
   EnterpriseMemberConnection: Omit<EnterpriseMemberConnection, 'nodes'> & { nodes?: Maybe<Array<Maybe<ResolversParentTypes['EnterpriseMember']>>> };
@@ -31053,6 +31107,21 @@ export type EnterpriseBillingInfoResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EnterpriseFailedInvitationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EnterpriseFailedInvitationConnection'] = ResolversParentTypes['EnterpriseFailedInvitationConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['EnterpriseFailedInvitationEdge']>>>, ParentType, ContextType>;
+  nodes?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationInvitation']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totalUniqueUserCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EnterpriseFailedInvitationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EnterpriseFailedInvitationEdge'] = ResolversParentTypes['EnterpriseFailedInvitationEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['OrganizationInvitation']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type EnterpriseIdentityProviderResolvers<ContextType = any, ParentType extends ResolversParentTypes['EnterpriseIdentityProvider'] = ResolversParentTypes['EnterpriseIdentityProvider']> = {
   digestMethod?: Resolver<Maybe<ResolversTypes['SamlDigestAlgorithm']>, ParentType, ContextType>;
   enterprise?: Resolver<Maybe<ResolversTypes['Enterprise']>, ParentType, ContextType>;
@@ -31125,6 +31194,7 @@ export type EnterpriseOwnerInfoResolvers<ContextType = any, ParentType extends R
   defaultRepositoryPermissionSettingOrganizations?: Resolver<ResolversTypes['OrganizationConnection'], ParentType, ContextType, RequireFields<EnterpriseOwnerInfoDefaultRepositoryPermissionSettingOrganizationsArgs, 'orderBy' | 'value'>>;
   domains?: Resolver<ResolversTypes['VerifiableDomainConnection'], ParentType, ContextType, RequireFields<EnterpriseOwnerInfoDomainsArgs, 'isApproved' | 'isVerified' | 'orderBy'>>;
   enterpriseServerInstallations?: Resolver<ResolversTypes['EnterpriseServerInstallationConnection'], ParentType, ContextType, RequireFields<EnterpriseOwnerInfoEnterpriseServerInstallationsArgs, 'connectedOnly' | 'orderBy'>>;
+  failedInvitations?: Resolver<ResolversTypes['EnterpriseFailedInvitationConnection'], ParentType, ContextType, Partial<EnterpriseOwnerInfoFailedInvitationsArgs>>;
   ipAllowListEnabledSetting?: Resolver<ResolversTypes['IpAllowListEnabledSettingValue'], ParentType, ContextType>;
   ipAllowListEntries?: Resolver<ResolversTypes['IpAllowListEntryConnection'], ParentType, ContextType, RequireFields<EnterpriseOwnerInfoIpAllowListEntriesArgs, 'orderBy'>>;
   ipAllowListForInstalledAppsEnabledSetting?: Resolver<ResolversTypes['IpAllowListForInstalledAppsEnabledSettingValue'], ParentType, ContextType>;
@@ -33459,6 +33529,7 @@ export type OrganizationInvitationResolvers<ContextType = any, ParentType extend
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  invitationSource?: Resolver<ResolversTypes['OrganizationInvitationSource'], ParentType, ContextType>;
   invitationType?: Resolver<ResolversTypes['OrganizationInvitationType'], ParentType, ContextType>;
   invitee?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   inviter?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -38327,6 +38398,8 @@ export type Resolvers<ContextType = any> = {
   EnterpriseAdministratorInvitationEdge?: EnterpriseAdministratorInvitationEdgeResolvers<ContextType>;
   EnterpriseAuditEntryData?: EnterpriseAuditEntryDataResolvers<ContextType>;
   EnterpriseBillingInfo?: EnterpriseBillingInfoResolvers<ContextType>;
+  EnterpriseFailedInvitationConnection?: EnterpriseFailedInvitationConnectionResolvers<ContextType>;
+  EnterpriseFailedInvitationEdge?: EnterpriseFailedInvitationEdgeResolvers<ContextType>;
   EnterpriseIdentityProvider?: EnterpriseIdentityProviderResolvers<ContextType>;
   EnterpriseMember?: EnterpriseMemberResolvers<ContextType>;
   EnterpriseMemberConnection?: EnterpriseMemberConnectionResolvers<ContextType>;
