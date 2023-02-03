@@ -40976,7 +40976,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.6';
+var version = '3.7.7';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -41778,6 +41778,9 @@ var LocalState = (function () {
             var variables, fieldName, aliasedFieldName, aliasUsed, defaultResult, resultPromise, resolverType, resolverMap, resolve;
             var _this = this;
             return tslib.__generator(this, function (_a) {
+                if (!rootValue) {
+                    return [2, null];
+                }
                 variables = execContext.variables;
                 fieldName = field.name.value;
                 aliasedFieldName = utilities.resultKeyNameFromField(field);
@@ -44719,12 +44722,11 @@ var EAGER_METHODS = [
     'subscribeToMore',
 ];
 function useLazyQuery(query, options) {
+    var _a;
     var abortControllersRef = React.useRef(new Set());
-    var internalState = useInternalState(useApolloClient(options && options.client), query);
     var execOptionsRef = React.useRef();
-    var merged = execOptionsRef.current
-        ? utilities.mergeOptions(options, execOptionsRef.current)
-        : options;
+    var merged = execOptionsRef.current ? utilities.mergeOptions(options, execOptionsRef.current) : options;
+    var internalState = useInternalState(useApolloClient(options && options.client), (_a = merged === null || merged === void 0 ? void 0 : merged.query) !== null && _a !== void 0 ? _a : query);
     var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign({}, merged), { skip: !execOptionsRef.current }));
     var initialFetchPolicy = useQueryResult.observable.options.initialFetchPolicy ||
         internalState.getDefaultFetchPolicy();
