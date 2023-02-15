@@ -40976,7 +40976,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.7';
+var version = '3.7.8';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -46364,9 +46364,9 @@ var Concast = (function (_super) {
                 }
             },
             complete: function () {
-                var sub = _this.sub;
+                var _a = _this, sub = _a.sub, _b = _a.sources, sources = _b === void 0 ? [] : _b;
                 if (sub !== null) {
-                    var value = _this.sources.shift();
+                    var value = sources.shift();
                     if (!value) {
                         if (sub)
                             setTimeout(function () { return sub.unsubscribe(); });
