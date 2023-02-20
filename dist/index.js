@@ -38665,7 +38665,6 @@ var hasOwn = Object.prototype.hasOwnProperty;
 function isNullish(value) {
     return value === null || value === void 0;
 }
-var isArray = Array.isArray;
 function defaultDataIdFromObject(_a, context) {
     var __typename = _a.__typename, id = _a.id, _id = _a._id;
     if (typeof __typename === "string") {
@@ -38709,7 +38708,7 @@ function fieldNameFromStoreName(storeFieldName) {
 }
 function selectionSetMatchesResult(selectionSet, result, variables) {
     if (utilities.isNonNullObject(result)) {
-        return isArray(result)
+        return utilities.isArray(result)
             ? result.every(function (item) { return selectionSetMatchesResult(selectionSet, item, variables); })
             : selectionSet.selections.every(function (field) {
                 if (utilities.isField(field) && utilities.shouldInclude(field, variables)) {
@@ -38726,7 +38725,7 @@ function selectionSetMatchesResult(selectionSet, result, variables) {
 function storeValueIsStoreObject(value) {
     return utilities.isNonNullObject(value) &&
         !utilities.isReference(value) &&
-        !isArray(value);
+        !utilities.isArray(value);
 }
 function makeProcessedFieldsMerger() {
     return new utilities.DeepMerger;
@@ -39206,7 +39205,7 @@ function supportsResultCaching(store) {
 
 function shallowCopy(value) {
     if (utilities.isNonNullObject(value)) {
-        return isArray(value)
+        return utilities.isArray(value)
             ? value.slice(0)
             : tslib.__assign({ __proto__: Object.getPrototypeOf(value) }, value);
     }
@@ -39458,7 +39457,7 @@ var StoreReader = (function () {
                             _a));
                     }
                 }
-                else if (isArray(fieldValue)) {
+                else if (utilities.isArray(fieldValue)) {
                     fieldValue = handleMissing(_this.executeSubSelectedArray({
                         field: selection,
                         array: fieldValue,
@@ -39522,7 +39521,7 @@ var StoreReader = (function () {
             if (item === null) {
                 return null;
             }
-            if (isArray(item)) {
+            if (utilities.isArray(item)) {
                 return handleMissing(_this.executeSubSelectedArray({
                     field: field,
                     array: item,
@@ -39716,13 +39715,13 @@ function getSpecifierPaths(spec) {
         var paths_1 = info.paths = [];
         var currentPath_1 = [];
         spec.forEach(function (s, i) {
-            if (isArray(s)) {
+            if (utilities.isArray(s)) {
                 getSpecifierPaths(s).forEach(function (p) { return paths_1.push(currentPath_1.concat(p)); });
                 currentPath_1.length = 0;
             }
             else {
                 currentPath_1.push(s);
-                if (!isArray(spec[i + 1])) {
+                if (!utilities.isArray(spec[i + 1])) {
                     paths_1.push(currentPath_1.slice(0));
                     currentPath_1.length = 0;
                 }
@@ -39737,14 +39736,14 @@ function extractKey(object, key) {
 function extractKeyPath(object, path, extract) {
     extract = extract || extractKey;
     return normalize(path.reduce(function reducer(obj, key) {
-        return isArray(obj)
+        return utilities.isArray(obj)
             ? obj.map(function (child) { return reducer(child, key); })
             : obj && extract(obj, key);
     }, object));
 }
 function normalize(value) {
     if (utilities.isNonNullObject(value)) {
-        if (isArray(value)) {
+        if (utilities.isArray(value)) {
             return value.map(normalize);
         }
         return collectSpecifierPaths(Object.keys(value).sort(), function (path) { return extractKeyPath(value, path); });
@@ -39807,7 +39806,7 @@ var Policies = (function () {
         var keyFn = policy && policy.keyFn || this.config.dataIdFromObject;
         while (keyFn) {
             var specifierOrId = keyFn(object, context);
-            if (isArray(specifierOrId)) {
+            if (utilities.isArray(specifierOrId)) {
                 keyFn = keyFieldsFnFromSpecifier(specifierOrId);
             }
             else {
@@ -39850,7 +39849,7 @@ var Policies = (function () {
         setMerge(existing, incoming.merge);
         existing.keyFn =
             keyFields === false ? nullKeyFieldsFn :
-                isArray(keyFields) ? keyFieldsFnFromSpecifier(keyFields) :
+                utilities.isArray(keyFields) ? keyFieldsFnFromSpecifier(keyFields) :
                     typeof keyFields === "function" ? keyFields :
                         existing.keyFn;
         if (fields) {
@@ -39864,7 +39863,7 @@ var Policies = (function () {
                     var keyArgs = incoming.keyArgs, read = incoming.read, merge = incoming.merge;
                     existing.keyFn =
                         keyArgs === false ? simpleKeyArgsFn :
-                            isArray(keyArgs) ? keyArgsFnFromSpecifier(keyArgs) :
+                            utilities.isArray(keyArgs) ? keyArgsFnFromSpecifier(keyArgs) :
                                 typeof keyArgs === "function" ? keyArgs :
                                     existing.keyFn;
                     if (typeof read === "function") {
@@ -40009,7 +40008,7 @@ var Policies = (function () {
             var args = argsFromFieldSpecifier(fieldSpec);
             while (keyFn) {
                 var specifierOrString = keyFn(args, context);
-                if (isArray(specifierOrString)) {
+                if (utilities.isArray(specifierOrString)) {
                     keyFn = keyArgsFnFromSpecifier(specifierOrString);
                 }
                 else {
@@ -40130,7 +40129,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
 }
 function makeMergeObjectsFunction(store) {
     return function mergeObjects(existing, incoming) {
-        if (isArray(existing) || isArray(incoming)) {
+        if (utilities.isArray(existing) || utilities.isArray(incoming)) {
             throw __DEV__ ? new globals.InvariantError("Cannot automatically merge arrays") : new globals.InvariantError(4);
         }
         if (utilities.isNonNullObject(existing) &&
@@ -40348,7 +40347,7 @@ var StoreWriter = (function () {
         if (!field.selectionSet || value === null) {
             return __DEV__ ? utilities.cloneDeep(value) : value;
         }
-        if (isArray(value)) {
+        if (utilities.isArray(value)) {
             return value.map(function (item, i) {
                 var value = _this.processFieldValue(item, field, context, getChildMergeTree(mergeTree, i));
                 maybeRecycleChildMergeTree(mergeTree, i);
@@ -40416,7 +40415,7 @@ var StoreWriter = (function () {
         var _a;
         var _this = this;
         if (mergeTree.map.size && !utilities.isReference(incoming)) {
-            var e_1 = (!isArray(incoming) &&
+            var e_1 = (!utilities.isArray(incoming) &&
                 (utilities.isReference(existing) || storeValueIsStoreObject(existing))) ? existing : void 0;
             var i_1 = incoming;
             if (e_1 && !getStorageArgs) {
@@ -40424,7 +40423,7 @@ var StoreWriter = (function () {
             }
             var changedFields_1;
             var getValue_1 = function (from, name) {
-                return isArray(from)
+                return utilities.isArray(from)
                     ? (typeof name === "number" ? from[name] : void 0)
                     : context.store.getFieldValue(from, String(name));
             };
@@ -40446,7 +40445,7 @@ var StoreWriter = (function () {
                 }
             });
             if (changedFields_1) {
-                incoming = (isArray(i_1) ? i_1.slice(0) : tslib.__assign({}, i_1));
+                incoming = (utilities.isArray(i_1) ? i_1.slice(0) : tslib.__assign({}, i_1));
                 changedFields_1.forEach(function (value, name) {
                     incoming[name] = value;
                 });
@@ -40527,8 +40526,8 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
         return;
     warnings.add(typeDotName);
     var childTypenames = [];
-    if (!isArray(existing) &&
-        !isArray(incoming)) {
+    if (!utilities.isArray(existing) &&
+        !utilities.isArray(incoming)) {
         [existing, incoming].forEach(function (child) {
             var typename = store.getFieldValue(child, "__typename");
             if (typeof typename === "string" &&
@@ -40990,7 +40989,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.8';
+var version = '3.7.9';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -45716,26 +45715,20 @@ function getDefaultValues(definition) {
     return defaultValues;
 }
 
-function filterInPlace(array, test, context) {
-    var target = 0;
-    array.forEach(function (elem, i) {
-        if (test.call(this, elem, i, array)) {
-            array[target++] = elem;
-        }
-    }, context);
-    array.length = target;
-    return array;
+var isArray = Array.isArray;
+function isNonEmptyArray(value) {
+    return Array.isArray(value) && value.length > 0;
 }
 
 var TYPENAME_FIELD = {
-    kind: 'Field',
+    kind: graphql.Kind.FIELD,
     name: {
-        kind: 'Name',
+        kind: graphql.Kind.NAME,
         value: '__typename',
     },
 };
 function isEmpty(op, fragmentMap) {
-    return !op || op.selectionSet.selections.every(function (selection) { return selection.kind === 'FragmentSpread' &&
+    return !op || op.selectionSet.selections.every(function (selection) { return selection.kind === graphql.Kind.FRAGMENT_SPREAD &&
         isEmpty(fragmentMap[selection.name.value], fragmentMap); });
 }
 function nullIfDocIsEmpty(doc) {
@@ -45744,84 +45737,190 @@ function nullIfDocIsEmpty(doc) {
         : doc;
 }
 function getDirectiveMatcher(directives) {
-    return function directiveMatcher(directive) {
-        return directives.some(function (dir) {
-            return (dir.name && dir.name === directive.name.value) ||
-                (dir.test && dir.test(directive));
-        });
+    var nameSet = new Set();
+    var tests = [];
+    directives.forEach(function (directive) {
+        if (directive.name) {
+            nameSet.add(directive.name);
+        }
+        else if (directive.test) {
+            tests.push(directive.test);
+        }
+    });
+    return function (directive) { return (nameSet.has(directive.name.value) ||
+        tests.some(function (test) { return test(directive); })); };
+}
+function makeInUseGetterFunction(defaultKey) {
+    var map = new Map();
+    return function inUseGetterFunction(key) {
+        if (key === void 0) { key = defaultKey; }
+        var inUse = map.get(key);
+        if (!inUse) {
+            map.set(key, inUse = {
+                variables: new Set,
+                fragmentSpreads: new Set,
+            });
+        }
+        return inUse;
     };
 }
 function removeDirectivesFromDocument(directives, doc) {
-    var variablesInUse = Object.create(null);
-    var variablesToRemove = [];
-    var fragmentSpreadsInUse = Object.create(null);
-    var fragmentSpreadsToRemove = [];
-    var modifiedDoc = nullIfDocIsEmpty(graphql.visit(doc, {
-        Variable: {
-            enter: function (node, _key, parent) {
-                if (parent.kind !== 'VariableDefinition') {
-                    variablesInUse[node.name.value] = true;
-                }
+    var getInUseByOperationName = makeInUseGetterFunction("");
+    var getInUseByFragmentName = makeInUseGetterFunction("");
+    var getInUse = function (ancestors) {
+        for (var p = 0, ancestor = void 0; p < ancestors.length && (ancestor = ancestors[p]); ++p) {
+            if (isArray(ancestor))
+                continue;
+            if (ancestor.kind === graphql.Kind.OPERATION_DEFINITION) {
+                return getInUseByOperationName(ancestor.name && ancestor.name.value);
+            }
+            if (ancestor.kind === graphql.Kind.FRAGMENT_DEFINITION) {
+                return getInUseByFragmentName(ancestor.name.value);
+            }
+        }
+        __DEV__ && globals.invariant.error("Could not find operation or fragment");
+        return null;
+    };
+    var operationCount = 0;
+    for (var i = doc.definitions.length - 1; i >= 0; --i) {
+        if (doc.definitions[i].kind === graphql.Kind.OPERATION_DEFINITION) {
+            ++operationCount;
+        }
+    }
+    var directiveMatcher = getDirectiveMatcher(directives);
+    var hasRemoveDirective = directives.some(function (directive) { return directive.remove; });
+    var shouldRemoveField = function (nodeDirectives) { return (hasRemoveDirective &&
+        nodeDirectives &&
+        nodeDirectives.some(directiveMatcher)); };
+    var originalFragmentDefsByPath = new Map();
+    var firstVisitMadeChanges = false;
+    var fieldOrInlineFragmentVisitor = {
+        enter: function (node) {
+            if (shouldRemoveField(node.directives)) {
+                firstVisitMadeChanges = true;
+                return null;
+            }
+        },
+    };
+    var docWithoutDirectiveSubtrees = graphql.visit(doc, {
+        Field: fieldOrInlineFragmentVisitor,
+        InlineFragment: fieldOrInlineFragmentVisitor,
+        VariableDefinition: {
+            enter: function () {
+                return false;
             },
         },
-        Field: {
-            enter: function (node) {
-                if (directives && node.directives) {
-                    var shouldRemoveField = directives.some(function (directive) { return directive.remove; });
-                    if (shouldRemoveField &&
-                        node.directives &&
-                        node.directives.some(getDirectiveMatcher(directives))) {
-                        if (node.arguments) {
-                            node.arguments.forEach(function (arg) {
-                                if (arg.value.kind === 'Variable') {
-                                    variablesToRemove.push({
-                                        name: arg.value.name.value,
-                                    });
-                                }
-                            });
-                        }
-                        if (node.selectionSet) {
-                            getAllFragmentSpreadsFromSelectionSet(node.selectionSet).forEach(function (frag) {
-                                fragmentSpreadsToRemove.push({
-                                    name: frag.name.value,
-                                });
-                            });
-                        }
-                        return null;
-                    }
+        Variable: {
+            enter: function (node, _key, _parent, _path, ancestors) {
+                var inUse = getInUse(ancestors);
+                if (inUse) {
+                    inUse.variables.add(node.name.value);
                 }
             },
         },
         FragmentSpread: {
-            enter: function (node) {
-                fragmentSpreadsInUse[node.name.value] = true;
+            enter: function (node, _key, _parent, _path, ancestors) {
+                if (shouldRemoveField(node.directives)) {
+                    firstVisitMadeChanges = true;
+                    return null;
+                }
+                var inUse = getInUse(ancestors);
+                if (inUse) {
+                    inUse.fragmentSpreads.add(node.name.value);
+                }
             },
         },
-        Directive: {
-            enter: function (node) {
-                if (getDirectiveMatcher(directives)(node)) {
+        FragmentDefinition: {
+            enter: function (node, _key, _parent, path) {
+                originalFragmentDefsByPath.set(JSON.stringify(path), node);
+            },
+            leave: function (node, _key, _parent, path) {
+                var originalNode = originalFragmentDefsByPath.get(JSON.stringify(path));
+                if (node === originalNode) {
+                    return node;
+                }
+                if (operationCount > 0 &&
+                    node.selectionSet.selections.every(function (selection) { return (selection.kind === graphql.Kind.FIELD &&
+                        selection.name.value === '__typename'); })) {
+                    getInUseByFragmentName(node.name.value).removed = true;
+                    firstVisitMadeChanges = true;
                     return null;
                 }
             },
         },
+        Directive: {
+            leave: function (node) {
+                if (directiveMatcher(node)) {
+                    firstVisitMadeChanges = true;
+                    return null;
+                }
+            },
+        },
+    });
+    if (!firstVisitMadeChanges) {
+        return doc;
+    }
+    var populateTransitiveVars = function (inUse) {
+        if (!inUse.transitiveVars) {
+            inUse.transitiveVars = new Set(inUse.variables);
+            if (!inUse.removed) {
+                inUse.fragmentSpreads.forEach(function (childFragmentName) {
+                    populateTransitiveVars(getInUseByFragmentName(childFragmentName)).transitiveVars.forEach(function (varName) {
+                        inUse.transitiveVars.add(varName);
+                    });
+                });
+            }
+        }
+        return inUse;
+    };
+    var allFragmentNamesUsed = new Set();
+    docWithoutDirectiveSubtrees.definitions.forEach(function (def) {
+        if (def.kind === graphql.Kind.OPERATION_DEFINITION) {
+            populateTransitiveVars(getInUseByOperationName(def.name && def.name.value)).fragmentSpreads.forEach(function (childFragmentName) {
+                allFragmentNamesUsed.add(childFragmentName);
+            });
+        }
+        else if (def.kind === graphql.Kind.FRAGMENT_DEFINITION &&
+            operationCount === 0 &&
+            !getInUseByFragmentName(def.name.value).removed) {
+            allFragmentNamesUsed.add(def.name.value);
+        }
+    });
+    allFragmentNamesUsed.forEach(function (fragmentName) {
+        populateTransitiveVars(getInUseByFragmentName(fragmentName)).fragmentSpreads.forEach(function (childFragmentName) {
+            allFragmentNamesUsed.add(childFragmentName);
+        });
+    });
+    var fragmentWillBeRemoved = function (fragmentName) { return !!(!allFragmentNamesUsed.has(fragmentName) ||
+        getInUseByFragmentName(fragmentName).removed); };
+    var enterVisitor = {
+        enter: function (node) {
+            if (fragmentWillBeRemoved(node.name.value)) {
+                return null;
+            }
+        },
+    };
+    return nullIfDocIsEmpty(graphql.visit(docWithoutDirectiveSubtrees, {
+        FragmentSpread: enterVisitor,
+        FragmentDefinition: enterVisitor,
+        OperationDefinition: {
+            leave: function (node) {
+                if (node.variableDefinitions) {
+                    var usedVariableNames_1 = populateTransitiveVars(getInUseByOperationName(node.name && node.name.value)).transitiveVars;
+                    if (usedVariableNames_1.size < node.variableDefinitions.length) {
+                        return tslib.__assign(tslib.__assign({}, node), { variableDefinitions: node.variableDefinitions.filter(function (varDef) { return usedVariableNames_1.has(varDef.variable.name.value); }) });
+                    }
+                }
+            },
+        },
     }));
-    if (modifiedDoc &&
-        filterInPlace(variablesToRemove, function (v) { return !!v.name && !variablesInUse[v.name]; }).length) {
-        modifiedDoc = removeArgumentsFromDocument(variablesToRemove, modifiedDoc);
-    }
-    if (modifiedDoc &&
-        filterInPlace(fragmentSpreadsToRemove, function (fs) { return !!fs.name && !fragmentSpreadsInUse[fs.name]; })
-            .length) {
-        modifiedDoc = removeFragmentSpreadFromDocument(fragmentSpreadsToRemove, modifiedDoc);
-    }
-    return modifiedDoc;
 }
 var addTypenameToDocument = Object.assign(function (doc) {
     return graphql.visit(doc, {
         SelectionSet: {
             enter: function (node, _key, parent) {
                 if (parent &&
-                    parent.kind === 'OperationDefinition') {
+                    parent.kind === graphql.Kind.OPERATION_DEFINITION) {
                     return;
                 }
                 var selections = node.selections;
@@ -45871,7 +45970,7 @@ function getArgumentMatcher(config) {
     return function argumentMatcher(argument) {
         return config.some(function (aConfig) {
             return argument.value &&
-                argument.value.kind === 'Variable' &&
+                argument.value.kind === graphql.Kind.VARIABLE &&
                 argument.value.name &&
                 (aConfig.name === argument.value.name.value ||
                     (aConfig.test && aConfig.test(argument)));
@@ -45926,19 +46025,6 @@ function removeFragmentSpreadFromDocument(config, doc) {
         FragmentDefinition: { enter: enter },
     }));
 }
-function getAllFragmentSpreadsFromSelectionSet(selectionSet) {
-    var allFragments = [];
-    selectionSet.selections.forEach(function (selection) {
-        if ((isField(selection) || isInlineFragment(selection)) &&
-            selection.selectionSet) {
-            getAllFragmentSpreadsFromSelectionSet(selection.selectionSet).forEach(function (frag) { return allFragments.push(frag); });
-        }
-        else if (selection.kind === 'FragmentSpread') {
-            allFragments.push(selection);
-        }
-    });
-    return allFragments;
-}
 function buildQueryFromSelectionSet(document) {
     var definition = getMainDefinition(document);
     var definitionOperation = definition.operation;
@@ -45962,22 +46048,6 @@ function removeClientSetsFromDocument(document) {
             remove: true,
         },
     ], document);
-    if (modifiedDoc) {
-        modifiedDoc = graphql.visit(modifiedDoc, {
-            FragmentDefinition: {
-                enter: function (node) {
-                    if (node.selectionSet) {
-                        var isTypenameOnly = node.selectionSet.selections.every(function (selection) {
-                            return isField(selection) && selection.name.value === '__typename';
-                        });
-                        if (isTypenameOnly) {
-                            return null;
-                        }
-                    }
-                },
-            },
-        });
-    }
     return modifiedDoc;
 }
 
@@ -46474,10 +46544,6 @@ var Concast = (function (_super) {
 }(zenObservableTs.Observable));
 fixObservableSubclass(Concast);
 
-function isNonEmptyArray(value) {
-    return Array.isArray(value) && value.length > 0;
-}
-
 function isExecutionPatchIncrementalResult(value) {
     return "incremental" in value;
 }
@@ -46580,6 +46646,7 @@ exports.hasAllDirectives = hasAllDirectives;
 exports.hasAnyDirectives = hasAnyDirectives;
 exports.hasClientExports = hasClientExports;
 exports.hasDirectives = hasDirectives;
+exports.isArray = isArray;
 exports.isDocumentNode = isDocumentNode;
 exports.isField = isField;
 exports.isInlineFragment = isInlineFragment;
