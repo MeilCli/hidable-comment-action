@@ -41021,7 +41021,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.9';
+var version = '3.7.10';
 
 function isNonEmptyArray(value) {
     return Array.isArray(value) && value.length > 0;
@@ -43226,12 +43226,18 @@ var ApolloClient = (function () {
         return this.cache.readFragment(options, optimistic);
     };
     ApolloClient.prototype.writeQuery = function (options) {
-        this.cache.writeQuery(options);
-        this.queryManager.broadcastQueries();
+        var ref = this.cache.writeQuery(options);
+        if (options.broadcast !== false) {
+            this.queryManager.broadcastQueries();
+        }
+        return ref;
     };
     ApolloClient.prototype.writeFragment = function (options) {
-        this.cache.writeFragment(options);
-        this.queryManager.broadcastQueries();
+        var ref = this.cache.writeFragment(options);
+        if (options.broadcast !== false) {
+            this.queryManager.broadcastQueries();
+        }
+        return ref;
     };
     ApolloClient.prototype.__actionHookForDevTools = function (cb) {
         this.devToolsHookCb = cb;
@@ -44845,8 +44851,9 @@ function useMutation(mutation, options) {
     }
     var execute = React.useCallback(function (executeOptions) {
         if (executeOptions === void 0) { executeOptions = {}; }
-        var _a = ref.current, client = _a.client, options = _a.options, mutation = _a.mutation;
+        var _a = ref.current, options = _a.options, mutation = _a.mutation;
         var baseOptions = tslib.__assign(tslib.__assign({}, options), { mutation: mutation });
+        var client = executeOptions.client || ref.current.client;
         if (!ref.current.result.loading && !baseOptions.ignoreResults && ref.current.isMounted) {
             setResult(ref.current.result = {
                 loading: true,
@@ -45688,17 +45695,21 @@ function checkDocument(doc) {
 }
 function getOperationDefinition(doc) {
     checkDocument(doc);
-    return doc.definitions.filter(function (definition) { return definition.kind === 'OperationDefinition'; })[0];
+    return doc.definitions.filter(function (definition) {
+        return definition.kind === 'OperationDefinition';
+    })[0];
 }
 function getOperationName(doc) {
     return (doc.definitions
         .filter(function (definition) {
-        return definition.kind === 'OperationDefinition' && definition.name;
+        return definition.kind === 'OperationDefinition' && !!definition.name;
     })
         .map(function (x) { return x.name.value; })[0] || null);
 }
 function getFragmentDefinitions(doc) {
-    return doc.definitions.filter(function (definition) { return definition.kind === 'FragmentDefinition'; });
+    return doc.definitions.filter(function (definition) {
+        return definition.kind === 'FragmentDefinition';
+    });
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
