@@ -4978,7 +4978,7 @@ exports.checkBypass = checkBypass;
 
 /***/ }),
 
-/***/ 3037:
+/***/ 3792:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -5151,222 +5151,6 @@ var Slot = globalHost[globalKey] ||
             return Slot;
         }
     })(makeSlotClass());
-
-var bind = Slot.bind, noContext = Slot.noContext;
-function setTimeoutWithContext(callback, delay) {
-    return setTimeout(bind(callback), delay);
-}
-// Turn any generator function into an async function (using yield instead
-// of await), with context automatically preserved across yields.
-function asyncFromGen(genFn) {
-    return function () {
-        var gen = genFn.apply(this, arguments);
-        var boundNext = bind(gen.next);
-        var boundThrow = bind(gen.throw);
-        return new Promise(function (resolve, reject) {
-            function invoke(method, argument) {
-                try {
-                    var result = method.call(gen, argument);
-                }
-                catch (error) {
-                    return reject(error);
-                }
-                var next = result.done ? resolve : invokeNext;
-                if (isPromiseLike(result.value)) {
-                    result.value.then(next, result.done ? reject : invokeThrow);
-                }
-                else {
-                    next(result.value);
-                }
-            }
-            var invokeNext = function (value) { return invoke(boundNext, value); };
-            var invokeThrow = function (error) { return invoke(boundThrow, error); };
-            invokeNext();
-        });
-    };
-}
-function isPromiseLike(value) {
-    return value && typeof value.then === "function";
-}
-// If you use the fibers npm package to implement coroutines in Node.js,
-// you should call this function at least once to ensure context management
-// remains coherent across any yields.
-var wrappedFibers = [];
-function wrapYieldingFiberMethods(Fiber) {
-    // There can be only one implementation of Fiber per process, so this array
-    // should never grow longer than one element.
-    if (wrappedFibers.indexOf(Fiber) < 0) {
-        var wrap = function (obj, method) {
-            var fn = obj[method];
-            obj[method] = function () {
-                return noContext(fn, arguments, this);
-            };
-        };
-        // These methods can yield, according to
-        // https://github.com/laverdet/node-fibers/blob/ddebed9b8ae3883e57f822e2108e6943e5c8d2a8/fibers.js#L97-L100
-        wrap(Fiber, "yield");
-        wrap(Fiber.prototype, "run");
-        wrap(Fiber.prototype, "throwInto");
-        wrappedFibers.push(Fiber);
-    }
-    return Fiber;
-}
-
-exports.Slot = Slot;
-exports.asyncFromGen = asyncFromGen;
-exports.bind = bind;
-exports.noContext = noContext;
-exports.setTimeout = setTimeoutWithContext;
-exports.wrapYieldingFiberMethods = wrapYieldingFiberMethods;
-//# sourceMappingURL=context.js.map
-
-
-/***/ }),
-
-/***/ 3792:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-// This currentContext variable will only be used if the makeSlotClass
-// function is called, which happens only if this is the first copy of the
-// @wry/context package to be imported.
-var currentContext = null;
-// This unique internal object is used to denote the absence of a value
-// for a given Slot, and is never exposed to outside code.
-var MISSING_VALUE = {};
-var idCounter = 1;
-// Although we can't do anything about the cost of duplicated code from
-// accidentally bundling multiple copies of the @wry/context package, we can
-// avoid creating the Slot class more than once using makeSlotClass.
-var makeSlotClass = function () { return /** @class */ (function () {
-    function Slot() {
-        // If you have a Slot object, you can find out its slot.id, but you cannot
-        // guess the slot.id of a Slot you don't have access to, thanks to the
-        // randomized suffix.
-        this.id = [
-            "slot",
-            idCounter++,
-            Date.now(),
-            Math.random().toString(36).slice(2),
-        ].join(":");
-    }
-    Slot.prototype.hasValue = function () {
-        for (var context_1 = currentContext; context_1; context_1 = context_1.parent) {
-            // We use the Slot object iself as a key to its value, which means the
-            // value cannot be obtained without a reference to the Slot object.
-            if (this.id in context_1.slots) {
-                var value = context_1.slots[this.id];
-                if (value === MISSING_VALUE)
-                    break;
-                if (context_1 !== currentContext) {
-                    // Cache the value in currentContext.slots so the next lookup will
-                    // be faster. This caching is safe because the tree of contexts and
-                    // the values of the slots are logically immutable.
-                    currentContext.slots[this.id] = value;
-                }
-                return true;
-            }
-        }
-        if (currentContext) {
-            // If a value was not found for this Slot, it's never going to be found
-            // no matter how many times we look it up, so we might as well cache
-            // the absence of the value, too.
-            currentContext.slots[this.id] = MISSING_VALUE;
-        }
-        return false;
-    };
-    Slot.prototype.getValue = function () {
-        if (this.hasValue()) {
-            return currentContext.slots[this.id];
-        }
-    };
-    Slot.prototype.withValue = function (value, callback, 
-    // Given the prevalence of arrow functions, specifying arguments is likely
-    // to be much more common than specifying `this`, hence this ordering:
-    args, thisArg) {
-        var _a;
-        var slots = (_a = {
-                __proto__: null
-            },
-            _a[this.id] = value,
-            _a);
-        var parent = currentContext;
-        currentContext = { parent: parent, slots: slots };
-        try {
-            // Function.prototype.apply allows the arguments array argument to be
-            // omitted or undefined, so args! is fine here.
-            return callback.apply(thisArg, args);
-        }
-        finally {
-            currentContext = parent;
-        }
-    };
-    // Capture the current context and wrap a callback function so that it
-    // reestablishes the captured context when called.
-    Slot.bind = function (callback) {
-        var context = currentContext;
-        return function () {
-            var saved = currentContext;
-            try {
-                currentContext = context;
-                return callback.apply(this, arguments);
-            }
-            finally {
-                currentContext = saved;
-            }
-        };
-    };
-    // Immediately run a callback function without any captured context.
-    Slot.noContext = function (callback, 
-    // Given the prevalence of arrow functions, specifying arguments is likely
-    // to be much more common than specifying `this`, hence this ordering:
-    args, thisArg) {
-        if (currentContext) {
-            var saved = currentContext;
-            try {
-                currentContext = null;
-                // Function.prototype.apply allows the arguments array argument to be
-                // omitted or undefined, so args! is fine here.
-                return callback.apply(thisArg, args);
-            }
-            finally {
-                currentContext = saved;
-            }
-        }
-        else {
-            return callback.apply(thisArg, args);
-        }
-    };
-    return Slot;
-}()); };
-// We store a single global implementation of the Slot class as a permanent
-// non-enumerable symbol property of the Array constructor. This obfuscation
-// does nothing to prevent access to the Slot class, but at least it ensures
-// the implementation (i.e. currentContext) cannot be tampered with, and all
-// copies of the @wry/context package (hopefully just one) will share the
-// same Slot implementation. Since the first copy of the @wry/context package
-// to be imported wins, this technique imposes a very high cost for any
-// future breaking changes to the Slot class.
-var globalKey = "@wry/context:Slot";
-var host = Array;
-var Slot = host[globalKey] || function () {
-    var Slot = makeSlotClass();
-    try {
-        Object.defineProperty(host, globalKey, {
-            value: host[globalKey] = Slot,
-            enumerable: false,
-            writable: false,
-            configurable: false,
-        });
-    }
-    finally {
-        return Slot;
-    }
-}();
 
 var bind = Slot.bind, noContext = Slot.noContext;
 function setTimeoutWithContext(callback, delay) {
@@ -33541,7 +33325,7 @@ function maybeSubscribe(entry, args) {
 var EntryMethods = {
     setDirty: true,
     dispose: true,
-    forget: true,
+    forget: true, // Fully remove parent Entry from LRU cache and computation graph
 };
 function dep(options) {
     var depsByKey = new Map();
@@ -38608,7 +38392,7 @@ var utilities = __nccwpck_require__(3150);
 var equality = __nccwpck_require__(9969);
 var trie = __nccwpck_require__(1653);
 var graphql = __nccwpck_require__(6155);
-var context = __nccwpck_require__(3037);
+var context = __nccwpck_require__(3792);
 
 var ApolloCache = (function () {
     function ApolloCache() {
@@ -41046,14 +40830,14 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.10';
-
-function isNonEmptyArray(value) {
-    return Array.isArray(value) && value.length > 0;
-}
+var version = '3.7.11';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
+}
+
+function isNonEmptyArray(value) {
+    return Array.isArray(value) && value.length > 0;
 }
 
 var hasOwnProperty$2 = Object.prototype.hasOwnProperty;
@@ -41487,7 +41271,7 @@ var ObservableQuery = (function (_super) {
     };
     ObservableQuery.prototype.fetch = function (options, newNetworkStatus) {
         this.queryManager.setObservableQuery(this);
-        return this.queryManager.fetchQueryObservable(this.queryId, options, newNetworkStatus);
+        return this.queryManager['fetchConcastWithInfo'](this.queryId, options, newNetworkStatus);
     };
     ObservableQuery.prototype.updatePolling = function () {
         var _this = this;
@@ -41540,7 +41324,7 @@ var ObservableQuery = (function (_super) {
         }
         return this.last;
     };
-    ObservableQuery.prototype.reobserve = function (newOptions, newNetworkStatus) {
+    ObservableQuery.prototype.reobserveAsConcast = function (newOptions, newNetworkStatus) {
         var _this = this;
         this.isTornDown = false;
         var useDisposableConcast = newNetworkStatus === exports.NetworkStatus.refetch ||
@@ -41566,7 +41350,7 @@ var ObservableQuery = (function (_super) {
             }
         }
         var variables = options.variables && tslib.__assign({}, options.variables);
-        var concast = this.fetch(options, newNetworkStatus);
+        var _a = this.fetch(options, newNetworkStatus), concast = _a.concast, fromLink = _a.fromLink;
         var observer = {
             next: function (result) {
                 _this.reportResult(result, variables);
@@ -41575,7 +41359,7 @@ var ObservableQuery = (function (_super) {
                 _this.reportError(error, variables);
             },
         };
-        if (!useDisposableConcast) {
+        if (!useDisposableConcast && fromLink) {
             if (this.concast && this.observer) {
                 this.concast.removeObserver(this.observer);
             }
@@ -41583,7 +41367,10 @@ var ObservableQuery = (function (_super) {
             this.observer = observer;
         }
         concast.addObserver(observer);
-        return concast.promise;
+        return concast;
+    };
+    ObservableQuery.prototype.reobserve = function (newOptions, newNetworkStatus) {
+        return this.reobserveAsConcast(newOptions, newNetworkStatus).promise;
     };
     ObservableQuery.prototype.observe = function () {
         this.reportResult(this.getCurrentResult(false), this.variables);
@@ -42754,10 +42541,17 @@ var QueryManager = (function () {
                     }
                     _this.broadcastQueries();
                 }
-                if (utilities.graphQLResultHasError(result)) {
-                    throw new errors.ApolloError({
-                        graphQLErrors: result.errors,
-                    });
+                var hasErrors = utilities.graphQLResultHasError(result);
+                var hasProtocolErrors = errors.graphQLResultHasProtocolErrors(result);
+                if (hasErrors || hasProtocolErrors) {
+                    var errors$1 = {};
+                    if (hasErrors) {
+                        errors$1.graphQLErrors = result.errors;
+                    }
+                    if (hasProtocolErrors) {
+                        errors$1.protocolErrors = result.extensions[errors.PROTOCOL_ERRORS_SYMBOL];
+                    }
+                    throw new errors.ApolloError(errors$1);
                 }
                 return result;
             });
@@ -42889,6 +42683,9 @@ var QueryManager = (function () {
         });
     };
     QueryManager.prototype.fetchQueryObservable = function (queryId, options, networkStatus) {
+        return this.fetchConcastWithInfo(queryId, options, networkStatus).concast;
+    };
+    QueryManager.prototype.fetchConcastWithInfo = function (queryId, options, networkStatus) {
         var _this = this;
         if (networkStatus === void 0) { networkStatus = exports.NetworkStatus.loading; }
         var query = this.transform(options.query).document;
@@ -42907,24 +42704,36 @@ var QueryManager = (function () {
         });
         var fromVariables = function (variables) {
             normalized.variables = variables;
-            var concastSources = _this.fetchQueryByPolicy(queryInfo, normalized, networkStatus);
+            var sourcesWithInfo = _this.fetchQueryByPolicy(queryInfo, normalized, networkStatus);
             if (normalized.fetchPolicy !== "standby" &&
-                concastSources.length > 0 &&
+                sourcesWithInfo.sources.length > 0 &&
                 queryInfo.observableQuery) {
                 queryInfo.observableQuery["applyNextFetchPolicy"]("after-fetch", options);
             }
-            return concastSources;
+            return sourcesWithInfo;
         };
         var cleanupCancelFn = function () { return _this.fetchCancelFns.delete(queryId); };
         this.fetchCancelFns.set(queryId, function (reason) {
             cleanupCancelFn();
             setTimeout(function () { return concast.cancel(reason); });
         });
-        var concast = new utilities.Concast(this.transform(normalized.query).hasClientExports
-            ? this.localState.addExportedVariables(normalized.query, normalized.variables, normalized.context).then(fromVariables)
-            : fromVariables(normalized.variables));
+        var concast, containsDataFromLink;
+        if (this.transform(normalized.query).hasClientExports) {
+            concast = new utilities.Concast(this.localState
+                .addExportedVariables(normalized.query, normalized.variables, normalized.context)
+                .then(fromVariables).then(function (sourcesWithInfo) { return sourcesWithInfo.sources; }));
+            containsDataFromLink = true;
+        }
+        else {
+            var sourcesWithInfo = fromVariables(normalized.variables);
+            containsDataFromLink = sourcesWithInfo.fromLink;
+            concast = new utilities.Concast(sourcesWithInfo.sources);
+        }
         concast.promise.then(cleanupCancelFn, cleanupCancelFn);
-        return concast;
+        return {
+            concast: concast,
+            fromLink: containsDataFromLink,
+        };
     };
     QueryManager.prototype.refetchQueries = function (_a) {
         var _this = this;
@@ -43048,54 +42857,40 @@ var QueryManager = (function () {
             case "cache-first": {
                 var diff = readCache();
                 if (diff.complete) {
-                    return [
-                        resultsFromCache(diff, queryInfo.markReady()),
-                    ];
+                    return { fromLink: false, sources: [resultsFromCache(diff, queryInfo.markReady())] };
                 }
                 if (returnPartialData || shouldNotify) {
-                    return [
-                        resultsFromCache(diff),
-                        resultsFromLink(),
-                    ];
+                    return { fromLink: true, sources: [resultsFromCache(diff), resultsFromLink()] };
                 }
-                return [
-                    resultsFromLink(),
-                ];
+                return { fromLink: true, sources: [resultsFromLink()] };
             }
             case "cache-and-network": {
                 var diff = readCache();
                 if (diff.complete || returnPartialData || shouldNotify) {
-                    return [
-                        resultsFromCache(diff),
-                        resultsFromLink(),
-                    ];
+                    return { fromLink: true, sources: [resultsFromCache(diff), resultsFromLink()] };
                 }
-                return [
-                    resultsFromLink(),
-                ];
+                return { fromLink: true, sources: [resultsFromLink()] };
             }
             case "cache-only":
-                return [
-                    resultsFromCache(readCache(), queryInfo.markReady()),
-                ];
+                return { fromLink: false, sources: [resultsFromCache(readCache(), queryInfo.markReady())] };
             case "network-only":
                 if (shouldNotify) {
-                    return [
-                        resultsFromCache(readCache()),
-                        resultsFromLink(),
-                    ];
+                    return { fromLink: true, sources: [resultsFromCache(readCache()), resultsFromLink()] };
                 }
-                return [resultsFromLink()];
+                return { fromLink: true, sources: [resultsFromLink()] };
             case "no-cache":
                 if (shouldNotify) {
-                    return [
-                        resultsFromCache(queryInfo.getDiff()),
-                        resultsFromLink(),
-                    ];
+                    return {
+                        fromLink: true,
+                        sources: [
+                            resultsFromCache(queryInfo.getDiff()),
+                            resultsFromLink(),
+                        ],
+                    };
                 }
-                return [resultsFromLink()];
+                return { fromLink: true, sources: [resultsFromLink()] };
             case "standby":
-                return [];
+                return { fromLink: false, sources: [] };
         }
     };
     QueryManager.prototype.getQuery = function (queryId) {
@@ -43397,34 +43192,32 @@ var tslib = __nccwpck_require__(4351);
 __nccwpck_require__(8869);
 var utilities = __nccwpck_require__(3150);
 
+var PROTOCOL_ERRORS_SYMBOL = Symbol();
+function graphQLResultHasProtocolErrors(result) {
+    if (result.extensions) {
+        return Array.isArray(result.extensions[PROTOCOL_ERRORS_SYMBOL]);
+    }
+    return false;
+}
 function isApolloError(err) {
     return err.hasOwnProperty('graphQLErrors');
 }
 var generateErrorMessage = function (err) {
-    var message = '';
-    if (utilities.isNonEmptyArray(err.graphQLErrors) || utilities.isNonEmptyArray(err.clientErrors)) {
-        var errors = (err.graphQLErrors || [])
-            .concat(err.clientErrors || []);
-        errors.forEach(function (error) {
-            var errorMessage = error
-                ? error.message
-                : 'Error message not found.';
-            message += "".concat(errorMessage, "\n");
-        });
-    }
-    if (err.networkError) {
-        message += "".concat(err.networkError.message, "\n");
-    }
-    message = message.replace(/\n$/, '');
-    return message;
+    var errors = tslib.__spreadArray(tslib.__spreadArray(tslib.__spreadArray([], err.graphQLErrors, true), err.clientErrors, true), err.protocolErrors, true);
+    if (err.networkError)
+        errors.push(err.networkError);
+    return errors
+        .map(function (err) { return utilities.isNonNullObject(err) && err.message || 'Error message not found.'; })
+        .join('\n');
 };
 var ApolloError = (function (_super) {
     tslib.__extends(ApolloError, _super);
     function ApolloError(_a) {
-        var graphQLErrors = _a.graphQLErrors, clientErrors = _a.clientErrors, networkError = _a.networkError, errorMessage = _a.errorMessage, extraInfo = _a.extraInfo;
+        var graphQLErrors = _a.graphQLErrors, protocolErrors = _a.protocolErrors, clientErrors = _a.clientErrors, networkError = _a.networkError, errorMessage = _a.errorMessage, extraInfo = _a.extraInfo;
         var _this = _super.call(this, errorMessage) || this;
         _this.name = 'ApolloError';
         _this.graphQLErrors = graphQLErrors || [];
+        _this.protocolErrors = protocolErrors || [];
         _this.clientErrors = clientErrors || [];
         _this.networkError = networkError || null;
         _this.message = errorMessage || generateErrorMessage(_this);
@@ -43436,6 +43229,8 @@ var ApolloError = (function (_super) {
 }(Error));
 
 exports.ApolloError = ApolloError;
+exports.PROTOCOL_ERRORS_SYMBOL = PROTOCOL_ERRORS_SYMBOL;
+exports.graphQLResultHasProtocolErrors = graphQLResultHasProtocolErrors;
 exports.isApolloError = isApolloError;
 //# sourceMappingURL=errors.cjs.map
 
@@ -43583,6 +43378,7 @@ var globals = __nccwpck_require__(8869);
 var tslib = __nccwpck_require__(4351);
 var utilities = __nccwpck_require__(3150);
 var utils = __nccwpck_require__(6922);
+var errors = __nccwpck_require__(1621);
 var graphql = __nccwpck_require__(6155);
 var core = __nccwpck_require__(6784);
 
@@ -43757,20 +43553,28 @@ function responseIterator(response) {
     throw new Error("Unknown body type for responseIterator. Please pass a streamable response.");
 }
 
+function isNonNullObject(obj) {
+    return obj !== null && typeof obj === 'object';
+}
+
+function isApolloPayloadResult(value) {
+    return isNonNullObject(value) && "payload" in value;
+}
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function readMultipartBody(response, observer) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return tslib.__awaiter(this, void 0, void 0, function () {
-        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _d, value, done, chunk, bi, message, i, headers, contentType_1, body, result;
-        var _e;
-        return tslib.__generator(this, function (_f) {
-            switch (_f.label) {
+        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _e, value, done, chunk, bi, message, i, headers, contentType_1, body, result, next;
+        var _f, _g;
+        return tslib.__generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
                     if (TextDecoder === undefined) {
                         throw new Error("TextDecoder must be defined in the environment: please import a polyfill.");
                     }
                     decoder = new TextDecoder("utf-8");
-                    contentType = (_a = response.headers) === null || _a === void 0 ? void 0 : _a.get('content-type');
+                    contentType = (_a = response.headers) === null || _a === void 0 ? void 0 : _a.get("content-type");
                     delimiter = "boundary=";
                     boundaryVal = (contentType === null || contentType === void 0 ? void 0 : contentType.includes(delimiter))
                         ? contentType === null || contentType === void 0 ? void 0 : contentType.substring((contentType === null || contentType === void 0 ? void 0 : contentType.indexOf(delimiter)) + delimiter.length).replace(/['"]/g, "").replace(/\;(.*)/gm, "").trim()
@@ -43779,22 +43583,22 @@ function readMultipartBody(response, observer) {
                     buffer = "";
                     iterator = responseIterator(response);
                     running = true;
-                    _f.label = 1;
+                    _h.label = 1;
                 case 1:
                     if (!running) return [3, 3];
                     return [4, iterator.next()];
                 case 2:
-                    _d = _f.sent(), value = _d.value, done = _d.done;
+                    _e = _h.sent(), value = _e.value, done = _e.done;
                     chunk = typeof value === "string" ? value : decoder.decode(value);
                     running = !done;
                     buffer += chunk;
                     bi = buffer.indexOf(boundary);
                     while (bi > -1) {
                         message = void 0;
-                        _e = [
+                        _f = [
                             buffer.slice(0, bi),
                             buffer.slice(bi + boundary.length),
-                        ], message = _e[0], buffer = _e[1];
+                        ], message = _f[0], buffer = _f[1];
                         if (message.trim()) {
                             i = message.indexOf("\r\n\r\n");
                             headers = parseHeaders(message.slice(0, i));
@@ -43809,8 +43613,21 @@ function readMultipartBody(response, observer) {
                                 if (Object.keys(result).length > 1 ||
                                     "data" in result ||
                                     "incremental" in result ||
-                                    "errors" in result) {
-                                    (_b = observer.next) === null || _b === void 0 ? void 0 : _b.call(observer, result);
+                                    "errors" in result ||
+                                    "payload" in result) {
+                                    if (isApolloPayloadResult(result)) {
+                                        next = {};
+                                        if ("payload" in result) {
+                                            next = tslib.__assign({}, result.payload);
+                                        }
+                                        if ("errors" in result) {
+                                            next = tslib.__assign(tslib.__assign({}, next), { extensions: tslib.__assign(tslib.__assign({}, ("extensions" in next ? next.extensions : null)), (_g = {}, _g[errors.PROTOCOL_ERRORS_SYMBOL] = result.errors, _g)) });
+                                        }
+                                        (_b = observer.next) === null || _b === void 0 ? void 0 : _b.call(observer, next);
+                                    }
+                                    else {
+                                        (_c = observer.next) === null || _c === void 0 ? void 0 : _c.call(observer, result);
+                                    }
                                 }
                             }
                             catch (err) {
@@ -43821,7 +43638,7 @@ function readMultipartBody(response, observer) {
                     }
                     return [3, 1];
                 case 3:
-                    (_c = observer.complete) === null || _c === void 0 ? void 0 : _c.call(observer);
+                    (_d = observer.complete) === null || _d === void 0 ? void 0 : _d.call(observer);
                     return [2];
             }
         });
@@ -44119,13 +43936,28 @@ var createHttpLink = function (linkOptions) {
         var definitionIsMutation = function (d) {
             return d.kind === 'OperationDefinition' && d.operation === 'mutation';
         };
+        var definitionIsSubscription = function (d) {
+            return d.kind === 'OperationDefinition' && d.operation === 'subscription';
+        };
+        var isSubscription = definitionIsSubscription(utilities.getMainDefinition(operation.query));
+        var hasDefer = utilities.hasDirectives(['defer'], operation.query);
         if (useGETForQueries &&
             !operation.query.definitions.some(definitionIsMutation)) {
             options.method = 'GET';
         }
-        if (utilities.hasDirectives(['defer'], operation.query)) {
+        if (hasDefer || isSubscription) {
             options.headers = options.headers || {};
-            options.headers.accept = "multipart/mixed; deferSpec=20220824, application/json";
+            var acceptHeader = "multipart/mixed;";
+            if (isSubscription && hasDefer) {
+                __DEV__ && globals.invariant.warn("Multipart-subscriptions do not support @defer");
+            }
+            if (isSubscription) {
+                acceptHeader += 'boundary=graphql;subscriptionSpec=1.0,application/json';
+            }
+            else if (hasDefer) {
+                acceptHeader += 'deferSpec=20220824,application/json';
+            }
+            options.headers.accept = acceptHeader;
         }
         if (options.method === 'GET') {
             var _d = rewriteURIForGET(chosenURI, body), newURI = _d.newURI, parseError = _d.parseError;
@@ -44524,8 +44356,6 @@ var InternalState = (function () {
     function InternalState(client, query, previous) {
         this.client = client;
         this.query = query;
-        this.asyncResolveFns = new Set();
-        this.optionsToIgnoreOnce = new (utilities.canUseWeakSet ? WeakSet : Set)();
         this.ssrDisabledResult = utilities.maybeDeepFreeze({
             loading: true,
             data: void 0,
@@ -44549,20 +44379,30 @@ var InternalState = (function () {
     InternalState.prototype.forceUpdate = function () {
         __DEV__ && globals.invariant.warn("Calling default no-op implementation of InternalState#forceUpdate");
     };
-    InternalState.prototype.asyncUpdate = function (signal) {
+    InternalState.prototype.executeQuery = function (options) {
         var _this = this;
-        return new Promise(function (resolve, reject) {
-            var watchQueryOptions = _this.watchQueryOptions;
-            var handleAborted = function () {
-                _this.asyncResolveFns.delete(resolve);
-                _this.optionsToIgnoreOnce.delete(watchQueryOptions);
-                signal.removeEventListener('abort', handleAborted);
-                reject(signal.reason);
-            };
-            _this.asyncResolveFns.add(resolve);
-            _this.optionsToIgnoreOnce.add(watchQueryOptions);
-            signal.addEventListener('abort', handleAborted);
-            _this.forceUpdate();
+        var _a;
+        if (options.query) {
+            Object.assign(this, { query: options.query });
+        }
+        this.watchQueryOptions = this.createWatchQueryOptions(this.queryHookOptions = options);
+        var concast = this.observable.reobserveAsConcast(this.getObsQueryOptions());
+        this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
+        this.result = void 0;
+        this.forceUpdate();
+        return new Promise(function (resolve) {
+            var result;
+            concast.subscribe({
+                next: function (value) {
+                    result = value;
+                },
+                error: function () {
+                    resolve(_this.toQueryResult(_this.observable.getCurrentResult()));
+                },
+                complete: function () {
+                    resolve(_this.toQueryResult(result));
+                }
+            });
         });
     };
     InternalState.prototype.useQuery = function (options) {
@@ -44611,29 +44451,22 @@ var InternalState = (function () {
                 }
             };
             var subscription = obsQuery.subscribe(onNext, onError);
-            return function () { return subscription.unsubscribe(); };
+            return function () { return setTimeout(function () { return subscription.unsubscribe(); }); };
         }, [
             obsQuery,
             this.renderPromises,
             this.client.disableNetworkFetches,
         ]), function () { return _this.getCurrentResult(); }, function () { return _this.getCurrentResult(); });
         this.unsafeHandlePartialRefetch(result);
-        var queryResult = this.toQueryResult(result);
-        if (!queryResult.loading && this.asyncResolveFns.size) {
-            this.asyncResolveFns.forEach(function (resolve) { return resolve(queryResult); });
-            this.asyncResolveFns.clear();
-        }
-        return queryResult;
+        return this.toQueryResult(result);
     };
     InternalState.prototype.useOptions = function (options) {
         var _a;
         var watchQueryOptions = this.createWatchQueryOptions(this.queryHookOptions = options);
         var currentWatchQueryOptions = this.watchQueryOptions;
-        if (this.optionsToIgnoreOnce.has(currentWatchQueryOptions) ||
-            !equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
+        if (!equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
             this.watchQueryOptions = watchQueryOptions;
             if (currentWatchQueryOptions && this.observable) {
-                this.optionsToIgnoreOnce.delete(currentWatchQueryOptions);
                 this.observable.reobserve(this.getObsQueryOptions());
                 this.previousData = ((_a = this.result) === null || _a === void 0 ? void 0 : _a.data) || this.previousData;
                 this.result = void 0;
@@ -44799,10 +44632,14 @@ var EAGER_METHODS = [
 ];
 function useLazyQuery(query, options) {
     var _a;
-    var abortControllersRef = React.useRef(new Set());
     var execOptionsRef = React.useRef();
+    var optionsRef = React.useRef();
+    var queryRef = React.useRef();
     var merged = execOptionsRef.current ? utilities.mergeOptions(options, execOptionsRef.current) : options;
-    var internalState = useInternalState(useApolloClient(options && options.client), (_a = merged === null || merged === void 0 ? void 0 : merged.query) !== null && _a !== void 0 ? _a : query);
+    var document = (_a = merged === null || merged === void 0 ? void 0 : merged.query) !== null && _a !== void 0 ? _a : query;
+    optionsRef.current = merged;
+    queryRef.current = document;
+    var internalState = useInternalState(useApolloClient(options && options.client), document);
     var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign({}, merged), { skip: !execOptionsRef.current }));
     var initialFetchPolicy = useQueryResult.observable.options.initialFetchPolicy ||
         internalState.getDefaultFetchPolicy();
@@ -44828,28 +44665,15 @@ function useLazyQuery(query, options) {
         return eagerMethods;
     }, []);
     Object.assign(result, eagerMethods);
-    React.useEffect(function () {
-        return function () {
-            abortControllersRef.current.forEach(function (controller) {
-                controller.abort();
-            });
-        };
-    }, []);
     var execute = React.useCallback(function (executeOptions) {
-        var controller = new AbortController();
-        abortControllersRef.current.add(controller);
         execOptionsRef.current = executeOptions ? tslib.__assign(tslib.__assign({}, executeOptions), { fetchPolicy: executeOptions.fetchPolicy || initialFetchPolicy }) : {
             fetchPolicy: initialFetchPolicy,
         };
+        var options = utilities.mergeOptions(optionsRef.current, tslib.__assign({ query: queryRef.current }, execOptionsRef.current));
         var promise = internalState
-            .asyncUpdate(controller.signal)
-            .then(function (queryResult) {
-            abortControllersRef.current.delete(controller);
-            return Object.assign(queryResult, eagerMethods);
-        });
-        promise.catch(function () {
-            abortControllersRef.current.delete(controller);
-        });
+            .executeQuery(tslib.__assign(tslib.__assign({}, options), { skip: false }))
+            .then(function (queryResult) { return Object.assign(queryResult, eagerMethods); });
+        promise.catch(function () { });
         return promise;
     }, []);
     return [execute, result];
