@@ -40884,7 +40884,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.11';
+var version = '3.7.12';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -43617,12 +43617,12 @@ function isApolloPayloadResult(value) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function readMultipartBody(response, observer) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return tslib.__awaiter(this, void 0, void 0, function () {
-        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _e, value, done, chunk, bi, message, i, headers, contentType_1, body, result, next;
-        var _f, _g;
-        return tslib.__generator(this, function (_h) {
-            switch (_h.label) {
+        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _f, value, done, chunk, bi, message, i, headers, contentType_1, body, result, next;
+        var _g, _h;
+        return tslib.__generator(this, function (_j) {
+            switch (_j.label) {
                 case 0:
                     if (TextDecoder === undefined) {
                         throw new Error("TextDecoder must be defined in the environment: please import a polyfill.");
@@ -43637,22 +43637,22 @@ function readMultipartBody(response, observer) {
                     buffer = "";
                     iterator = responseIterator(response);
                     running = true;
-                    _h.label = 1;
+                    _j.label = 1;
                 case 1:
                     if (!running) return [3, 3];
                     return [4, iterator.next()];
                 case 2:
-                    _e = _h.sent(), value = _e.value, done = _e.done;
+                    _f = _j.sent(), value = _f.value, done = _f.done;
                     chunk = typeof value === "string" ? value : decoder.decode(value);
                     running = !done;
                     buffer += chunk;
                     bi = buffer.indexOf(boundary);
                     while (bi > -1) {
                         message = void 0;
-                        _f = [
+                        _g = [
                             buffer.slice(0, bi),
                             buffer.slice(bi + boundary.length),
-                        ], message = _f[0], buffer = _f[1];
+                        ], message = _g[0], buffer = _g[1];
                         if (message.trim()) {
                             i = message.indexOf("\r\n\r\n");
                             headers = parseHeaders(message.slice(0, i));
@@ -43675,13 +43675,18 @@ function readMultipartBody(response, observer) {
                                             next = tslib.__assign({}, result.payload);
                                         }
                                         if ("errors" in result) {
-                                            next = tslib.__assign(tslib.__assign({}, next), { extensions: tslib.__assign(tslib.__assign({}, ("extensions" in next ? next.extensions : null)), (_g = {}, _g[errors.PROTOCOL_ERRORS_SYMBOL] = result.errors, _g)) });
+                                            next = tslib.__assign(tslib.__assign({}, next), { extensions: tslib.__assign(tslib.__assign({}, ("extensions" in next ? next.extensions : null)), (_h = {}, _h[errors.PROTOCOL_ERRORS_SYMBOL] = result.errors, _h)) });
                                         }
                                         (_b = observer.next) === null || _b === void 0 ? void 0 : _b.call(observer, next);
                                     }
                                     else {
                                         (_c = observer.next) === null || _c === void 0 ? void 0 : _c.call(observer, result);
                                     }
+                                }
+                                else if (Object.keys(result).length === 1 &&
+                                    "hasNext" in result &&
+                                    !result.hasNext) {
+                                    (_d = observer.complete) === null || _d === void 0 ? void 0 : _d.call(observer);
                                 }
                             }
                             catch (err) {
@@ -43692,7 +43697,7 @@ function readMultipartBody(response, observer) {
                     }
                     return [3, 1];
                 case 3:
-                    (_d = observer.complete) === null || _d === void 0 ? void 0 : _d.call(observer);
+                    (_e = observer.complete) === null || _e === void 0 ? void 0 : _e.call(observer);
                     return [2];
             }
         });
