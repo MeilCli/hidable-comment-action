@@ -40976,7 +40976,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.12';
+var version = '3.7.13';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -45010,9 +45010,13 @@ function useSubscription(subscription, options) {
         if (!observable) {
             return;
         }
+        var subscriptionStopped = false;
         var subscription = observable.subscribe({
             next: function (fetchResult) {
                 var _a, _b;
+                if (subscriptionStopped) {
+                    return;
+                }
                 var result = {
                     loading: false,
                     data: fetchResult.data,
@@ -45035,26 +45039,33 @@ function useSubscription(subscription, options) {
             },
             error: function (error) {
                 var _a, _b;
-                setResult({
-                    loading: false,
-                    data: void 0,
-                    error: error,
-                    variables: options === null || options === void 0 ? void 0 : options.variables,
-                });
-                (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) === null || _b === void 0 ? void 0 : _b.call(_a, error);
+                if (!subscriptionStopped) {
+                    setResult({
+                        loading: false,
+                        data: void 0,
+                        error: error,
+                        variables: options === null || options === void 0 ? void 0 : options.variables,
+                    });
+                    (_b = (_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onError) === null || _b === void 0 ? void 0 : _b.call(_a, error);
+                }
             },
             complete: function () {
                 var _a, _b;
-                if ((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onComplete) {
-                    ref.current.options.onComplete();
-                }
-                else if ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onSubscriptionComplete) {
-                    ref.current.options.onSubscriptionComplete();
+                if (!subscriptionStopped) {
+                    if ((_a = ref.current.options) === null || _a === void 0 ? void 0 : _a.onComplete) {
+                        ref.current.options.onComplete();
+                    }
+                    else if ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.onSubscriptionComplete) {
+                        ref.current.options.onSubscriptionComplete();
+                    }
                 }
             },
         });
         return function () {
-            subscription.unsubscribe();
+            subscriptionStopped = true;
+            setTimeout(function () {
+                subscription.unsubscribe();
+            });
         };
     }, [observable]);
     return result;
