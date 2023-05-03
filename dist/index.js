@@ -40976,7 +40976,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.13';
+var version = '3.7.14';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
