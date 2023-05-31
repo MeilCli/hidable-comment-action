@@ -38626,7 +38626,7 @@ var tslib = __nccwpck_require__(4351);
 var optimism = __nccwpck_require__(6864);
 var utilities = __nccwpck_require__(3150);
 var equality = __nccwpck_require__(9969);
-var trie = __nccwpck_require__(1653);
+var trie = __nccwpck_require__(5255);
 var graphql = __nccwpck_require__(6155);
 var context = __nccwpck_require__(3792);
 
@@ -39882,7 +39882,7 @@ var Policies = (function () {
         var policy = typename && this.getTypePolicy(typename);
         var keyFn = policy && policy.keyFn || this.config.dataIdFromObject;
         while (keyFn) {
-            var specifierOrId = keyFn(object, context);
+            var specifierOrId = keyFn(tslib.__assign(tslib.__assign({}, object), storeObject), context);
             if (utilities.isArray(specifierOrId)) {
                 keyFn = keyFieldsFnFromSpecifier(specifierOrId);
             }
@@ -41066,7 +41066,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.14';
+var version = '3.7.15';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -43801,7 +43801,7 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 function readMultipartBody(response, observer) {
     var _a, _b, _c, _d, _e;
     return tslib.__awaiter(this, void 0, void 0, function () {
-        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _f, value, done, chunk, bi, message, i, headers, contentType_1, body, result, next;
+        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _f, value, done, chunk, searchFrom, bi, message, i, headers, contentType_1, body, result, next;
         var _g, _h;
         return tslib.__generator(this, function (_j) {
             switch (_j.label) {
@@ -43815,7 +43815,7 @@ function readMultipartBody(response, observer) {
                     boundaryVal = (contentType === null || contentType === void 0 ? void 0 : contentType.includes(delimiter))
                         ? contentType === null || contentType === void 0 ? void 0 : contentType.substring((contentType === null || contentType === void 0 ? void 0 : contentType.indexOf(delimiter)) + delimiter.length).replace(/['"]/g, "").replace(/\;(.*)/gm, "").trim()
                         : "-";
-                    boundary = "--".concat(boundaryVal);
+                    boundary = "\r\n--".concat(boundaryVal);
                     buffer = "";
                     iterator = responseIterator(response);
                     running = true;
@@ -43826,26 +43826,27 @@ function readMultipartBody(response, observer) {
                 case 2:
                     _f = _j.sent(), value = _f.value, done = _f.done;
                     chunk = typeof value === "string" ? value : decoder.decode(value);
+                    searchFrom = buffer.length - boundary.length + 1;
                     running = !done;
                     buffer += chunk;
-                    bi = buffer.indexOf(boundary);
+                    bi = buffer.indexOf(boundary, searchFrom);
                     while (bi > -1) {
                         message = void 0;
                         _g = [
                             buffer.slice(0, bi),
                             buffer.slice(bi + boundary.length),
                         ], message = _g[0], buffer = _g[1];
-                        if (message.trim()) {
-                            i = message.indexOf("\r\n\r\n");
-                            headers = parseHeaders(message.slice(0, i));
-                            contentType_1 = headers["content-type"];
-                            if (contentType_1 &&
-                                contentType_1.toLowerCase().indexOf("application/json") === -1) {
-                                throw new Error("Unsupported patch content type: application/json is required.");
-                            }
-                            body = message.slice(i);
+                        i = message.indexOf("\r\n\r\n");
+                        headers = parseHeaders(message.slice(0, i));
+                        contentType_1 = headers["content-type"];
+                        if (contentType_1 &&
+                            contentType_1.toLowerCase().indexOf("application/json") === -1) {
+                            throw new Error("Unsupported patch content type: application/json is required.");
+                        }
+                        body = message.slice(i);
+                        if (body) {
                             try {
-                                result = parseJsonBody(response, body.replace("\r\n", ""));
+                                result = parseJsonBody(response, body);
                                 if (Object.keys(result).length > 1 ||
                                     "data" in result ||
                                     "incremental" in result ||
@@ -44409,6 +44410,86 @@ for (var k in react) {
 	if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = react[k];
 }
 //# sourceMappingURL=main.cjs.map
+
+
+/***/ }),
+
+/***/ 5255:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+// A [trie](https://en.wikipedia.org/wiki/Trie) data structure that holds
+// object keys weakly, yet can also hold non-object keys, unlike the
+// native `WeakMap`.
+// If no makeData function is supplied, the looked-up data will be an empty,
+// null-prototype Object.
+var defaultMakeData = function () { return Object.create(null); };
+// Useful for processing arguments objects as well as arrays.
+var _a = Array.prototype, forEach = _a.forEach, slice = _a.slice;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var Trie = /** @class */ (function () {
+    function Trie(weakness, makeData) {
+        if (weakness === void 0) { weakness = true; }
+        if (makeData === void 0) { makeData = defaultMakeData; }
+        this.weakness = weakness;
+        this.makeData = makeData;
+    }
+    Trie.prototype.lookup = function () {
+        var array = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            array[_i] = arguments[_i];
+        }
+        return this.lookupArray(array);
+    };
+    Trie.prototype.lookupArray = function (array) {
+        var node = this;
+        forEach.call(array, function (key) { return node = node.getChildTrie(key); });
+        return hasOwnProperty.call(node, "data")
+            ? node.data
+            : node.data = this.makeData(slice.call(array));
+    };
+    Trie.prototype.peek = function () {
+        var array = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            array[_i] = arguments[_i];
+        }
+        return this.peekArray(array);
+    };
+    Trie.prototype.peekArray = function (array) {
+        var node = this;
+        for (var i = 0, len = array.length; node && i < len; ++i) {
+            var map = this.weakness && isObjRef(array[i]) ? node.weak : node.strong;
+            node = map && map.get(array[i]);
+        }
+        return node && node.data;
+    };
+    Trie.prototype.getChildTrie = function (key) {
+        var map = this.weakness && isObjRef(key)
+            ? this.weak || (this.weak = new WeakMap())
+            : this.strong || (this.strong = new Map());
+        var child = map.get(key);
+        if (!child)
+            map.set(key, child = new Trie(this.weakness, this.makeData));
+        return child;
+    };
+    return Trie;
+}());
+function isObjRef(value) {
+    switch (typeof value) {
+        case "object":
+            if (value === null)
+                break;
+        // Fall through to return true...
+        case "function":
+            return true;
+    }
+    return false;
+}
+
+exports.Trie = Trie;
+//# sourceMappingURL=bundle.cjs.map
 
 
 /***/ }),
@@ -45756,9 +45837,7 @@ function resultKeyNameFromField(field) {
     return field.alias ? field.alias.value : field.name.value;
 }
 function getTypenameFromResult(result, selectionSet, fragmentMap) {
-    if (typeof result.__typename === 'string') {
-        return result.__typename;
-    }
+    var fragments;
     for (var _i = 0, _a = selectionSet.selections; _i < _a.length; _i++) {
         var selection = _a[_i];
         if (isField(selection)) {
@@ -45766,7 +45845,19 @@ function getTypenameFromResult(result, selectionSet, fragmentMap) {
                 return result[resultKeyNameFromField(selection)];
             }
         }
+        else if (fragments) {
+            fragments.push(selection);
+        }
         else {
+            fragments = [selection];
+        }
+    }
+    if (typeof result.__typename === 'string') {
+        return result.__typename;
+    }
+    if (fragments) {
+        for (var _b = 0, fragments_1 = fragments; _b < fragments_1.length; _b++) {
+            var selection = fragments_1[_b];
             var typename = getTypenameFromResult(result, getFragmentFromSelection(selection, fragmentMap).selectionSet, fragmentMap);
             if (typeof typename === 'string') {
                 return typename;
