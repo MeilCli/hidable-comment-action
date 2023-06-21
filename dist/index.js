@@ -41092,7 +41092,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.15';
+var version = '3.7.16';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -46436,6 +46436,9 @@ function relayStylePagination(keyArgs) {
                     }
                 }
             });
+            if (edges.length > 1 && firstEdgeCursor === lastEdgeCursor) {
+                firstEdgeCursor = "";
+            }
             var _b = existing.pageInfo || {}, startCursor = _b.startCursor, endCursor = _b.endCursor;
             return tslib.__assign(tslib.__assign({}, getExtras(existing)), { edges: edges, pageInfo: tslib.__assign(tslib.__assign({}, existing.pageInfo), { startCursor: startCursor || firstEdgeCursor, endCursor: endCursor || lastEdgeCursor }) });
         },
