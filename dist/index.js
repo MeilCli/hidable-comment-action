@@ -6900,23 +6900,34 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (const [responseName, fieldNodes] of fields.entries()) {
-    const fieldPath = (0, _Path.addPath)(path, responseName, parentType.name);
-    const result = executeField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-    );
+  try {
+    for (const [responseName, fieldNodes] of fields.entries()) {
+      const fieldPath = (0, _Path.addPath)(path, responseName, parentType.name);
+      const result = executeField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
 
-    if (result !== undefined) {
-      results[responseName] = result;
+      if (result !== undefined) {
+        results[responseName] = result;
 
-      if ((0, _isPromise.isPromise)(result)) {
-        containsPromise = true;
+        if ((0, _isPromise.isPromise)(result)) {
+          containsPromise = true;
+        }
       }
     }
+  } catch (error) {
+    if (containsPromise) {
+      // Ensure that any promises returned by other fields are handled, as they may also reject.
+      return (0, _promiseForObject.promiseForObject)(results).finally(() => {
+        throw error;
+      });
+    }
+
+    throw error;
   } // If there are no promises, we can just return the object
 
   if (!containsPromise) {
@@ -8081,7 +8092,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         onError(
           new _GraphQLError.GraphQLError(prefix + '; ' + error.message, {
             nodes: varDefNode,
-            originalError: error.originalError,
+            originalError: error,
           }),
         );
       },
@@ -9924,6 +9935,8 @@ exports.instanceOf = void 0;
 
 var _inspect = __nccwpck_require__(102);
 
+var _globalThis$process;
+
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -9933,8 +9946,10 @@ var _inspect = __nccwpck_require__(102);
 const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  // eslint-disable-next-line no-undef
-  process.env.NODE_ENV === 'production'
+  ((_globalThis$process = globalThis.process) === null ||
+  _globalThis$process === void 0
+    ? void 0
+    : _globalThis$process.env.NODE_ENV) === 'production'
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }
@@ -29205,7 +29220,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.6.0';
+const version = '16.7.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -29213,7 +29228,7 @@ const version = '16.6.0';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 6,
+  minor: 7,
   patch: 0,
   preReleaseTag: null,
 });
@@ -41092,7 +41107,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.15';
+var version = '3.7.16';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -46436,6 +46451,9 @@ function relayStylePagination(keyArgs) {
                     }
                 }
             });
+            if (edges.length > 1 && firstEdgeCursor === lastEdgeCursor) {
+                firstEdgeCursor = "";
+            }
             var _b = existing.pageInfo || {}, startCursor = _b.startCursor, endCursor = _b.endCursor;
             return tslib.__assign(tslib.__assign({}, getExtras(existing)), { edges: edges, pageInfo: tslib.__assign(tslib.__assign({}, existing.pageInfo), { startCursor: startCursor || firstEdgeCursor, endCursor: endCursor || lastEdgeCursor }) });
         },
