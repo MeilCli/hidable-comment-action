@@ -9935,8 +9935,6 @@ exports.instanceOf = void 0;
 
 var _inspect = __nccwpck_require__(102);
 
-var _globalThis$process;
-
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -9946,10 +9944,7 @@ var _globalThis$process;
 const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  ((_globalThis$process = globalThis.process) === null ||
-  _globalThis$process === void 0
-    ? void 0
-    : _globalThis$process.env.NODE_ENV) === 'production'
+  globalThis.process && globalThis.process.env.NODE_ENV === 'production'
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }
@@ -29220,7 +29215,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.7.0';
+const version = '16.7.1';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -29229,7 +29224,7 @@ exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
   minor: 7,
-  patch: 0,
+  patch: 1,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
