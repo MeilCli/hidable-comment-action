@@ -40641,7 +40641,7 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
             }
         });
     }
-    __DEV__ && globals.invariant.warn("Cache data may be lost when replacing the ".concat(fieldName, " field of a ").concat(parentType, " object.\n\nTo address this problem (which is not a bug in Apollo Client), ").concat(childTypenames.length
+    __DEV__ && globals.invariant.warn("Cache data may be lost when replacing the ".concat(fieldName, " field of a ").concat(parentType, " object.\n\nThis could cause additional (usually avoidable) network requests to fetch data that were otherwise cached.\n\nTo address this problem (which is not a bug in Apollo Client), ").concat(childTypenames.length
         ? "either ensure all objects of type " +
             childTypenames.join(" and ") + " have an ID or a custom merge function, or "
         : "", "define a custom merge function for the ").concat(typeDotName, " field, so InMemoryCache can safely merge these objects:\n\n  existing: ").concat(JSON.stringify(existing).slice(0, 1000), "\n  incoming: ").concat(JSON.stringify(incoming).slice(0, 1000), "\n\nFor more information about these options, please refer to the documentation:\n\n  * Ensuring entity objects have IDs: https://go.apollo.dev/c/generating-unique-identifiers\n  * Defining custom merge functions: https://go.apollo.dev/c/merging-non-normalized-objects\n"));
@@ -41094,7 +41094,7 @@ var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
 
-var version = '3.7.16';
+var version = '3.7.17';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -41238,6 +41238,7 @@ var ObservableQuery = (function (_super) {
         _this.subscriptions = new Set();
         _this.queryInfo = queryInfo;
         _this.queryManager = queryManager;
+        _this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy);
         _this.isTornDown = false;
         var _b = queryManager.defaultOptions.watchQuery, _c = _b === void 0 ? {} : _b, _d = _c.fetchPolicy, defaultFetchPolicy = _d === void 0 ? "cache-first" : _d;
         var _e = options.fetchPolicy, fetchPolicy = _e === void 0 ? defaultFetchPolicy : _e, _f = options.initialFetchPolicy, initialFetchPolicy = _f === void 0 ? (fetchPolicy === "standby" ? defaultFetchPolicy : fetchPolicy) : _f;
@@ -41288,10 +41289,11 @@ var ObservableQuery = (function (_super) {
             exports.NetworkStatus.ready;
         var result = tslib.__assign(tslib.__assign({}, lastResult), { loading: isNetworkRequestInFlight(networkStatus), networkStatus: networkStatus });
         var _a = this.options.fetchPolicy, fetchPolicy = _a === void 0 ? "cache-first" : _a;
-        if (fetchPolicy === 'network-only' ||
-            fetchPolicy === 'no-cache' ||
-            fetchPolicy === 'standby' ||
+        if (skipCacheDataFor(fetchPolicy) ||
             this.queryManager.transform(this.options.query).hasForcedResolvers) ;
+        else if (this.waitForOwnResult) {
+            this.queryInfo['updateWatch']();
+        }
         else {
             var diff = this.queryInfo.getDiff();
             if (diff.complete || this.options.returnPartialData) {
@@ -41613,13 +41615,21 @@ var ObservableQuery = (function (_super) {
                 }
             }
         }
+        this.waitForOwnResult && (this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy));
+        var finishWaitingForOwnResult = function () {
+            if (_this.concast === concast) {
+                _this.waitForOwnResult = false;
+            }
+        };
         var variables = options.variables && tslib.__assign({}, options.variables);
         var _a = this.fetch(options, newNetworkStatus), concast = _a.concast, fromLink = _a.fromLink;
         var observer = {
             next: function (result) {
+                finishWaitingForOwnResult();
                 _this.reportResult(result, variables);
             },
             error: function (error) {
+                finishWaitingForOwnResult();
                 _this.reportError(error, variables);
             },
         };
@@ -41698,6 +41708,9 @@ function logMissingFieldErrors(missing) {
     if (__DEV__ && missing) {
         __DEV__ && globals.invariant.debug("Missing cache result fields: ".concat(JSON.stringify(missing)), missing);
     }
+}
+function skipCacheDataFor(fetchPolicy) {
+    return fetchPolicy === "network-only" || fetchPolicy === "no-cache" || fetchPolicy === "standby";
 }
 
 var LocalState = (function () {
