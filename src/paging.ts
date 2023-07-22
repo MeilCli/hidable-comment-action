@@ -13,7 +13,7 @@ export interface IssueOrPullRequestWithPagingResult {
 
 export async function getIssueOrPullRequestCommentWithPaging(
     client: GitHubClient,
-    variables: GetIssueOrPullRequestCommentQueryVariables
+    variables: GetIssueOrPullRequestCommentQueryVariables,
 ): Promise<IssueOrPullRequestWithPagingResult> {
     const comments: GetIssueOrPullRequestCommentQueryIssueOrPullRequestCommentNode[] = [];
 

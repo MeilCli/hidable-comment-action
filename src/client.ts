@@ -28,7 +28,7 @@ export function githubClient(option: Option): GitHubClient {
                 fetch,
             }),
             cache: new InMemoryCache(),
-        })
+        }),
     );
 }
 
@@ -52,7 +52,7 @@ export class GitHubClient {
     }
 
     async getIssueOrPullRequestComment(
-        variables: GetIssueOrPullRequestCommentQueryVariables
+        variables: GetIssueOrPullRequestCommentQueryVariables,
     ): Promise<GetIssueOrPullRequestCommentQuery> {
         const result = await this.client.query<GetIssueOrPullRequestCommentQuery>({
             query: GetIssueOrPullRequestComment,
