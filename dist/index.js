@@ -40125,7 +40125,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = '3.8.0';
+var version = '3.8.1';
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === 'object';
@@ -42894,20 +42894,39 @@ function readerIterator(reader) {
     return iterator;
 }
 
+function isNodeResponse(value) {
+    return !!value.body;
+}
+function isReadableStream(value) {
+    return !!value.getReader;
+}
+function isAsyncIterableIterator(value) {
+    return !!(utilities.canUseAsyncIteratorSymbol &&
+        value[Symbol.asyncIterator]);
+}
+function isStreamableBlob(value) {
+    return !!value.stream;
+}
+function isBlob(value) {
+    return !!value.arrayBuffer;
+}
+function isNodeReadableStream(value) {
+    return !!value.pipe;
+}
 function responseIterator(response) {
     var body = response;
-    if (utilities.isNodeResponse(response))
+    if (isNodeResponse(response))
         body = response.body;
-    if (utilities.isAsyncIterableIterator(body))
+    if (isAsyncIterableIterator(body))
         return asyncIterator(body);
-    if (utilities.isReadableStream(body))
+    if (isReadableStream(body))
         return readerIterator(body.getReader());
-    if (utilities.isStreamableBlob(body)) {
+    if (isStreamableBlob(body)) {
         return readerIterator(body.stream().getReader());
     }
-    if (utilities.isBlob(body))
+    if (isBlob(body))
         return promiseIterator(body.arrayBuffer());
-    if (utilities.isNodeReadableStream(body))
+    if (isNodeReadableStream(body))
         return nodeStreamIterator(body);
     throw new Error("Unknown body type for responseIterator. Please pass a streamable response.");
 }
@@ -45172,7 +45191,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var tslib = __nccwpck_require__(4351);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = '3.8.0';
+var version = '3.8.1';
 
 function maybe(thunk) {
     try {
@@ -46773,26 +46792,6 @@ function mergeOptions(defaults, options) {
     });
 }
 
-function isNodeResponse(value) {
-    return !!value.body;
-}
-function isReadableStream(value) {
-    return !!value.getReader;
-}
-function isAsyncIterableIterator(value) {
-    return !!(canUseAsyncIteratorSymbol &&
-        value[Symbol.asyncIterator]);
-}
-function isStreamableBlob(value) {
-    return !!value.stream;
-}
-function isBlob(value) {
-    return !!value.arrayBuffer;
-}
-function isNodeReadableStream(value) {
-    return !!value.pipe;
-}
-
 function omitDeep(value, key) {
     return __omitDeep(value, key);
 }
@@ -46882,8 +46881,6 @@ exports.hasClientExports = hasClientExports;
 exports.hasDirectives = hasDirectives;
 exports.isApolloPayloadResult = isApolloPayloadResult;
 exports.isArray = isArray;
-exports.isAsyncIterableIterator = isAsyncIterableIterator;
-exports.isBlob = isBlob;
 exports.isDocumentNode = isDocumentNode;
 exports.isExecutionPatchIncrementalResult = isExecutionPatchIncrementalResult;
 exports.isExecutionPatchInitialResult = isExecutionPatchInitialResult;
@@ -46891,16 +46888,12 @@ exports.isExecutionPatchResult = isExecutionPatchResult;
 exports.isField = isField;
 exports.isInlineFragment = isInlineFragment;
 exports.isMutationOperation = isMutationOperation;
-exports.isNodeReadableStream = isNodeReadableStream;
-exports.isNodeResponse = isNodeResponse;
 exports.isNonEmptyArray = isNonEmptyArray;
 exports.isNonNullObject = isNonNullObject;
 exports.isPlainObject = isPlainObject;
 exports.isQueryOperation = isQueryOperation;
-exports.isReadableStream = isReadableStream;
 exports.isReference = isReference;
 exports.isStatefulPromise = isStatefulPromise;
-exports.isStreamableBlob = isStreamableBlob;
 exports.isSubscriptionOperation = isSubscriptionOperation;
 exports.iterateObserversSafely = iterateObserversSafely;
 exports.makeReference = makeReference;
