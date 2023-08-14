@@ -22166,6 +22166,14 @@ function getIntrospectionQuery(options) {
                   ofType {
                     kind
                     name
+                    ofType {
+                      kind
+                      name
+                      ofType {
+                        kind
+                        name
+                      }
+                    }
                   }
                 }
               }
@@ -28734,7 +28742,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.7.1';
+const version = '16.8.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -28742,8 +28750,8 @@ const version = '16.7.1';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 7,
-  patch: 1,
+  minor: 8,
+  patch: 0,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
