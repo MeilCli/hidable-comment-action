@@ -26104,7 +26104,7 @@ function findConflict(
       ];
     } // Two field calls must have the same arguments.
 
-    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
+    if (!sameArguments(node1, node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -26149,27 +26149,40 @@ function findConflict(
   }
 }
 
-function stringifyArguments(fieldNode) {
-  var _fieldNode$arguments;
+function sameArguments(node1, node2) {
+  const args1 = node1.arguments;
+  const args2 = node2.arguments;
 
-  // FIXME https://github.com/graphql/graphql-js/issues/2203
-  const args =
+  if (args1 === undefined || args1.length === 0) {
+    return args2 === undefined || args2.length === 0;
+  }
+
+  if (args2 === undefined || args2.length === 0) {
+    return false;
+  }
+  /* c8 ignore next */
+
+  if (args1.length !== args2.length) {
     /* c8 ignore next */
-    (_fieldNode$arguments = fieldNode.arguments) !== null &&
-    _fieldNode$arguments !== void 0
-      ? _fieldNode$arguments
-      : [];
-  const inputObjectWithArgs = {
-    kind: _kinds.Kind.OBJECT,
-    fields: args.map((argNode) => ({
-      kind: _kinds.Kind.OBJECT_FIELD,
-      name: argNode.name,
-      value: argNode.value,
-    })),
-  };
-  return (0, _printer.print)(
-    (0, _sortValueNode.sortValueNode)(inputObjectWithArgs),
-  );
+    return false;
+    /* c8 ignore next */
+  }
+
+  const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
+  return args1.every((arg1) => {
+    const value1 = arg1.value;
+    const value2 = values2.get(arg1.name.value);
+
+    if (value2 === undefined) {
+      return false;
+    }
+
+    return stringifyValue(value1) === stringifyValue(value2);
+  });
+}
+
+function stringifyValue(value) {
+  return (0, _printer.print)((0, _sortValueNode.sortValueNode)(value));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
@@ -28760,7 +28773,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.8.0';
+const version = '16.8.1';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -28769,7 +28782,7 @@ exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
   minor: 8,
-  patch: 0,
+  patch: 1,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
@@ -40213,7 +40226,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.8.3";
+var version = "3.8.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -45336,7 +45349,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var tslib = __nccwpck_require__(4351);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.8.3";
+var version = "3.8.4";
 
 function maybe(thunk) {
     try {
@@ -45375,7 +45388,12 @@ function wrap(fn) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        fn.apply(void 0, tslib.__spreadArray([typeof message === "number" ? getErrorMsg(message) : message], args, false));
+        if (typeof message === "number") {
+            fn(getErrorMsg(message, args));
+        }
+        else {
+            fn.apply(void 0, tslib.__spreadArray([message], args, false));
+        }
     };
 }
 var invariant = Object.assign(function invariant(condition, message) {
