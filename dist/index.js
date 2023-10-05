@@ -40226,7 +40226,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.8.4";
+var version = "3.8.5";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -40753,9 +40753,9 @@ var ObservableQuery = (function (_super) {
         }
         return options.fetchPolicy;
     };
-    ObservableQuery.prototype.fetch = function (options, newNetworkStatus) {
+    ObservableQuery.prototype.fetch = function (options, newNetworkStatus, query) {
         this.queryManager.setObservableQuery(this);
-        return this.queryManager["fetchConcastWithInfo"](this.queryId, options, newNetworkStatus);
+        return this.queryManager["fetchConcastWithInfo"](this.queryId, options, newNetworkStatus, query);
     };
     ObservableQuery.prototype.updatePolling = function () {
         var _this = this;
@@ -40837,15 +40837,14 @@ var ObservableQuery = (function (_super) {
                 }
             }
         }
-        var fetchOptions = query === options.query ? options : tslib.__assign(tslib.__assign({}, options), { query: query });
-        this.waitForOwnResult && (this.waitForOwnResult = skipCacheDataFor(fetchOptions.fetchPolicy));
+        this.waitForOwnResult && (this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy));
         var finishWaitingForOwnResult = function () {
             if (_this.concast === concast) {
                 _this.waitForOwnResult = false;
             }
         };
-        var variables = fetchOptions.variables && tslib.__assign({}, fetchOptions.variables);
-        var _a = this.fetch(fetchOptions, newNetworkStatus), concast = _a.concast, fromLink = _a.fromLink;
+        var variables = options.variables && tslib.__assign({}, options.variables);
+        var _a = this.fetch(options, newNetworkStatus, query), concast = _a.concast, fromLink = _a.fromLink;
         var observer = {
             next: function (result) {
                 finishWaitingForOwnResult();
@@ -41287,7 +41286,6 @@ var QueryInfo = (function () {
         this.listeners = new Set();
         this.document = null;
         this.lastRequestId = 1;
-        this.subscriptions = new Set();
         this.stopped = false;
         this.dirty = false;
         this.observableQuery = null;
@@ -41422,7 +41420,6 @@ var QueryInfo = (function () {
             this.reset();
             this.cancel();
             this.cancel = QueryInfo.prototype.cancel;
-            this.subscriptions.forEach(function (sub) { return sub.unsubscribe(); });
             var oq = this.observableQuery;
             if (oq)
                 oq.stopPolling();
@@ -42201,10 +42198,10 @@ var QueryManager = (function () {
             throw error;
         });
     };
-    QueryManager.prototype.fetchConcastWithInfo = function (queryId, options, networkStatus) {
+    QueryManager.prototype.fetchConcastWithInfo = function (queryId, options, networkStatus, query) {
         var _this = this;
         if (networkStatus === void 0) { networkStatus = exports.NetworkStatus.loading; }
-        var query = options.query;
+        if (query === void 0) { query = options.query; }
         var variables = this.getVariables(query, options.variables);
         var queryInfo = this.getQuery(queryId);
         var defaults = this.defaultOptions.watchQuery;
@@ -45102,225 +45099,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 __nccwpck_require__(8869);
 var context = __nccwpck_require__(3673);
 var hooks = __nccwpck_require__(9293);
-var tslib = __nccwpck_require__(4351);
-var trie = __nccwpck_require__(4665);
-var utilities = __nccwpck_require__(3150);
-var equality = __nccwpck_require__(3750);
-var core = __nccwpck_require__(1402);
 var parser = __nccwpck_require__(5043);
 
-var OBSERVED_CHANGED_OPTIONS = [
-    "canonizeResults",
-    "context",
-    "errorPolicy",
-    "fetchPolicy",
-    "refetchWritePolicy",
-    "returnPartialData",
-];
-var InternalQueryReference = (function () {
-    function InternalQueryReference(observable, options) {
-        var _this = this;
-        var _a;
-        this.listeners = new Set();
-        this.status = "loading";
-        this.references = 0;
-        this.handleNext = this.handleNext.bind(this);
-        this.handleError = this.handleError.bind(this);
-        this.dispose = this.dispose.bind(this);
-        this.observable = observable;
-        this.result = observable.getCurrentResult(false);
-        this.key = options.key;
-        if (options.onDispose) {
-            this.onDispose = options.onDispose;
-        }
-        if (core.isNetworkRequestSettled(this.result.networkStatus) ||
-            (this.result.data &&
-                (!this.result.partial || this.watchQueryOptions.returnPartialData))) {
-            this.promise = utilities.createFulfilledPromise(this.result);
-            this.status = "idle";
-        }
-        else {
-            this.promise = new Promise(function (resolve, reject) {
-                _this.resolve = resolve;
-                _this.reject = reject;
-            });
-        }
-        this.subscription = observable
-            .filter(function (_a) {
-            var data = _a.data;
-            return !equality.equal(data, {});
-        })
-            .subscribe({
-            next: this.handleNext,
-            error: this.handleError,
-        });
-        this.autoDisposeTimeoutId = setTimeout(this.dispose, (_a = options.autoDisposeTimeoutMs) !== null && _a !== void 0 ? _a : 30000);
-    }
-    Object.defineProperty(InternalQueryReference.prototype, "watchQueryOptions", {
-        get: function () {
-            return this.observable.options;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    InternalQueryReference.prototype.retain = function () {
-        var _this = this;
-        this.references++;
-        clearTimeout(this.autoDisposeTimeoutId);
-        var disposed = false;
-        return function () {
-            if (disposed) {
-                return;
-            }
-            disposed = true;
-            _this.references--;
-            setTimeout(function () {
-                if (!_this.references) {
-                    _this.dispose();
-                }
-            });
-        };
-    };
-    InternalQueryReference.prototype.didChangeOptions = function (watchQueryOptions) {
-        var _this = this;
-        return OBSERVED_CHANGED_OPTIONS.some(function (option) {
-            return !equality.equal(_this.watchQueryOptions[option], watchQueryOptions[option]);
-        });
-    };
-    InternalQueryReference.prototype.applyOptions = function (watchQueryOptions) {
-        var _a = this.watchQueryOptions, currentFetchPolicy = _a.fetchPolicy, currentCanonizeResults = _a.canonizeResults;
-        if (currentFetchPolicy === "standby" &&
-            currentFetchPolicy !== watchQueryOptions.fetchPolicy) {
-            this.initiateFetch(this.observable.reobserve(watchQueryOptions));
-        }
-        else {
-            this.observable.silentSetOptions(watchQueryOptions);
-            if (currentCanonizeResults !== watchQueryOptions.canonizeResults) {
-                this.result = tslib.__assign(tslib.__assign({}, this.result), this.observable.getCurrentResult());
-                this.promise = utilities.createFulfilledPromise(this.result);
-            }
-        }
-        return this.promise;
-    };
-    InternalQueryReference.prototype.listen = function (listener) {
-        var _this = this;
-        this.listeners.add(listener);
-        return function () {
-            _this.listeners.delete(listener);
-        };
-    };
-    InternalQueryReference.prototype.refetch = function (variables) {
-        return this.initiateFetch(this.observable.refetch(variables));
-    };
-    InternalQueryReference.prototype.fetchMore = function (options) {
-        return this.initiateFetch(this.observable.fetchMore(options));
-    };
-    InternalQueryReference.prototype.dispose = function () {
-        this.subscription.unsubscribe();
-        this.onDispose();
-    };
-    InternalQueryReference.prototype.onDispose = function () {
-    };
-    InternalQueryReference.prototype.handleNext = function (result) {
-        var _a;
-        switch (this.status) {
-            case "loading": {
-                if (result.data === void 0) {
-                    result.data = this.result.data;
-                }
-                this.status = "idle";
-                this.result = result;
-                (_a = this.resolve) === null || _a === void 0 ? void 0 : _a.call(this, result);
-                break;
-            }
-            case "idle": {
-                if (result.data === this.result.data) {
-                    return;
-                }
-                if (result.data === void 0) {
-                    result.data = this.result.data;
-                }
-                this.result = result;
-                this.promise = utilities.createFulfilledPromise(result);
-                this.deliver(this.promise);
-                break;
-            }
-        }
-    };
-    InternalQueryReference.prototype.handleError = function (error) {
-        var _a;
-        this.subscription.unsubscribe();
-        this.subscription = this.observable.resubscribeAfterError(this.handleNext, this.handleError);
-        switch (this.status) {
-            case "loading": {
-                this.status = "idle";
-                (_a = this.reject) === null || _a === void 0 ? void 0 : _a.call(this, error);
-                break;
-            }
-            case "idle": {
-                this.promise = utilities.createRejectedPromise(error);
-                this.deliver(this.promise);
-            }
-        }
-    };
-    InternalQueryReference.prototype.deliver = function (promise) {
-        this.listeners.forEach(function (listener) { return listener(promise); });
-    };
-    InternalQueryReference.prototype.initiateFetch = function (returnedPromise) {
-        var _this = this;
-        this.status = "loading";
-        this.promise = new Promise(function (resolve, reject) {
-            _this.resolve = resolve;
-            _this.reject = reject;
-        });
-        this.promise.catch(function () { });
-        returnedPromise
-            .then(function (result) {
-            var _a;
-            if (_this.status === "loading") {
-                _this.status = "idle";
-                _this.result = result;
-                (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
-            }
-        })
-            .catch(function () { });
-        return returnedPromise;
-    };
-    return InternalQueryReference;
-}());
 
-var SuspenseCache$1 = (function () {
-    function SuspenseCache(options) {
-        if (options === void 0) { options = Object.create(null); }
-        this.queryRefs = new trie.Trie(utilities.canUseWeakMap);
-        this.options = options;
-    }
-    SuspenseCache.prototype.getQueryRef = function (cacheKey, createObservable) {
-        var ref = this.queryRefs.lookupArray(cacheKey);
-        if (!ref.current) {
-            ref.current = new InternalQueryReference(createObservable(), {
-                key: cacheKey,
-                autoDisposeTimeoutMs: this.options.autoDisposeTimeoutMs,
-                onDispose: function () {
-                    delete ref.current;
-                },
-            });
-        }
-        return ref.current;
-    };
-    return SuspenseCache;
-}());
-
-var SuspenseCache = (function (_super) {
-    tslib.__extends(SuspenseCache, _super);
-    function SuspenseCache() {
-        _super.call(this) || this;
-        throw new Error("It is no longer necessary to create a `SuspenseCache` instance and pass it into the `ApolloProvider`.\n" +
-            "Please remove this code from your application. \n\n" +
-            "This export will be removed with the final 3.8 release.");
-    }
-    return SuspenseCache;
-}(SuspenseCache$1));
 
 exports.ApolloConsumer = context.ApolloConsumer;
 exports.ApolloProvider = context.ApolloProvider;
@@ -45329,9 +45110,8 @@ exports.resetApolloContext = context.resetApolloContext;
 exports.DocumentType = parser.DocumentType;
 exports.operationName = parser.operationName;
 exports.parser = parser.parser;
-exports.SuspenseCache = SuspenseCache;
 for (var k in hooks) {
-    if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = hooks[k];
+	if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = hooks[k];
 }
 //# sourceMappingURL=react.cjs.map
 
@@ -45346,10 +45126,9 @@ for (var k in hooks) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
-var tslib = __nccwpck_require__(4351);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.8.4";
+var version = "3.8.5";
 
 function maybe(thunk) {
     try {
@@ -45389,11 +45168,14 @@ function wrap(fn) {
             args[_i - 1] = arguments[_i];
         }
         if (typeof message === "number") {
-            fn(getErrorMsg(message, args));
+            var arg0 = message;
+            message = getHandledErrorMsg(arg0);
+            if (!message) {
+                message = getFallbackErrorMsg(arg0, args);
+                args = [];
+            }
         }
-        else {
-            fn.apply(void 0, tslib.__spreadArray([message], args, false));
-        }
+        fn.apply(void 0, [message].concat(args));
     };
 }
 var invariant = Object.assign(function invariant(condition, message) {
@@ -45402,7 +45184,7 @@ var invariant = Object.assign(function invariant(condition, message) {
         args[_i - 2] = arguments[_i];
     }
     if (!condition) {
-        tsInvariant.invariant(condition, getErrorMsg(message, args));
+        tsInvariant.invariant(condition, getHandledErrorMsg(message, args) || getFallbackErrorMsg(message, args));
     }
 }, {
     debug: wrap(tsInvariant.invariant.debug),
@@ -45415,23 +45197,31 @@ function newInvariantError(message) {
     for (var _i = 1; _i < arguments.length; _i++) {
         optionalParams[_i - 1] = arguments[_i];
     }
-    return new tsInvariant.InvariantError(getErrorMsg(message, optionalParams));
+    return new tsInvariant.InvariantError(getHandledErrorMsg(message, optionalParams) ||
+        getFallbackErrorMsg(message, optionalParams));
 }
 var ApolloErrorMessageHandler = Symbol.for("ApolloErrorMessageHandler_" + version);
-function getErrorMsg(message, messageArgs) {
+function stringify(arg) {
+    return typeof arg == "string"
+        ? arg
+        : stringifyForDisplay(arg, 2).slice(0, 1000);
+}
+function getHandledErrorMsg(message, messageArgs) {
     if (messageArgs === void 0) { messageArgs = []; }
     if (!message)
         return;
-    var args = messageArgs.map(function (arg) {
-        return typeof arg == "string" ? arg : stringifyForDisplay(arg, 2).slice(0, 1000);
-    });
-    return ((global$1[ApolloErrorMessageHandler] &&
-        global$1[ApolloErrorMessageHandler](message, args)) ||
-        "An error occurred! For more details, see the full error text at https://go.apollo.dev/c/err#".concat(encodeURIComponent(JSON.stringify({
-            version: version,
-            message: message,
-            args: args,
-        }))));
+    return (global$1[ApolloErrorMessageHandler] &&
+        global$1[ApolloErrorMessageHandler](message, messageArgs.map(stringify)));
+}
+function getFallbackErrorMsg(message, messageArgs) {
+    if (messageArgs === void 0) { messageArgs = []; }
+    if (!message)
+        return;
+    return "An error occurred! For more details, see the full error text at https://go.apollo.dev/c/err#".concat(encodeURIComponent(JSON.stringify({
+        version: version,
+        message: message,
+        args: messageArgs.map(stringify),
+    })));
 }
 
 var DEV = globalThis.__DEV__ !== false;
@@ -46703,48 +46493,31 @@ function iterateObserversSafely(observers, method, argument) {
 
 function asyncMap(observable, mapFn, catchFn) {
     return new zenObservableTs.Observable(function (observer) {
-        var next = observer.next, error = observer.error, complete = observer.complete;
-        var activeCallbackCount = 0;
-        var completed = false;
         var promiseQueue = {
             then: function (callback) {
                 return new Promise(function (resolve) { return resolve(callback()); });
             },
         };
-        function makeCallback(examiner, delegate) {
-            if (examiner) {
-                return function (arg) {
-                    ++activeCallbackCount;
-                    var both = function () { return examiner(arg); };
-                    promiseQueue = promiseQueue
-                        .then(both, both)
-                        .then(function (result) {
-                        --activeCallbackCount;
-                        next && next.call(observer, result);
-                        if (completed) {
-                            handler.complete();
-                        }
-                    }, function (error) {
-                        --activeCallbackCount;
-                        throw error;
-                    })
-                        .catch(function (caught) {
-                        error && error.call(observer, caught);
-                    });
-                };
-            }
-            else {
-                return function (arg) { return delegate && delegate.call(observer, arg); };
-            }
+        function makeCallback(examiner, key) {
+            return function (arg) {
+                if (examiner) {
+                    var both = function () {
+                        return observer.closed
+                            ? 0
+                            : examiner(arg);
+                    };
+                    promiseQueue = promiseQueue.then(both, both).then(function (result) { return observer.next(result); }, function (error) { return observer.error(error); });
+                }
+                else {
+                    observer[key](arg);
+                }
+            };
         }
         var handler = {
-            next: makeCallback(mapFn, next),
-            error: makeCallback(catchFn, error),
+            next: makeCallback(mapFn, "next"),
+            error: makeCallback(catchFn, "error"),
             complete: function () {
-                completed = true;
-                if (!activeCallbackCount) {
-                    complete && complete.call(observer);
-                }
+                promiseQueue.then(function () { return observer.complete(); });
             },
         };
         var sub = observable.subscribe(handler);
