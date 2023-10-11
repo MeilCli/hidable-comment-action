@@ -2038,6 +2038,8 @@ var RepositoryRuleType;
     RepositoryRuleType["TagNamePattern"] = "TAG_NAME_PATTERN";
     /** Only allow users with bypass permission to update matching refs. */
     RepositoryRuleType["Update"] = "UPDATE";
+    /** Require all changes made to a targeted branch to pass the specified workflows before they can be merged. */
+    RepositoryRuleType["Workflows"] = "WORKFLOWS";
     /** Workflow files cannot be modified. */
     RepositoryRuleType["WorkflowUpdates"] = "WORKFLOW_UPDATES";
 })(RepositoryRuleType || (exports.RepositoryRuleType = RepositoryRuleType = {}));
@@ -2248,6 +2250,8 @@ var SocialAccountProvider;
     SocialAccountProvider["Linkedin"] = "LINKEDIN";
     /** Open-source federated microblogging service. */
     SocialAccountProvider["Mastodon"] = "MASTODON";
+    /** JavaScript package registry. */
+    SocialAccountProvider["Npm"] = "NPM";
     /** Social news aggregation and discussion website. */
     SocialAccountProvider["Reddit"] = "REDDIT";
     /** Live-streaming service. */
