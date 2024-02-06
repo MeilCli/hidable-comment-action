@@ -35615,6 +35615,16 @@ if (process.env.NODE_ENV === 'production') {
 
 /***/ }),
 
+/***/ 6970:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+module.exports = __nccwpck_require__(8444);
+
+
+/***/ }),
+
 /***/ 8421:
 /***/ ((module, exports, __nccwpck_require__) => {
 
@@ -37773,14 +37783,64 @@ var globals = __nccwpck_require__(8869);
 var tslib = __nccwpck_require__(4351);
 var optimism = __nccwpck_require__(152);
 var utilities = __nccwpck_require__(3150);
+var caches = __nccwpck_require__(4599);
 var equality = __nccwpck_require__(3750);
 var trie = __nccwpck_require__(4665);
 var graphql = __nccwpck_require__(6155);
 
+var getInMemoryCacheMemoryInternals = globalThis.__DEV__ !== false ?
+    _getInMemoryCacheMemoryInternals
+    : undefined;
+var getApolloCacheMemoryInternals = globalThis.__DEV__ !== false ?
+    _getApolloCacheMemoryInternals
+    : undefined;
+function _getApolloCacheMemoryInternals() {
+    return {
+        cache: {
+            fragmentQueryDocuments: getWrapperInformation(this["getFragmentDoc"]),
+        },
+    };
+}
+function _getInMemoryCacheMemoryInternals() {
+    var fragments = this.config.fragments;
+    return tslib.__assign(tslib.__assign({}, _getApolloCacheMemoryInternals.apply(this)), { addTypenameDocumentTransform: transformInfo(this["addTypenameTransform"]), inMemoryCache: {
+            executeSelectionSet: getWrapperInformation(this["storeReader"]["executeSelectionSet"]),
+            executeSubSelectedArray: getWrapperInformation(this["storeReader"]["executeSubSelectedArray"]),
+            maybeBroadcastWatch: getWrapperInformation(this["maybeBroadcastWatch"]),
+        }, fragmentRegistry: {
+            findFragmentSpreads: getWrapperInformation(fragments === null || fragments === void 0 ? void 0 : fragments.findFragmentSpreads),
+            lookup: getWrapperInformation(fragments === null || fragments === void 0 ? void 0 : fragments.lookup),
+            transform: getWrapperInformation(fragments === null || fragments === void 0 ? void 0 : fragments.transform),
+        } });
+}
+function isWrapper(f) {
+    return !!f && "dirtyKey" in f;
+}
+function getWrapperInformation(f) {
+    return isWrapper(f) ? f.size : undefined;
+}
+function isDefined(value) {
+    return value != null;
+}
+function transformInfo(transform) {
+    return recurseTransformInfo(transform).map(function (cache) { return ({ cache: cache }); });
+}
+function recurseTransformInfo(transform) {
+    return transform ?
+        tslib.__spreadArray(tslib.__spreadArray([
+            getWrapperInformation(transform === null || transform === void 0 ? void 0 : transform["performWork"])
+        ], recurseTransformInfo(transform === null || transform === void 0 ? void 0 : transform["left"]), true), recurseTransformInfo(transform === null || transform === void 0 ? void 0 : transform["right"]), true).filter(isDefined)
+        : [];
+}
+
 var ApolloCache =  (function () {
     function ApolloCache() {
         this.assumeImmutableResults = false;
-        this.getFragmentDoc = optimism.wrap(utilities.getFragmentQueryDocument);
+        this.getFragmentDoc = optimism.wrap(utilities.getFragmentQueryDocument, {
+            max: utilities.cacheSizes["cache.fragmentQueryDocuments"] ||
+                1000 ,
+            cache: caches.WeakCache,
+        });
     }
     ApolloCache.prototype.batch = function (options) {
         var _this = this;
@@ -37858,6 +37918,9 @@ var ApolloCache =  (function () {
     };
     return ApolloCache;
 }());
+if (globalThis.__DEV__ !== false) {
+    ApolloCache.prototype.getMemoryInternals = getApolloCacheMemoryInternals;
+}
 
 exports.Cache = void 0;
 (function (Cache) {
@@ -38560,28 +38623,6 @@ var ObjectCanon =  (function () {
     };
     return ObjectCanon;
 }());
-var canonicalStringify = Object.assign(function (value) {
-    if (utilities.isNonNullObject(value)) {
-        if (stringifyCanon === void 0) {
-            resetCanonicalStringify();
-        }
-        var canonical = stringifyCanon.admit(value);
-        var json = stringifyCache.get(canonical);
-        if (json === void 0) {
-            stringifyCache.set(canonical, (json = JSON.stringify(canonical)));
-        }
-        return json;
-    }
-    return JSON.stringify(value);
-}, {
-    reset: resetCanonicalStringify,
-});
-var stringifyCanon;
-var stringifyCache;
-function resetCanonicalStringify() {
-    stringifyCanon = new ObjectCanon();
-    stringifyCache = new (utilities.canUseWeakMap ? WeakMap : Map)();
-}
 
 function execSelectionSetKeyArgs(options) {
     return [
@@ -38616,7 +38657,9 @@ var StoreReader =  (function () {
             maybeDependOnExistenceOfEntity(options.context.store, options.enclosingRef.__ref);
             return _this.execSelectionSetImpl(options);
         }, {
-            max: this.config.resultCacheMaxSize,
+            max: this.config.resultCacheMaxSize ||
+                utilities.cacheSizes["inMemoryCache.executeSelectionSet"] ||
+                50000 ,
             keyArgs: execSelectionSetKeyArgs,
             makeCacheKey: function (selectionSet, parent, context, canonizeResults) {
                 if (supportsResultCaching(context.store)) {
@@ -38628,7 +38671,9 @@ var StoreReader =  (function () {
             maybeDependOnExistenceOfEntity(options.context.store, options.enclosingRef.__ref);
             return _this.execSubSelectedArrayImpl(options);
         }, {
-            max: this.config.resultCacheMaxSize,
+            max: this.config.resultCacheMaxSize ||
+                utilities.cacheSizes["inMemoryCache.executeSubSelectedArray"] ||
+                10000 ,
             makeCacheKey: function (_a) {
                 var field = _a.field, array = _a.array, context = _a.context;
                 if (supportsResultCaching(context.store)) {
@@ -38649,7 +38694,7 @@ var StoreReader =  (function () {
             selectionSet: utilities.getMainDefinition(query).selectionSet,
             objectOrReference: rootRef,
             enclosingRef: rootRef,
-            context: tslib.__assign({ store: store, query: query, policies: policies, variables: variables, varString: canonicalStringify(variables), canonizeResults: canonizeResults }, extractFragmentContext(query, this.config.fragments)),
+            context: tslib.__assign({ store: store, query: query, policies: policies, variables: variables, varString: utilities.canonicalStringify(variables), canonizeResults: canonizeResults }, extractFragmentContext(query, this.config.fragments)),
         });
         var missing;
         if (execResult.missing) {
@@ -39036,7 +39081,6 @@ function normalize(value) {
     return value;
 }
 
-utilities.getStoreKeyName.setStringify(canonicalStringify);
 function argsFromFieldSpecifier(spec) {
     return (spec.args !== void 0 ? spec.args
         : spec.field ? utilities.argumentsObjectFromField(spec.field, spec.variables)
@@ -39491,7 +39535,7 @@ var StoreWriter =  (function () {
         variables = tslib.__assign(tslib.__assign({}, utilities.getDefaultValues(operationDefinition)), variables);
         var context = tslib.__assign(tslib.__assign({ store: store, written: Object.create(null), merge: function (existing, incoming) {
                 return merger.merge(existing, incoming);
-            }, variables: variables, varString: canonicalStringify(variables) }, extractFragmentContext(query, this.fragments)), { overwrite: !!overwrite, incomingById: new Map(), clientOnly: false, deferred: false, flavors: new Map() });
+            }, variables: variables, varString: utilities.canonicalStringify(variables) }, extractFragmentContext(query, this.fragments)), { overwrite: !!overwrite, incomingById: new Map(), clientOnly: false, deferred: false, flavors: new Map() });
         var ref = this.processSelectionSet({
             result: result || Object.create(null),
             dataId: dataId,
@@ -39906,13 +39950,15 @@ var InMemoryCache =  (function (_super) {
         this.maybeBroadcastWatch = optimism.wrap(function (c, options) {
             return _this.broadcastWatch(c, options);
         }, {
-            max: this.config.resultCacheMaxSize,
+            max: this.config.resultCacheMaxSize ||
+                utilities.cacheSizes["inMemoryCache.maybeBroadcastWatch"] ||
+                5000 ,
             makeCacheKey: function (c) {
                 var store = c.optimistic ? _this.optimisticData : _this.data;
                 if (supportsResultCaching(store)) {
                     var optimistic = c.optimistic, id = c.id, variables = c.variables;
                     return store.makeCacheKey(c.query,
-                    c.callback, canonicalStringify({ optimistic: optimistic, id: id, variables: variables }));
+                    c.callback, utilities.canonicalStringify({ optimistic: optimistic, id: id, variables: variables }));
                 }
             },
         });
@@ -39993,7 +40039,11 @@ var InMemoryCache =  (function (_super) {
         };
     };
     InMemoryCache.prototype.gc = function (options) {
-        canonicalStringify.reset();
+        var _a;
+        utilities.canonicalStringify.reset();
+        utilities.print.reset();
+        this.addTypenameTransform.resetCache();
+        (_a = this.config.fragments) === null || _a === void 0 ? void 0 : _a.resetCaches();
         var ids = this.optimisticData.gc();
         if (options && !this.txCount) {
             if (options.resetResultCache) {
@@ -40041,7 +40091,7 @@ var InMemoryCache =  (function (_super) {
     InMemoryCache.prototype.reset = function (options) {
         var _this = this;
         this.init();
-        canonicalStringify.reset();
+        utilities.canonicalStringify.reset();
         if (options && options.discardWatches) {
             this.watches.forEach(function (watch) { return _this.maybeBroadcastWatch.forget(watch); });
             this.watches.clear();
@@ -40157,6 +40207,9 @@ var InMemoryCache =  (function (_super) {
     };
     return InMemoryCache;
 }(ApolloCache));
+if (globalThis.__DEV__ !== false) {
+    InMemoryCache.prototype.getMemoryInternals = getInMemoryCacheMemoryInternals;
+}
 
 function createFragmentRegistry() {
     var fragments = [];
@@ -40199,13 +40252,21 @@ var FragmentRegistry =  (function () {
     };
     FragmentRegistry.prototype.invalidate = function (name) { };
     FragmentRegistry.prototype.resetCaches = function () {
-        this.invalidate = (this.lookup = this.cacheUnaryMethod(this.lookup)).dirty;
-        this.transform = this.cacheUnaryMethod(this.transform);
-        this.findFragmentSpreads = this.cacheUnaryMethod(this.findFragmentSpreads);
-    };
-    FragmentRegistry.prototype.cacheUnaryMethod = function (originalMethod) {
-        return optimism.wrap(originalMethod.bind(this), {
+        var proto = FragmentRegistry.prototype;
+        this.invalidate = (this.lookup = optimism.wrap(proto.lookup.bind(this), {
             makeCacheKey: function (arg) { return arg; },
+            max: utilities.cacheSizes["fragmentRegistry.lookup"] ||
+                1000 ,
+        })).dirty;
+        this.transform = optimism.wrap(proto.transform.bind(this), {
+            cache: caches.WeakCache,
+            max: utilities.cacheSizes["fragmentRegistry.transform"] ||
+                2000 ,
+        });
+        this.findFragmentSpreads = optimism.wrap(proto.findFragmentSpreads.bind(this), {
+            cache: caches.WeakCache,
+            max: utilities.cacheSizes["fragmentRegistry.findFragmentSpreads"] ||
+                4000 ,
         });
     };
     FragmentRegistry.prototype.lookup = function (fragmentName) {
@@ -40268,6 +40329,7 @@ var FragmentRegistry =  (function () {
     return FragmentRegistry;
 }());
 
+exports.canonicalStringify = utilities.canonicalStringify;
 exports.isReference = utilities.isReference;
 exports.makeReference = utilities.makeReference;
 exports.ApolloCache = ApolloCache;
@@ -40275,7 +40337,6 @@ exports.InMemoryCache = InMemoryCache;
 exports.MissingFieldError = MissingFieldError;
 exports.Policies = Policies;
 exports.cacheSlot = cacheSlot;
-exports.canonicalStringify = canonicalStringify;
 exports.createFragmentRegistry = createFragmentRegistry;
 exports.defaultDataIdFromObject = defaultDataIdFromObject;
 exports.fieldNameFromStoreName = fieldNameFromStoreName;
@@ -40302,6 +40363,7 @@ var utilities = __nccwpck_require__(3150);
 var cache = __nccwpck_require__(768);
 var errors = __nccwpck_require__(1621);
 var graphql = __nccwpck_require__(6155);
+var trie = __nccwpck_require__(4665);
 var utils = __nccwpck_require__(6922);
 var tsInvariant = __nccwpck_require__(7371);
 var graphqlTag = __nccwpck_require__(8435);
@@ -40310,7 +40372,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.8.8";
+var version = "3.9.3";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -40564,6 +40626,9 @@ var ObservableQuery =  (function (_super) {
             };
             var subscription = _this.subscribe(observer);
         });
+    };
+    ObservableQuery.prototype.resetDiff = function () {
+        this.queryInfo.resetDiff();
     };
     ObservableQuery.prototype.getCurrentResult = function (saveAsLastResult) {
         if (saveAsLastResult === void 0) { saveAsLastResult = true; }
@@ -40865,8 +40930,10 @@ var ObservableQuery =  (function (_super) {
         var info = pollingInfo || (this.pollingInfo = {});
         info.interval = pollInterval;
         var maybeFetch = function () {
+            var _a, _b;
             if (_this.pollingInfo) {
-                if (!isNetworkRequestInFlight(_this.queryInfo.networkStatus)) {
+                if (!isNetworkRequestInFlight(_this.queryInfo.networkStatus) &&
+                    !((_b = (_a = _this.options).skipPollAttempt) === null || _b === void 0 ? void 0 : _b.call(_a))) {
                     _this.reobserve({
                         fetchPolicy: _this.options.initialFetchPolicy === "no-cache" ?
                             "no-cache"
@@ -40935,12 +41002,16 @@ var ObservableQuery =  (function (_super) {
         var _a = this.fetch(options, newNetworkStatus, query), concast = _a.concast, fromLink = _a.fromLink;
         var observer = {
             next: function (result) {
-                finishWaitingForOwnResult();
-                _this.reportResult(result, variables);
+                if (equal.equal(_this.variables, variables)) {
+                    finishWaitingForOwnResult();
+                    _this.reportResult(result, variables);
+                }
             },
             error: function (error) {
-                finishWaitingForOwnResult();
-                _this.reportError(error, variables);
+                if (equal.equal(_this.variables, variables)) {
+                    finishWaitingForOwnResult();
+                    _this.reportError(error, variables);
+                }
             },
         };
         if (!useDisposableConcast && (fromLink || !this.concast)) {
@@ -41419,6 +41490,9 @@ var QueryInfo =  (function () {
         cancelNotifyTimeout(this);
         this.dirty = false;
     };
+    QueryInfo.prototype.resetDiff = function () {
+        this.lastDiff = void 0;
+    };
     QueryInfo.prototype.getDiff = function () {
         var options = this.getDiffOptions();
         if (this.lastDiff && equal.equal(options, this.lastDiff.options)) {
@@ -41545,6 +41619,7 @@ var QueryInfo =  (function () {
     };
     QueryInfo.prototype.markResult = function (result, document, options, cacheWriteBehavior) {
         var _this = this;
+        result = tslib.__assign({}, result);
         var merger = new utilities.DeepMerger();
         var graphQLErrors = utilities.isNonEmptyArray(result.errors) ? result.errors.slice(0) : [];
         this.reset();
@@ -41571,7 +41646,7 @@ var QueryInfo =  (function () {
                             overwrite: cacheWriteBehavior === 1 ,
                         });
                         _this.lastWrite = {
-                            result: result,
+                            result: tslib.__assign({}, result),
                             variables: options.variables,
                             dmCount: destructiveMethodCounts.get(_this.cache),
                         };
@@ -41588,15 +41663,14 @@ var QueryInfo =  (function () {
                         _this.updateWatch(options.variables);
                     }
                     _this.updateLastDiff(diff, diffOptions);
-                    if (diff.complete) {
-                        result.data = diff.result;
-                    }
+                    result.data = diff.result;
                 });
             }
             else {
                 this.lastWrite = void 0;
             }
         }
+        return result;
     };
     QueryInfo.prototype.markReady = function () {
         this.networkError = null;
@@ -41627,18 +41701,20 @@ function shouldWriteResult(result, errorPolicy) {
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var IGNORE = Object.create(null);
 var QueryManager =  (function () {
     function QueryManager(_a) {
-        var cache = _a.cache, link = _a.link, defaultOptions = _a.defaultOptions, documentTransform = _a.documentTransform, _b = _a.queryDeduplication, queryDeduplication = _b === void 0 ? false : _b, onBroadcast = _a.onBroadcast, _c = _a.ssrMode, ssrMode = _c === void 0 ? false : _c, _d = _a.clientAwareness, clientAwareness = _d === void 0 ? {} : _d, localState = _a.localState, _e = _a.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? !!cache.assumeImmutableResults : _e;
+        var cache = _a.cache, link = _a.link, defaultOptions = _a.defaultOptions, documentTransform = _a.documentTransform, _b = _a.queryDeduplication, queryDeduplication = _b === void 0 ? false : _b, onBroadcast = _a.onBroadcast, _c = _a.ssrMode, ssrMode = _c === void 0 ? false : _c, _d = _a.clientAwareness, clientAwareness = _d === void 0 ? {} : _d, localState = _a.localState, _e = _a.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? !!cache.assumeImmutableResults : _e, defaultContext = _a.defaultContext;
         var _this = this;
         this.clientAwareness = {};
         this.queries = new Map();
         this.fetchCancelFns = new Map();
-        this.transformCache = new (utilities.canUseWeakMap ? WeakMap : Map)();
+        this.transformCache = new utilities.AutoCleanedWeakCache(utilities.cacheSizes["queryManager.getDocumentInfo"] ||
+            2000 );
         this.queryIdCounter = 1;
         this.requestIdCounter = 1;
         this.mutationIdCounter = 1;
-        this.inFlightLinkObservables = new Map();
+        this.inFlightLinkObservables = new trie.Trie(false);
         var defaultDocumentTransform = new utilities.DocumentTransform(function (document) { return _this.cache.transformDocument(document); },
         { cache: false });
         this.cache = cache;
@@ -41655,6 +41731,7 @@ var QueryManager =  (function () {
                     .concat(documentTransform)
                     .concat(defaultDocumentTransform)
                 : defaultDocumentTransform;
+        this.defaultContext = defaultContext || Object.create(null);
         if ((this.onBroadcast = onBroadcast)) {
             this.mutationStore = Object.create(null);
         }
@@ -41674,7 +41751,7 @@ var QueryManager =  (function () {
         var _b, _c;
         var mutation = _a.mutation, variables = _a.variables, optimisticResponse = _a.optimisticResponse, updateQueries = _a.updateQueries, _d = _a.refetchQueries, refetchQueries = _d === void 0 ? [] : _d, _e = _a.awaitRefetchQueries, awaitRefetchQueries = _e === void 0 ? false : _e, updateWithProxyFn = _a.update, onQueryUpdated = _a.onQueryUpdated, _f = _a.fetchPolicy, fetchPolicy = _f === void 0 ? ((_b = this.defaultOptions.mutate) === null || _b === void 0 ? void 0 : _b.fetchPolicy) || "network-only" : _f, _g = _a.errorPolicy, errorPolicy = _g === void 0 ? ((_c = this.defaultOptions.mutate) === null || _c === void 0 ? void 0 : _c.errorPolicy) || "none" : _g, keepRootFields = _a.keepRootFields, context = _a.context;
         return tslib.__awaiter(this, void 0, void 0, function () {
-            var mutationId, hasClientExports, mutationStoreValue, self;
+            var mutationId, hasClientExports, mutationStoreValue, isOptimistic, self;
             return tslib.__generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -41697,7 +41774,7 @@ var QueryManager =  (function () {
                                 loading: true,
                                 error: null,
                             });
-                        if (optimisticResponse) {
+                        isOptimistic = optimisticResponse &&
                             this.markMutationOptimistic(optimisticResponse, {
                                 mutationId: mutationId,
                                 document: mutation,
@@ -41709,11 +41786,10 @@ var QueryManager =  (function () {
                                 update: updateWithProxyFn,
                                 keepRootFields: keepRootFields,
                             });
-                        }
                         this.broadcastQueries();
                         self = this;
                         return [2 , new Promise(function (resolve, reject) {
-                                return utilities.asyncMap(self.getObservableFromLink(mutation, tslib.__assign(tslib.__assign({}, context), { optimisticResponse: optimisticResponse }), variables, false), function (result) {
+                                return utilities.asyncMap(self.getObservableFromLink(mutation, tslib.__assign(tslib.__assign({}, context), { optimisticResponse: isOptimistic ? optimisticResponse : void 0 }), variables, false), function (result) {
                                     if (utilities.graphQLResultHasError(result) && errorPolicy === "none") {
                                         throw new errors.ApolloError({
                                             graphQLErrors: utilities.getGraphQLErrorsFromResult(result),
@@ -41742,7 +41818,7 @@ var QueryManager =  (function () {
                                         updateQueries: updateQueries,
                                         awaitRefetchQueries: awaitRefetchQueries,
                                         refetchQueries: refetchQueries,
-                                        removeOptimistic: optimisticResponse ? mutationId : void 0,
+                                        removeOptimistic: isOptimistic ? mutationId : void 0,
                                         onQueryUpdated: onQueryUpdated,
                                         keepRootFields: keepRootFields,
                                     });
@@ -41758,7 +41834,7 @@ var QueryManager =  (function () {
                                             mutationStoreValue.loading = false;
                                             mutationStoreValue.error = err;
                                         }
-                                        if (optimisticResponse) {
+                                        if (isOptimistic) {
                                             self.cache.removeOptimistic(mutationId);
                                         }
                                         self.broadcastQueries();
@@ -41845,7 +41921,7 @@ var QueryManager =  (function () {
             }
         }
         if (cacheWrites.length > 0 ||
-            mutation.refetchQueries ||
+            (mutation.refetchQueries || "").length > 0 ||
             mutation.update ||
             mutation.onQueryUpdated ||
             mutation.removeOptimistic) {
@@ -41908,9 +41984,12 @@ var QueryManager =  (function () {
     QueryManager.prototype.markMutationOptimistic = function (optimisticResponse, mutation) {
         var _this = this;
         var data = typeof optimisticResponse === "function" ?
-            optimisticResponse(mutation.variables)
+            optimisticResponse(mutation.variables, { IGNORE: IGNORE })
             : optimisticResponse;
-        return this.cache.recordOptimisticTransaction(function (cache) {
+        if (data === IGNORE) {
+            return false;
+        }
+        this.cache.recordOptimisticTransaction(function (cache) {
             try {
                 _this.markMutationResult(tslib.__assign(tslib.__assign({}, mutation), { result: { data: data } }), cache);
             }
@@ -41918,6 +41997,7 @@ var QueryManager =  (function () {
                 globalThis.__DEV__ !== false && globals.invariant.error(error);
             }
         }, mutation.mutationId);
+        return true;
     };
     QueryManager.prototype.fetchQuery = function (queryId, options, networkStatus) {
         return this.fetchConcastWithInfo(queryId, options, networkStatus).concast
@@ -42218,19 +42298,16 @@ var QueryManager =  (function () {
             context = operation.context;
             if (deduplication) {
                 var printedServerQuery_1 = utilities.print(serverQuery);
-                var byVariables_1 = inFlightLinkObservables_1.get(printedServerQuery_1) || new Map();
-                inFlightLinkObservables_1.set(printedServerQuery_1, byVariables_1);
                 var varJson_1 = cache.canonicalStringify(variables);
-                observable = byVariables_1.get(varJson_1);
+                var entry = inFlightLinkObservables_1.lookup(printedServerQuery_1, varJson_1);
+                observable = entry.observable;
                 if (!observable) {
                     var concast = new utilities.Concast([
                         core.execute(link, operation),
                     ]);
-                    byVariables_1.set(varJson_1, (observable = concast));
+                    observable = entry.observable = concast;
                     concast.beforeNext(function () {
-                        if (byVariables_1.delete(varJson_1) && byVariables_1.size < 1) {
-                            inFlightLinkObservables_1.delete(printedServerQuery_1);
-                        }
+                        inFlightLinkObservables_1.remove(printedServerQuery_1, varJson_1);
                     });
                 }
             }
@@ -42268,7 +42345,7 @@ var QueryManager =  (function () {
                         graphQLErrors: graphQLErrors,
                     }));
                 }
-                queryInfo.markResult(result, linkDocument, options, cacheWriteBehavior);
+                result = queryInfo.markResult(result, linkDocument, options, cacheWriteBehavior);
                 queryInfo.markReady();
             }
             var aqr = {
@@ -42527,10 +42604,82 @@ var QueryManager =  (function () {
     QueryManager.prototype.prepareContext = function (context) {
         if (context === void 0) { context = {}; }
         var newContext = this.localState.prepareContext(context);
-        return tslib.__assign(tslib.__assign({}, newContext), { clientAwareness: this.clientAwareness });
+        return tslib.__assign(tslib.__assign(tslib.__assign({}, this.defaultContext), newContext), { clientAwareness: this.clientAwareness });
     };
     return QueryManager;
 }());
+
+var cacheSizeSymbol = Symbol.for("apollo.cacheSize");
+var cacheSizes = tslib.__assign({}, globals.global[cacheSizeSymbol]);
+
+var globalCaches = {};
+var getApolloClientMemoryInternals = globalThis.__DEV__ !== false ?
+    _getApolloClientMemoryInternals
+    : undefined;
+function getCurrentCacheSizes() {
+    var defaults = {
+        parser: 1000 ,
+        canonicalStringify: 1000 ,
+        print: 2000 ,
+        "documentTransform.cache": 2000 ,
+        "queryManager.getDocumentInfo": 2000 ,
+        "PersistedQueryLink.persistedQueryHashes": 2000 ,
+        "fragmentRegistry.transform": 2000 ,
+        "fragmentRegistry.lookup": 1000 ,
+        "fragmentRegistry.findFragmentSpreads": 4000 ,
+        "cache.fragmentQueryDocuments": 1000 ,
+        "removeTypenameFromVariables.getVariableDefinitions": 2000 ,
+        "inMemoryCache.maybeBroadcastWatch": 5000 ,
+        "inMemoryCache.executeSelectionSet": 50000 ,
+        "inMemoryCache.executeSubSelectedArray": 10000 ,
+    };
+    return Object.fromEntries(Object.entries(defaults).map(function (_a) {
+        var k = _a[0], v = _a[1];
+        return [
+            k,
+            cacheSizes[k] || v,
+        ];
+    }));
+}
+function _getApolloClientMemoryInternals() {
+    var _a, _b, _c, _d, _e;
+    if (!(globalThis.__DEV__ !== false))
+        throw new Error("only supported in development mode");
+    return {
+        limits: getCurrentCacheSizes(),
+        sizes: tslib.__assign({ print: (_a = globalCaches.print) === null || _a === void 0 ? void 0 : _a.call(globalCaches), parser: (_b = globalCaches.parser) === null || _b === void 0 ? void 0 : _b.call(globalCaches), canonicalStringify: (_c = globalCaches.canonicalStringify) === null || _c === void 0 ? void 0 : _c.call(globalCaches), links: linkInfo(this.link), queryManager: {
+                getDocumentInfo: this["queryManager"]["transformCache"].size,
+                documentTransforms: transformInfo(this["queryManager"].documentTransform),
+            } }, (_e = (_d = this.cache).getMemoryInternals) === null || _e === void 0 ? void 0 : _e.call(_d)),
+    };
+}
+function isWrapper(f) {
+    return !!f && "dirtyKey" in f;
+}
+function getWrapperInformation(f) {
+    return isWrapper(f) ? f.size : undefined;
+}
+function isDefined(value) {
+    return value != null;
+}
+function transformInfo(transform) {
+    return recurseTransformInfo(transform).map(function (cache) { return ({ cache: cache }); });
+}
+function recurseTransformInfo(transform) {
+    return transform ?
+        tslib.__spreadArray(tslib.__spreadArray([
+            getWrapperInformation(transform === null || transform === void 0 ? void 0 : transform["performWork"])
+        ], recurseTransformInfo(transform === null || transform === void 0 ? void 0 : transform["left"]), true), recurseTransformInfo(transform === null || transform === void 0 ? void 0 : transform["right"]), true).filter(isDefined)
+        : [];
+}
+function linkInfo(link) {
+    var _a;
+    return link ?
+        tslib.__spreadArray(tslib.__spreadArray([
+            (_a = link === null || link === void 0 ? void 0 : link.getMemoryInternals) === null || _a === void 0 ? void 0 : _a.call(link)
+        ], linkInfo(link === null || link === void 0 ? void 0 : link.left), true), linkInfo(link === null || link === void 0 ? void 0 : link.right), true).filter(isDefined)
+        : [];
+}
 
 var hasSuggestedDevtools = false;
 var ApolloClient =  (function () {
@@ -42545,7 +42694,7 @@ var ApolloClient =  (function () {
         _c = options.connectToDevTools,
         connectToDevTools = _c === void 0 ? typeof window === "object" &&
             !window.__APOLLO_CLIENT__ &&
-            globalThis.__DEV__ !== false : _c, _d = options.queryDeduplication, queryDeduplication = _d === void 0 ? true : _d, defaultOptions = options.defaultOptions, _e = options.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? cache.assumeImmutableResults : _e, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version;
+            globalThis.__DEV__ !== false : _c, _d = options.queryDeduplication, queryDeduplication = _d === void 0 ? true : _d, defaultOptions = options.defaultOptions, defaultContext = options.defaultContext, _e = options.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? cache.assumeImmutableResults : _e, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version;
         var link = options.link;
         if (!link) {
             link =
@@ -42576,6 +42725,7 @@ var ApolloClient =  (function () {
             cache: this.cache,
             link: this.link,
             defaultOptions: this.defaultOptions,
+            defaultContext: defaultContext,
             documentTransform: documentTransform,
             queryDeduplication: queryDeduplication,
             ssrMode: ssrMode,
@@ -42787,8 +42937,18 @@ var ApolloClient =  (function () {
     ApolloClient.prototype.setLink = function (newLink) {
         this.link = this.queryManager.link = newLink;
     };
+    Object.defineProperty(ApolloClient.prototype, "defaultContext", {
+        get: function () {
+            return this.queryManager.defaultContext;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return ApolloClient;
 }());
+if (globalThis.__DEV__ !== false) {
+    ApolloClient.prototype.getMemoryInternals = getApolloClientMemoryInternals;
+}
 
 tsInvariant.setVerbosity(globalThis.__DEV__ !== false ? "log" : "silent");
 
@@ -42925,20 +43085,22 @@ var ApolloLink =  (function () {
     ApolloLink.split = function (test, left, right) {
         var leftLink = toLink(left);
         var rightLink = toLink(right || new ApolloLink(passthrough));
+        var ret;
         if (isTerminating(leftLink) && isTerminating(rightLink)) {
-            return new ApolloLink(function (operation) {
+            ret = new ApolloLink(function (operation) {
                 return test(operation) ?
                     leftLink.request(operation) || utilities.Observable.of()
                     : rightLink.request(operation) || utilities.Observable.of();
             });
         }
         else {
-            return new ApolloLink(function (operation, forward) {
+            ret = new ApolloLink(function (operation, forward) {
                 return test(operation) ?
                     leftLink.request(operation, forward) || utilities.Observable.of()
                     : rightLink.request(operation, forward) || utilities.Observable.of();
             });
         }
+        return Object.assign(ret, { left: leftLink, right: rightLink });
     };
     ApolloLink.execute = function (link, operation) {
         return (link.request(utils.createOperation(operation.context, utils.transformOperation(utils.validateOperation(operation)))) || utilities.Observable.of());
@@ -42950,18 +43112,20 @@ var ApolloLink =  (function () {
             return firstLink;
         }
         var nextLink = toLink(second);
+        var ret;
         if (isTerminating(nextLink)) {
-            return new ApolloLink(function (operation) {
+            ret = new ApolloLink(function (operation) {
                 return firstLink.request(operation, function (op) { return nextLink.request(op) || utilities.Observable.of(); }) || utilities.Observable.of();
             });
         }
         else {
-            return new ApolloLink(function (operation, forward) {
+            ret = new ApolloLink(function (operation, forward) {
                 return (firstLink.request(operation, function (op) {
                     return nextLink.request(op, forward) || utilities.Observable.of();
                 }) || utilities.Observable.of());
             });
         }
+        return Object.assign(ret, { left: firstLink, right: nextLink });
     };
     ApolloLink.prototype.split = function (test, left, right) {
         return this.concat(ApolloLink.split(test, left, right || new ApolloLink(passthrough)));
@@ -43323,9 +43487,6 @@ function parseAndCheckHttpResponse(operations) {
             .text()
             .then(function (bodyText) { return parseJsonBody(response, bodyText); })
             .then(function (result) {
-            if (response.status >= 300) {
-                utils.throwServerError(response, result, "Response not successful: Received status code ".concat(response.status));
-            }
             if (!Array.isArray(result) &&
                 !hasOwnProperty.call(result, "data") &&
                 !hasOwnProperty.call(result, "errors")) {
@@ -43824,7 +43985,7 @@ for (var k in react) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var globals = __nccwpck_require__(8869);
-var React = __nccwpck_require__(8444);
+var React = __nccwpck_require__(6970);
 var utilities = __nccwpck_require__(3150);
 var tslib = __nccwpck_require__(4351);
 
@@ -43896,7 +44057,7 @@ exports.resetApolloContext = resetApolloContext;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var globals = __nccwpck_require__(8869);
-var React = __nccwpck_require__(8444);
+var React = __nccwpck_require__(6970);
 var context = __nccwpck_require__(3673);
 var tslib = __nccwpck_require__(4351);
 var utilities = __nccwpck_require__(3150);
@@ -43904,8 +44065,8 @@ var equality = __nccwpck_require__(3750);
 var errors = __nccwpck_require__(1621);
 var core = __nccwpck_require__(1402);
 var parser = __nccwpck_require__(5043);
+var internal = __nccwpck_require__(6822);
 var cache = __nccwpck_require__(768);
-var trie = __nccwpck_require__(4665);
 
 function _interopNamespace(e) {
     if (e && e.__esModule) return e;
@@ -44020,7 +44181,7 @@ var InternalState =  (function () {
         }
     }
     InternalState.prototype.forceUpdateState = function () {
-        globalThis.__DEV__ !== false && globals.invariant.warn(50);
+        globalThis.__DEV__ !== false && globals.invariant.warn(51);
     };
     InternalState.prototype.executeQuery = function (options) {
         var _this = this;
@@ -44584,50 +44745,33 @@ function useReactiveVar(rv) {
     }, [rv]), rv, rv);
 }
 
-function useFragment(options) {
-    var cache = useApolloClient().cache;
-    var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, rest = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
-    var diffOptions = tslib.__assign(tslib.__assign({}, rest), { returnPartialData: true, id: typeof from === "string" ? from : cache.identify(from), query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic });
-    var resultRef = React__namespace.useRef();
-    var latestDiff = cache.diff(diffOptions);
-    var getSnapshot = function () {
-        var latestDiffToResult = diffToResult(latestDiff);
-        return (resultRef.current &&
-            equality.equal(resultRef.current.data, latestDiffToResult.data)) ?
-            resultRef.current
-            : (resultRef.current = latestDiffToResult);
-    };
-    return useSyncExternalStore(function (forceUpdate) {
-        var lastTimeout = 0;
-        var unsubcribe = cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
-                if (!equality.equal(diff, latestDiff)) {
-                    resultRef.current = diffToResult((latestDiff = diff));
-                    lastTimeout = setTimeout(forceUpdate);
-                }
-            } }));
-        return function () {
-            unsubcribe();
-            clearTimeout(lastTimeout);
-        };
-    }, getSnapshot, getSnapshot);
-}
-function diffToResult(diff) {
-    var result = {
-        data: diff.result,
-        complete: !!diff.complete,
-    };
-    if (diff.missing) {
-        result.missing = utilities.mergeDeepArray(diff.missing.map(function (error) { return error.missing; }));
-    }
-    return result;
-}
-
 function useDeepMemo(memoFn, deps) {
     var ref = React__namespace.useRef();
     if (!ref.current || !equality.equal(ref.current.deps, deps)) {
         ref.current = { value: memoFn(), deps: deps };
     }
     return ref.current.value;
+}
+
+function getRenderDispatcher() {
+    var _a, _b;
+    return (_b = (_a = React__namespace.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) === null || _a === void 0 ? void 0 : _a.ReactCurrentDispatcher) === null || _b === void 0 ? void 0 : _b.current;
+}
+var RenderDispatcher = null;
+function useRenderGuard() {
+    RenderDispatcher = getRenderDispatcher();
+    return React__namespace.useCallback(function () {
+        return (RenderDispatcher !== null && RenderDispatcher === getRenderDispatcher());
+    }, []);
+}
+
+var INIT = {};
+function useLazyRef(getInitialValue) {
+    var ref = React__namespace.useRef(INIT);
+    if (ref.current === INIT) {
+        ref.current = getInitialValue();
+    }
+    return ref;
 }
 
 var useKey = "use";
@@ -44645,228 +44789,40 @@ var __use = realHook ||
         }
     };
 
-var QUERY_REFERENCE_SYMBOL = Symbol();
-function wrapQueryRef(internalQueryRef) {
-    var _a;
-    return _a = {}, _a[QUERY_REFERENCE_SYMBOL] = internalQueryRef, _a;
-}
-function unwrapQueryRef(queryRef) {
-    return queryRef[QUERY_REFERENCE_SYMBOL];
-}
-var OBSERVED_CHANGED_OPTIONS = [
-    "canonizeResults",
-    "context",
-    "errorPolicy",
-    "fetchPolicy",
-    "refetchWritePolicy",
-    "returnPartialData",
-];
-var InternalQueryReference =  (function () {
-    function InternalQueryReference(observable, options) {
-        var _this = this;
-        this.listeners = new Set();
-        this.status = "loading";
-        this.references = 0;
-        this.handleNext = this.handleNext.bind(this);
-        this.handleError = this.handleError.bind(this);
-        this.dispose = this.dispose.bind(this);
-        this.observable = observable;
-        this.result = observable.getCurrentResult(false);
-        this.key = options.key;
-        if (options.onDispose) {
-            this.onDispose = options.onDispose;
-        }
-        if (core.isNetworkRequestSettled(this.result.networkStatus) ||
-            (this.result.data &&
-                (!this.result.partial || this.watchQueryOptions.returnPartialData))) {
-            this.promise = utilities.createFulfilledPromise(this.result);
-            this.status = "idle";
-        }
-        else {
-            this.promise = new Promise(function (resolve, reject) {
-                _this.resolve = resolve;
-                _this.reject = reject;
-            });
-        }
-        this.subscription = observable
-            .filter(function (_a) {
-            var data = _a.data;
-            return !equality.equal(data, {});
-        })
-            .subscribe({
-            next: this.handleNext,
-            error: this.handleError,
-        });
-        var startDisposeTimer = function () {
-            var _a;
-            if (!_this.references) {
-                _this.autoDisposeTimeoutId = setTimeout(_this.dispose, (_a = options.autoDisposeTimeoutMs) !== null && _a !== void 0 ? _a : 30000);
-            }
-        };
-        this.promise.then(startDisposeTimer, startDisposeTimer);
-    }
-    Object.defineProperty(InternalQueryReference.prototype, "watchQueryOptions", {
-        get: function () {
-            return this.observable.options;
-        },
-        enumerable: false,
-        configurable: true
+function useFragment(options) {
+    var cache = useApolloClient(options.client).cache;
+    var diffOptions = useDeepMemo(function () {
+        var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, rest = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
+        return tslib.__assign(tslib.__assign({}, rest), { returnPartialData: true, id: typeof from === "string" ? from : cache.identify(from), query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic });
+    }, [options]);
+    var resultRef = useLazyRef(function () {
+        return diffToResult(cache.diff(diffOptions));
     });
-    InternalQueryReference.prototype.retain = function () {
-        var _this = this;
-        this.references++;
-        clearTimeout(this.autoDisposeTimeoutId);
-        var disposed = false;
+    var getSnapshot = React__namespace.useCallback(function () { return resultRef.current; }, []);
+    return useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
+        var lastTimeout = 0;
+        var unsubscribe = cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
+                if (!equality.equal(diff.result, resultRef.current.data)) {
+                    resultRef.current = diffToResult(diff);
+                    clearTimeout(lastTimeout);
+                    lastTimeout = setTimeout(forceUpdate);
+                }
+            } }));
         return function () {
-            if (disposed) {
-                return;
-            }
-            disposed = true;
-            _this.references--;
-            setTimeout(function () {
-                if (!_this.references) {
-                    _this.dispose();
-                }
-            });
+            unsubscribe();
+            clearTimeout(lastTimeout);
         };
+    }, [cache, diffOptions]), getSnapshot, getSnapshot);
+}
+function diffToResult(diff) {
+    var result = {
+        data: diff.result,
+        complete: !!diff.complete,
     };
-    InternalQueryReference.prototype.didChangeOptions = function (watchQueryOptions) {
-        var _this = this;
-        return OBSERVED_CHANGED_OPTIONS.some(function (option) {
-            return !equality.equal(_this.watchQueryOptions[option], watchQueryOptions[option]);
-        });
-    };
-    InternalQueryReference.prototype.applyOptions = function (watchQueryOptions) {
-        var _a = this.watchQueryOptions, currentFetchPolicy = _a.fetchPolicy, currentCanonizeResults = _a.canonizeResults;
-        if (currentFetchPolicy === "standby" &&
-            currentFetchPolicy !== watchQueryOptions.fetchPolicy) {
-            this.initiateFetch(this.observable.reobserve(watchQueryOptions));
-        }
-        else {
-            this.observable.silentSetOptions(watchQueryOptions);
-            if (currentCanonizeResults !== watchQueryOptions.canonizeResults) {
-                this.result = tslib.__assign(tslib.__assign({}, this.result), this.observable.getCurrentResult());
-                this.promise = utilities.createFulfilledPromise(this.result);
-            }
-        }
-        return this.promise;
-    };
-    InternalQueryReference.prototype.listen = function (listener) {
-        var _this = this;
-        this.listeners.add(listener);
-        return function () {
-            _this.listeners.delete(listener);
-        };
-    };
-    InternalQueryReference.prototype.refetch = function (variables) {
-        return this.initiateFetch(this.observable.refetch(variables));
-    };
-    InternalQueryReference.prototype.fetchMore = function (options) {
-        return this.initiateFetch(this.observable.fetchMore(options));
-    };
-    InternalQueryReference.prototype.dispose = function () {
-        this.subscription.unsubscribe();
-        this.onDispose();
-    };
-    InternalQueryReference.prototype.onDispose = function () {
-    };
-    InternalQueryReference.prototype.handleNext = function (result) {
-        var _a;
-        switch (this.status) {
-            case "loading": {
-                if (result.data === void 0) {
-                    result.data = this.result.data;
-                }
-                this.status = "idle";
-                this.result = result;
-                (_a = this.resolve) === null || _a === void 0 ? void 0 : _a.call(this, result);
-                break;
-            }
-            case "idle": {
-                if (result.data === this.result.data) {
-                    return;
-                }
-                if (result.data === void 0) {
-                    result.data = this.result.data;
-                }
-                this.result = result;
-                this.promise = utilities.createFulfilledPromise(result);
-                this.deliver(this.promise);
-                break;
-            }
-        }
-    };
-    InternalQueryReference.prototype.handleError = function (error) {
-        var _a;
-        this.subscription.unsubscribe();
-        this.subscription = this.observable.resubscribeAfterError(this.handleNext, this.handleError);
-        switch (this.status) {
-            case "loading": {
-                this.status = "idle";
-                (_a = this.reject) === null || _a === void 0 ? void 0 : _a.call(this, error);
-                break;
-            }
-            case "idle": {
-                this.promise = utilities.createRejectedPromise(error);
-                this.deliver(this.promise);
-            }
-        }
-    };
-    InternalQueryReference.prototype.deliver = function (promise) {
-        this.listeners.forEach(function (listener) { return listener(promise); });
-    };
-    InternalQueryReference.prototype.initiateFetch = function (returnedPromise) {
-        var _this = this;
-        this.status = "loading";
-        this.promise = new Promise(function (resolve, reject) {
-            _this.resolve = resolve;
-            _this.reject = reject;
-        });
-        this.promise.catch(function () { });
-        returnedPromise
-            .then(function (result) {
-            var _a;
-            if (_this.status === "loading") {
-                _this.status = "idle";
-                _this.result = result;
-                (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
-            }
-        })
-            .catch(function () { });
-        return returnedPromise;
-    };
-    return InternalQueryReference;
-}());
-
-var SuspenseCache =  (function () {
-    function SuspenseCache(options) {
-        if (options === void 0) { options = Object.create(null); }
-        this.queryRefs = new trie.Trie(utilities.canUseWeakMap);
-        this.options = options;
+    if (diff.missing) {
+        result.missing = utilities.mergeDeepArray(diff.missing.map(function (error) { return error.missing; }));
     }
-    SuspenseCache.prototype.getQueryRef = function (cacheKey, createObservable) {
-        var ref = this.queryRefs.lookupArray(cacheKey);
-        if (!ref.current) {
-            ref.current = new InternalQueryReference(createObservable(), {
-                key: cacheKey,
-                autoDisposeTimeoutMs: this.options.autoDisposeTimeoutMs,
-                onDispose: function () {
-                    delete ref.current;
-                },
-            });
-        }
-        return ref.current;
-    };
-    return SuspenseCache;
-}());
-
-var suspenseCacheSymbol = Symbol.for("apollo.suspenseCache");
-function getSuspenseCache(client) {
-    var _a;
-    if (!client[suspenseCacheSymbol]) {
-        client[suspenseCacheSymbol] = new SuspenseCache((_a = client.defaultOptions.react) === null || _a === void 0 ? void 0 : _a.suspense);
-    }
-    return client[suspenseCacheSymbol];
+    return result;
 }
 
 var skipToken = Symbol.for("apollo.skipToken");
@@ -44874,7 +44830,7 @@ var skipToken = Symbol.for("apollo.skipToken");
 function useSuspenseQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
     var client = useApolloClient(options.client);
-    var suspenseCache = getSuspenseCache(client);
+    var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({
         client: client,
         query: query,
@@ -44889,22 +44845,19 @@ function useSuspenseQuery(query, options) {
     var queryRef = suspenseCache.getQueryRef(cacheKey, function () {
         return client.watchQuery(watchQueryOptions);
     });
-    var _b = React__namespace.useState(function () { return new Map([[queryRef.key, queryRef.promise]]); }), promiseCache = _b[0], setPromiseCache = _b[1];
-    var promise = promiseCache.get(queryRef.key);
-    if (queryRef.didChangeOptions(watchQueryOptions)) {
-        promise = queryRef.applyOptions(watchQueryOptions);
-        promiseCache.set(queryRef.key, promise);
+    var _b = React__namespace.useState([queryRef.key, queryRef.promise]), current = _b[0], setPromise = _b[1];
+    if (current[0] !== queryRef.key) {
+        current[0] = queryRef.key;
+        current[1] = queryRef.promise;
     }
-    if (!promise) {
-        promise = queryRef.promise;
-        promiseCache.set(queryRef.key, promise);
+    var promise = current[1];
+    if (queryRef.didChangeOptions(watchQueryOptions)) {
+        current[1] = promise = queryRef.applyOptions(watchQueryOptions);
     }
     React__namespace.useEffect(function () {
         var dispose = queryRef.retain();
         var removeListener = queryRef.listen(function (promise) {
-            setPromiseCache(function (promiseCache) {
-                return new Map(promiseCache).set(queryRef.key, promise);
-            });
+            setPromise([queryRef.key, promise]);
         });
         return function () {
             removeListener();
@@ -44923,16 +44876,12 @@ function useSuspenseQuery(query, options) {
     var result = fetchPolicy === "standby" ? skipResult : __use(promise);
     var fetchMore = React__namespace.useCallback((function (options) {
         var promise = queryRef.fetchMore(options);
-        setPromiseCache(function (previousPromiseCache) {
-            return new Map(previousPromiseCache).set(queryRef.key, queryRef.promise);
-        });
+        setPromise([queryRef.key, queryRef.promise]);
         return promise;
     }), [queryRef]);
     var refetch = React__namespace.useCallback(function (variables) {
         var promise = queryRef.refetch(variables);
-        setPromiseCache(function (previousPromiseCache) {
-            return new Map(previousPromiseCache).set(queryRef.key, queryRef.promise);
-        });
+        setPromise([queryRef.key, queryRef.promise]);
         return promise;
     }, [queryRef]);
     var subscribeToMore = React__namespace.useCallback(function (options) { return queryRef.observable.subscribeToMore(options); }, [queryRef]);
@@ -44998,7 +44947,7 @@ function useWatchQueryOptions(_a) {
 function useBackgroundQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
     var client = useApolloClient(options.client);
-    var suspenseCache = getSuspenseCache(client);
+    var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({ client: client, query: query, options: options });
     var fetchPolicy = watchQueryOptions.fetchPolicy, variables = watchQueryOptions.variables;
     var _a = options.queryKey, queryKey = _a === void 0 ? [] : _a;
@@ -45011,47 +44960,119 @@ function useBackgroundQuery(query, options) {
     var queryRef = suspenseCache.getQueryRef(cacheKey, function () {
         return client.watchQuery(watchQueryOptions);
     });
-    var _b = React__namespace.useState(function () { return new Map([[queryRef.key, queryRef.promise]]); }), promiseCache = _b[0], setPromiseCache = _b[1];
+    var _b = React__namespace.useState(internal.wrapQueryRef(queryRef)), wrappedQueryRef = _b[0], setWrappedQueryRef = _b[1];
+    if (internal.unwrapQueryRef(wrappedQueryRef) !== queryRef) {
+        setWrappedQueryRef(internal.wrapQueryRef(queryRef));
+    }
     if (queryRef.didChangeOptions(watchQueryOptions)) {
         var promise = queryRef.applyOptions(watchQueryOptions);
-        promiseCache.set(queryRef.key, promise);
+        internal.updateWrappedQueryRef(wrappedQueryRef, promise);
     }
-    React__namespace.useEffect(function () { return queryRef.retain(); }, [queryRef]);
     var fetchMore = React__namespace.useCallback(function (options) {
         var promise = queryRef.fetchMore(options);
-        setPromiseCache(function (promiseCache) {
-            return new Map(promiseCache).set(queryRef.key, queryRef.promise);
-        });
+        setWrappedQueryRef(internal.wrapQueryRef(queryRef));
         return promise;
     }, [queryRef]);
     var refetch = React__namespace.useCallback(function (variables) {
         var promise = queryRef.refetch(variables);
-        setPromiseCache(function (promiseCache) {
-            return new Map(promiseCache).set(queryRef.key, queryRef.promise);
-        });
+        setWrappedQueryRef(internal.wrapQueryRef(queryRef));
         return promise;
     }, [queryRef]);
-    queryRef.promiseCache = promiseCache;
-    var wrappedQueryRef = React__namespace.useMemo(function () { return wrapQueryRef(queryRef); }, [queryRef]);
     return [
         didFetchResult.current ? wrappedQueryRef : void 0,
         { fetchMore: fetchMore, refetch: refetch },
     ];
 }
 
-function useReadQuery(queryRef) {
-    var internalQueryRef = unwrapQueryRef(queryRef);
-    globals.invariant(internalQueryRef.promiseCache, 51);
-    var promiseCache = internalQueryRef.promiseCache, key = internalQueryRef.key;
-    if (!promiseCache.has(key)) {
-        promiseCache.set(key, internalQueryRef.promise);
+function useLoadableQuery(query, options) {
+    if (options === void 0) { options = Object.create(null); }
+    var client = useApolloClient(options.client);
+    var suspenseCache = internal.getSuspenseCache(client);
+    var watchQueryOptions = useWatchQueryOptions({ client: client, query: query, options: options });
+    var _a = options.queryKey, queryKey = _a === void 0 ? [] : _a;
+    var _b = React__namespace.useState(null), queryRef = _b[0], setQueryRef = _b[1];
+    var internalQueryRef = queryRef && internal.unwrapQueryRef(queryRef);
+    if (queryRef && (internalQueryRef === null || internalQueryRef === void 0 ? void 0 : internalQueryRef.didChangeOptions(watchQueryOptions))) {
+        var promise = internalQueryRef.applyOptions(watchQueryOptions);
+        internal.updateWrappedQueryRef(queryRef, promise);
     }
+    var calledDuringRender = useRenderGuard();
+    var fetchMore = React__namespace.useCallback(function (options) {
+        if (!internalQueryRef) {
+            throw new Error("The query has not been loaded. Please load the query.");
+        }
+        var promise = internalQueryRef.fetchMore(options);
+        setQueryRef(internal.wrapQueryRef(internalQueryRef));
+        return promise;
+    }, [internalQueryRef]);
+    var refetch = React__namespace.useCallback(function (options) {
+        if (!internalQueryRef) {
+            throw new Error("The query has not been loaded. Please load the query.");
+        }
+        var promise = internalQueryRef.refetch(options);
+        setQueryRef(internal.wrapQueryRef(internalQueryRef));
+        return promise;
+    }, [internalQueryRef]);
+    var loadQuery = React__namespace.useCallback(function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        globals.invariant(!calledDuringRender(), 50);
+        var variables = args[0];
+        var cacheKey = tslib.__spreadArray([
+            query,
+            cache.canonicalStringify(variables)
+        ], [].concat(queryKey), true);
+        var queryRef = suspenseCache.getQueryRef(cacheKey, function () {
+            return client.watchQuery(tslib.__assign(tslib.__assign({}, watchQueryOptions), { variables: variables }));
+        });
+        setQueryRef(internal.wrapQueryRef(queryRef));
+    }, [query, queryKey, suspenseCache, watchQueryOptions, calledDuringRender]);
+    var reset = React__namespace.useCallback(function () {
+        setQueryRef(null);
+    }, [queryRef]);
+    return [loadQuery, queryRef, { fetchMore: fetchMore, refetch: refetch, reset: reset }];
+}
+
+function useQueryRefHandlers(queryRef) {
+    var _a = React__namespace.useState(queryRef), previousQueryRef = _a[0], setPreviousQueryRef = _a[1];
+    var _b = React__namespace.useState(queryRef), wrappedQueryRef = _b[0], setWrappedQueryRef = _b[1];
+    var internalQueryRef = internal.unwrapQueryRef(queryRef);
+    if (previousQueryRef !== queryRef) {
+        setPreviousQueryRef(queryRef);
+        setWrappedQueryRef(queryRef);
+    }
+    else {
+        internal.updateWrappedQueryRef(queryRef, internal.getWrappedPromise(wrappedQueryRef));
+    }
+    var refetch = React__namespace.useCallback(function (variables) {
+        var promise = internalQueryRef.refetch(variables);
+        setWrappedQueryRef(internal.wrapQueryRef(internalQueryRef));
+        return promise;
+    }, [internalQueryRef]);
+    var fetchMore = React__namespace.useCallback(function (options) {
+        var promise = internalQueryRef.fetchMore(options);
+        setWrappedQueryRef(internal.wrapQueryRef(internalQueryRef));
+        return promise;
+    }, [internalQueryRef]);
+    return { refetch: refetch, fetchMore: fetchMore };
+}
+
+function useReadQuery(queryRef) {
+    var internalQueryRef = React__namespace.useMemo(function () { return internal.unwrapQueryRef(queryRef); }, [queryRef]);
+    var getPromise = React__namespace.useCallback(function () { return internal.getWrappedPromise(queryRef); }, [queryRef]);
+    if (internalQueryRef.disposed) {
+        internalQueryRef.reinitialize();
+        internal.updateWrappedQueryRef(queryRef, internalQueryRef.promise);
+    }
+    React__namespace.useEffect(function () { return internalQueryRef.retain(); }, [internalQueryRef]);
     var promise = useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         return internalQueryRef.listen(function (promise) {
-            internalQueryRef.promiseCache.set(internalQueryRef.key, promise);
+            internal.updateWrappedQueryRef(queryRef, promise);
             forceUpdate();
         });
-    }, [internalQueryRef]), function () { return promiseCache.get(key); }, function () { return promiseCache.get(key); });
+    }, [internalQueryRef]), getPromise, getPromise);
     var result = __use(promise);
     return React__namespace.useMemo(function () {
         return {
@@ -45067,13 +45088,307 @@ exports.useApolloClient = useApolloClient;
 exports.useBackgroundQuery = useBackgroundQuery;
 exports.useFragment = useFragment;
 exports.useLazyQuery = useLazyQuery;
+exports.useLoadableQuery = useLoadableQuery;
 exports.useMutation = useMutation;
 exports.useQuery = useQuery;
+exports.useQueryRefHandlers = useQueryRefHandlers;
 exports.useReactiveVar = useReactiveVar;
 exports.useReadQuery = useReadQuery;
 exports.useSubscription = useSubscription;
 exports.useSuspenseQuery = useSuspenseQuery;
 //# sourceMappingURL=hooks.cjs.map
+
+
+/***/ }),
+
+/***/ 6822:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+var trie = __nccwpck_require__(4665);
+var utilities = __nccwpck_require__(3150);
+var tslib = __nccwpck_require__(4351);
+var equality = __nccwpck_require__(3750);
+
+var QUERY_REFERENCE_SYMBOL = Symbol();
+var PROMISE_SYMBOL = Symbol();
+function wrapQueryRef(internalQueryRef) {
+    var _a;
+    var ref = (_a = {
+            toPromise: function () {
+                return getWrappedPromise(ref).then(function () { return ref; });
+            }
+        },
+        _a[QUERY_REFERENCE_SYMBOL] = internalQueryRef,
+        _a[PROMISE_SYMBOL] = internalQueryRef.promise,
+        _a);
+    return ref;
+}
+function getWrappedPromise(queryRef) {
+    var internalQueryRef = unwrapQueryRef(queryRef);
+    return internalQueryRef.promise.status === "fulfilled" ?
+        internalQueryRef.promise
+        : queryRef[PROMISE_SYMBOL];
+}
+function unwrapQueryRef(queryRef) {
+    return queryRef[QUERY_REFERENCE_SYMBOL];
+}
+function updateWrappedQueryRef(queryRef, promise) {
+    queryRef[PROMISE_SYMBOL] = promise;
+}
+var OBSERVED_CHANGED_OPTIONS = [
+    "canonizeResults",
+    "context",
+    "errorPolicy",
+    "fetchPolicy",
+    "refetchWritePolicy",
+    "returnPartialData",
+];
+var InternalQueryReference =  (function () {
+    function InternalQueryReference(observable, options) {
+        var _this = this;
+        this.key = {};
+        this.listeners = new Set();
+        this.references = 0;
+        this.handleNext = this.handleNext.bind(this);
+        this.handleError = this.handleError.bind(this);
+        this.dispose = this.dispose.bind(this);
+        this.observable = observable;
+        if (options.onDispose) {
+            this.onDispose = options.onDispose;
+        }
+        this.setResult();
+        this.subscribeToQuery();
+        var startDisposeTimer = function () {
+            var _a;
+            if (!_this.references) {
+                _this.autoDisposeTimeoutId = setTimeout(_this.dispose, (_a = options.autoDisposeTimeoutMs) !== null && _a !== void 0 ? _a : 30000);
+            }
+        };
+        this.promise.then(startDisposeTimer, startDisposeTimer);
+    }
+    Object.defineProperty(InternalQueryReference.prototype, "disposed", {
+        get: function () {
+            return this.subscription.closed;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(InternalQueryReference.prototype, "watchQueryOptions", {
+        get: function () {
+            return this.observable.options;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    InternalQueryReference.prototype.reinitialize = function () {
+        var observable = this.observable;
+        var originalFetchPolicy = this.watchQueryOptions.fetchPolicy;
+        try {
+            if (originalFetchPolicy !== "no-cache") {
+                observable.resetLastResults();
+                observable.silentSetOptions({ fetchPolicy: "cache-first" });
+            }
+            else {
+                observable.silentSetOptions({ fetchPolicy: "standby" });
+            }
+            this.subscribeToQuery();
+            if (originalFetchPolicy === "no-cache") {
+                return;
+            }
+            observable.resetDiff();
+            this.setResult();
+        }
+        finally {
+            observable.silentSetOptions({ fetchPolicy: originalFetchPolicy });
+        }
+    };
+    InternalQueryReference.prototype.retain = function () {
+        var _this = this;
+        this.references++;
+        clearTimeout(this.autoDisposeTimeoutId);
+        var disposed = false;
+        return function () {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+            _this.references--;
+            setTimeout(function () {
+                if (!_this.references) {
+                    _this.dispose();
+                }
+            });
+        };
+    };
+    InternalQueryReference.prototype.didChangeOptions = function (watchQueryOptions) {
+        var _this = this;
+        return OBSERVED_CHANGED_OPTIONS.some(function (option) {
+            return !equality.equal(_this.watchQueryOptions[option], watchQueryOptions[option]);
+        });
+    };
+    InternalQueryReference.prototype.applyOptions = function (watchQueryOptions) {
+        var _a = this.watchQueryOptions, currentFetchPolicy = _a.fetchPolicy, currentCanonizeResults = _a.canonizeResults;
+        if (currentFetchPolicy === "standby" &&
+            currentFetchPolicy !== watchQueryOptions.fetchPolicy) {
+            this.initiateFetch(this.observable.reobserve(watchQueryOptions));
+        }
+        else {
+            this.observable.silentSetOptions(watchQueryOptions);
+            if (currentCanonizeResults !== watchQueryOptions.canonizeResults) {
+                this.result = tslib.__assign(tslib.__assign({}, this.result), this.observable.getCurrentResult());
+                this.promise = utilities.createFulfilledPromise(this.result);
+            }
+        }
+        return this.promise;
+    };
+    InternalQueryReference.prototype.listen = function (listener) {
+        var _this = this;
+        this.listeners.add(listener);
+        return function () {
+            _this.listeners.delete(listener);
+        };
+    };
+    InternalQueryReference.prototype.refetch = function (variables) {
+        return this.initiateFetch(this.observable.refetch(variables));
+    };
+    InternalQueryReference.prototype.fetchMore = function (options) {
+        return this.initiateFetch(this.observable.fetchMore(options));
+    };
+    InternalQueryReference.prototype.dispose = function () {
+        this.subscription.unsubscribe();
+        this.onDispose();
+    };
+    InternalQueryReference.prototype.onDispose = function () {
+    };
+    InternalQueryReference.prototype.handleNext = function (result) {
+        var _a;
+        switch (this.promise.status) {
+            case "pending": {
+                if (result.data === void 0) {
+                    result.data = this.result.data;
+                }
+                this.result = result;
+                (_a = this.resolve) === null || _a === void 0 ? void 0 : _a.call(this, result);
+                break;
+            }
+            default: {
+                if (result.data === this.result.data &&
+                    result.networkStatus === this.result.networkStatus) {
+                    return;
+                }
+                if (result.data === void 0) {
+                    result.data = this.result.data;
+                }
+                this.result = result;
+                this.promise = utilities.createFulfilledPromise(result);
+                this.deliver(this.promise);
+                break;
+            }
+        }
+    };
+    InternalQueryReference.prototype.handleError = function (error) {
+        var _a;
+        this.subscription.unsubscribe();
+        this.subscription = this.observable.resubscribeAfterError(this.handleNext, this.handleError);
+        switch (this.promise.status) {
+            case "pending": {
+                (_a = this.reject) === null || _a === void 0 ? void 0 : _a.call(this, error);
+                break;
+            }
+            default: {
+                this.promise = utilities.createRejectedPromise(error);
+                this.deliver(this.promise);
+            }
+        }
+    };
+    InternalQueryReference.prototype.deliver = function (promise) {
+        this.listeners.forEach(function (listener) { return listener(promise); });
+    };
+    InternalQueryReference.prototype.initiateFetch = function (returnedPromise) {
+        var _this = this;
+        this.promise = this.createPendingPromise();
+        this.promise.catch(function () { });
+        returnedPromise
+            .then(function (result) {
+            var _a;
+            if (_this.promise.status === "pending") {
+                _this.result = result;
+                (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
+            }
+        })
+            .catch(function () { });
+        return returnedPromise;
+    };
+    InternalQueryReference.prototype.subscribeToQuery = function () {
+        var _this = this;
+        this.subscription = this.observable
+            .filter(function (result) { return !equality.equal(result.data, {}) && !equality.equal(result, _this.result); })
+            .subscribe(this.handleNext, this.handleError);
+    };
+    InternalQueryReference.prototype.setResult = function () {
+        var result = this.observable.getCurrentResult(false);
+        if (equality.equal(result, this.result)) {
+            return;
+        }
+        this.result = result;
+        this.promise =
+            (result.data &&
+                (!result.partial || this.watchQueryOptions.returnPartialData)) ?
+                utilities.createFulfilledPromise(result)
+                : this.createPendingPromise();
+    };
+    InternalQueryReference.prototype.createPendingPromise = function () {
+        var _this = this;
+        return utilities.wrapPromiseWithState(new Promise(function (resolve, reject) {
+            _this.resolve = resolve;
+            _this.reject = reject;
+        }));
+    };
+    return InternalQueryReference;
+}());
+
+var SuspenseCache =  (function () {
+    function SuspenseCache(options) {
+        if (options === void 0) { options = Object.create(null); }
+        this.queryRefs = new trie.Trie(utilities.canUseWeakMap);
+        this.options = options;
+    }
+    SuspenseCache.prototype.getQueryRef = function (cacheKey, createObservable) {
+        var ref = this.queryRefs.lookupArray(cacheKey);
+        if (!ref.current) {
+            ref.current = new InternalQueryReference(createObservable(), {
+                autoDisposeTimeoutMs: this.options.autoDisposeTimeoutMs,
+                onDispose: function () {
+                    delete ref.current;
+                },
+            });
+        }
+        return ref.current;
+    };
+    return SuspenseCache;
+}());
+
+var suspenseCacheSymbol = Symbol.for("apollo.suspenseCache");
+function getSuspenseCache(client) {
+    var _a;
+    if (!client[suspenseCacheSymbol]) {
+        client[suspenseCacheSymbol] = new SuspenseCache((_a = client.defaultOptions.react) === null || _a === void 0 ? void 0 : _a.suspense);
+    }
+    return client[suspenseCacheSymbol];
+}
+
+exports.InternalQueryReference = InternalQueryReference;
+exports.getSuspenseCache = getSuspenseCache;
+exports.getWrappedPromise = getWrappedPromise;
+exports.unwrapQueryRef = unwrapQueryRef;
+exports.updateWrappedQueryRef = updateWrappedQueryRef;
+exports.wrapQueryRef = wrapQueryRef;
+//# sourceMappingURL=internal.cjs.map
 
 
 /***/ }),
@@ -45087,6 +45402,13 @@ exports.useSuspenseQuery = useSuspenseQuery;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var globals = __nccwpck_require__(8869);
+var utilities = __nccwpck_require__(3150);
+__nccwpck_require__(4351);
+
+var globalCaches = {};
+function registerGlobalCache(name, getSize) {
+    globalCaches[name] = getSize;
+}
 
 exports.DocumentType = void 0;
 (function (DocumentType) {
@@ -45094,7 +45416,7 @@ exports.DocumentType = void 0;
     DocumentType[DocumentType["Mutation"] = 1] = "Mutation";
     DocumentType[DocumentType["Subscription"] = 2] = "Subscription";
 })(exports.DocumentType || (exports.DocumentType = {}));
-var cache = new Map();
+var cache;
 function operationName(type) {
     var name;
     switch (type) {
@@ -45111,6 +45433,9 @@ function operationName(type) {
     return name;
 }
 function parser(document) {
+    if (!cache) {
+        cache = new utilities.AutoCleanedWeakCache(utilities.cacheSizes.parser || 1000 );
+    }
     var cached = cache.get(document);
     if (cached)
         return cached;
@@ -45171,6 +45496,12 @@ function parser(document) {
     cache.set(document, payload);
     return payload;
 }
+parser.resetCache = function () {
+    cache = undefined;
+};
+if (globalThis.__DEV__ !== false) {
+    registerGlobalCache("parser", function () { return (cache ? cache.size : 0); });
+}
 function verifyDocumentType(document, type) {
     var operation = parser(document);
     var requiredOperationName = operationName(type);
@@ -45204,8 +45535,19 @@ __nccwpck_require__(8869);
 var context = __nccwpck_require__(3673);
 var hooks = __nccwpck_require__(9293);
 var parser = __nccwpck_require__(5043);
+var tslib = __nccwpck_require__(4351);
+var internal = __nccwpck_require__(6822);
 
-
+function createQueryPreloader(client) {
+    return function preloadQuery(query, options) {
+        var _a, _b;
+        if (options === void 0) { options = Object.create(null); }
+        var queryRef = new internal.InternalQueryReference(client.watchQuery(tslib.__assign(tslib.__assign({}, options), { query: query })), {
+            autoDisposeTimeoutMs: (_b = (_a = client.defaultOptions.react) === null || _a === void 0 ? void 0 : _a.suspense) === null || _b === void 0 ? void 0 : _b.autoDisposeTimeoutMs,
+        });
+        return internal.wrapQueryRef(queryRef);
+    };
+}
 
 exports.ApolloConsumer = context.ApolloConsumer;
 exports.ApolloProvider = context.ApolloProvider;
@@ -45214,8 +45556,9 @@ exports.resetApolloContext = context.resetApolloContext;
 exports.DocumentType = parser.DocumentType;
 exports.operationName = parser.operationName;
 exports.parser = parser.parser;
+exports.createQueryPreloader = createQueryPreloader;
 for (var k in hooks) {
-	if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = hooks[k];
+    if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = hooks[k];
 }
 //# sourceMappingURL=react.cjs.map
 
@@ -45232,7 +45575,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.8.8";
+var version = "3.9.3";
 
 function maybe(thunk) {
     try {
@@ -45353,6 +45696,8 @@ var globals = __nccwpck_require__(8869);
 var graphql = __nccwpck_require__(6155);
 var trie = __nccwpck_require__(4665);
 var tslib = __nccwpck_require__(4351);
+var caches = __nccwpck_require__(4599);
+var optimism = __nccwpck_require__(152);
 var zenObservableTs = __nccwpck_require__(6104);
 __nccwpck_require__(8421);
 
@@ -45367,7 +45712,7 @@ function shouldInclude(_a, variables) {
         if (ifArgument.value.kind === "Variable") {
             evaledValue =
                 variables && variables[ifArgument.value.name.value];
-            globals.invariant(evaledValue !== void 0, 66, directive.name.value);
+            globals.invariant(evaledValue !== void 0, 67, directive.name.value);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -45417,12 +45762,12 @@ function getInclusionDirectives(directives) {
                 return;
             var directiveArguments = directive.arguments;
             var directiveName = directive.name.value;
-            globals.invariant(directiveArguments && directiveArguments.length === 1, 67, directiveName);
+            globals.invariant(directiveArguments && directiveArguments.length === 1, 68, directiveName);
             var ifArgument = directiveArguments[0];
-            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 68, directiveName);
+            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 69, directiveName);
             var ifValue = ifArgument.value;
             globals.invariant(ifValue &&
-                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 69, directiveName);
+                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 70, directiveName);
             result.push({ directive: directive, ifArgument: ifArgument });
         });
     }
@@ -45430,7 +45775,7 @@ function getInclusionDirectives(directives) {
 }
 
 var canUseWeakMap = typeof WeakMap === "function" &&
-    globals.maybe(function () { return navigator.product; }) !== "ReactNative";
+    !globals.maybe(function () { return navigator.product == "ReactNative" && !global.HermesInternal; });
 var canUseWeakSet = typeof WeakSet === "function";
 var canUseSymbol = typeof Symbol === "function" && typeof Symbol.for === "function";
 var canUseAsyncIteratorSymbol = canUseSymbol && Symbol.asyncIterator;
@@ -45455,7 +45800,7 @@ function getFragmentQueryDocument(document, fragmentName) {
     document.definitions.forEach(function (definition) {
         if (definition.kind === "OperationDefinition") {
             throw globals.newInvariantError(
-                70,
+                71,
                 definition.operation,
                 definition.name ? " named '".concat(definition.name.value, "'") : ""
             );
@@ -45465,7 +45810,7 @@ function getFragmentQueryDocument(document, fragmentName) {
         }
     });
     if (typeof actualFragmentName === "undefined") {
-        globals.invariant(fragments.length === 1, 71, fragments.length);
+        globals.invariant(fragments.length === 1, 72, fragments.length);
         actualFragmentName = fragments[0].name.value;
     }
     var query = tslib.__assign(tslib.__assign({}, document), { definitions: tslib.__spreadArray([
@@ -45506,12 +45851,88 @@ function getFragmentFromSelection(selection, fragmentMap) {
                 return fragmentMap(fragmentName);
             }
             var fragment = fragmentMap && fragmentMap[fragmentName];
-            globals.invariant(fragment, 72, fragmentName);
+            globals.invariant(fragment, 73, fragmentName);
             return fragment || null;
         }
         default:
             return null;
     }
+}
+
+var scheduledCleanup = new WeakSet();
+function schedule(cache) {
+    if (!scheduledCleanup.has(cache)) {
+        scheduledCleanup.add(cache);
+        setTimeout(function () {
+            cache.clean();
+            scheduledCleanup.delete(cache);
+        }, 100);
+    }
+}
+var AutoCleanedWeakCache = function (max, dispose) {
+    var cache = new caches.WeakCache(max, dispose);
+    cache.set = function (key, value) {
+        schedule(this);
+        return caches.WeakCache.prototype.set.call(this, key, value);
+    };
+    return cache;
+};
+var AutoCleanedStrongCache = function (max, dispose) {
+    var cache = new caches.StrongCache(max, dispose);
+    cache.set = function (key, value) {
+        schedule(this);
+        return caches.StrongCache.prototype.set.call(this, key, value);
+    };
+    return cache;
+};
+
+var cacheSizeSymbol = Symbol.for("apollo.cacheSize");
+var cacheSizes = tslib.__assign({}, globals.global[cacheSizeSymbol]);
+
+var globalCaches = {};
+function registerGlobalCache(name, getSize) {
+    globalCaches[name] = getSize;
+}
+
+var canonicalStringify = Object.assign(function canonicalStringify(value) {
+    return JSON.stringify(value, stableObjectReplacer);
+}, {
+    reset: function () {
+        sortingMap = new AutoCleanedStrongCache(cacheSizes.canonicalStringify || 1000 );
+    },
+});
+if (globalThis.__DEV__ !== false) {
+    registerGlobalCache("canonicalStringify", function () { return sortingMap.size; });
+}
+var sortingMap;
+canonicalStringify.reset();
+function stableObjectReplacer(key, value) {
+    if (value && typeof value === "object") {
+        var proto = Object.getPrototypeOf(value);
+        if (proto === Object.prototype || proto === null) {
+            var keys = Object.keys(value);
+            if (keys.every(everyKeyInOrder))
+                return value;
+            var unsortedKey = JSON.stringify(keys);
+            var sortedKeys = sortingMap.get(unsortedKey);
+            if (!sortedKeys) {
+                keys.sort();
+                var sortedKey = JSON.stringify(keys);
+                sortedKeys = sortingMap.get(sortedKey) || keys;
+                sortingMap.set(unsortedKey, sortedKeys);
+                sortingMap.set(sortedKey, sortedKeys);
+            }
+            var sortedObject_1 = Object.create(proto);
+            sortedKeys.forEach(function (key) {
+                sortedObject_1[key] = value[key];
+            });
+            return sortedObject_1;
+        }
+    }
+    return value;
+}
+function everyKeyInOrder(key, i, keys) {
+    return i === 0 || keys[i - 1] <= key;
 }
 
 function makeReference(id) {
@@ -45584,7 +46005,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
         argObj[name.value] = null;
     }
     else {
-        throw globals.newInvariantError(81, name.value, value.kind);
+        throw globals.newInvariantError(82, name.value, value.kind);
     }
 }
 function storeKeyNameFromField(field, variables) {
@@ -45620,6 +46041,7 @@ var KNOWN_DIRECTIVES = [
     "export",
     "nonreactive",
 ];
+var storeKeyNameStringify = canonicalStringify;
 var getStoreKeyName = Object.assign(function (fieldName, args, directives) {
     if (args &&
         directives &&
@@ -45635,7 +46057,7 @@ var getStoreKeyName = Object.assign(function (fieldName, args, directives) {
             filterKeys.forEach(function (key) {
                 filteredArgs_1[key] = args[key];
             });
-            return "".concat(directives["connection"]["key"], "(").concat(stringify(filteredArgs_1), ")");
+            return "".concat(directives["connection"]["key"], "(").concat(storeKeyNameStringify(filteredArgs_1), ")");
         }
         else {
             return directives["connection"]["key"];
@@ -45643,7 +46065,7 @@ var getStoreKeyName = Object.assign(function (fieldName, args, directives) {
     }
     var completeFieldName = fieldName;
     if (args) {
-        var stringifiedArgs = stringify(args);
+        var stringifiedArgs = storeKeyNameStringify(args);
         completeFieldName += "(".concat(stringifiedArgs, ")");
     }
     if (directives) {
@@ -45651,7 +46073,7 @@ var getStoreKeyName = Object.assign(function (fieldName, args, directives) {
             if (KNOWN_DIRECTIVES.indexOf(key) !== -1)
                 return;
             if (directives[key] && Object.keys(directives[key]).length) {
-                completeFieldName += "@".concat(key, "(").concat(stringify(directives[key]), ")");
+                completeFieldName += "@".concat(key, "(").concat(storeKeyNameStringify(directives[key]), ")");
             }
             else {
                 completeFieldName += "@".concat(key);
@@ -45661,25 +46083,11 @@ var getStoreKeyName = Object.assign(function (fieldName, args, directives) {
     return completeFieldName;
 }, {
     setStringify: function (s) {
-        var previous = stringify;
-        stringify = s;
+        var previous = storeKeyNameStringify;
+        storeKeyNameStringify = s;
         return previous;
     },
 });
-var stringify = function defaultStringify(value) {
-    return JSON.stringify(value, stringifyReplacer);
-};
-function stringifyReplacer(_key, value) {
-    if (isNonNullObject(value) && !Array.isArray(value)) {
-        value = Object.keys(value)
-            .sort()
-            .reduce(function (copy, key) {
-            copy[key] = value[key];
-            return copy;
-        }, {});
-    }
-    return value;
-}
 function argumentsObjectFromField(field, variables) {
     if (field.arguments && field.arguments.length) {
         var argObj_1 = {};
@@ -45731,16 +46139,16 @@ function isInlineFragment(selection) {
 }
 
 function checkDocument(doc) {
-    globals.invariant(doc && doc.kind === "Document", 73);
+    globals.invariant(doc && doc.kind === "Document", 74);
     var operations = doc.definitions
         .filter(function (d) { return d.kind !== "FragmentDefinition"; })
         .map(function (definition) {
         if (definition.kind !== "OperationDefinition") {
-            throw globals.newInvariantError(74, definition.kind);
+            throw globals.newInvariantError(75, definition.kind);
         }
         return definition;
     });
-    globals.invariant(operations.length <= 1, 75, operations.length);
+    globals.invariant(operations.length <= 1, 76, operations.length);
     return doc;
 }
 function getOperationDefinition(doc) {
@@ -45763,14 +46171,14 @@ function getFragmentDefinitions(doc) {
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
-    globals.invariant(queryDef && queryDef.operation === "query", 76);
+    globals.invariant(queryDef && queryDef.operation === "query", 77);
     return queryDef;
 }
 function getFragmentDefinition(doc) {
-    globals.invariant(doc.kind === "Document", 77);
-    globals.invariant(doc.definitions.length <= 1, 78);
+    globals.invariant(doc.kind === "Document", 78);
+    globals.invariant(doc.definitions.length <= 1, 79);
     var fragmentDef = doc.definitions[0];
-    globals.invariant(fragmentDef.kind === "FragmentDefinition", 79);
+    globals.invariant(fragmentDef.kind === "FragmentDefinition", 80);
     return fragmentDef;
 }
 function getMainDefinition(queryDoc) {
@@ -45793,7 +46201,7 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw globals.newInvariantError(80);
+    throw globals.newInvariantError(81);
 }
 function getDefaultValues(definition) {
     var defaultValues = Object.create(null);
@@ -45819,9 +46227,8 @@ var DocumentTransform =  (function () {
         if (options.getCacheKey) {
             this.getCacheKey = options.getCacheKey;
         }
-        if (options.cache !== false) {
-            this.stableCacheKeys = new trie.Trie(canUseWeakMap, function (key) { return ({ key: key }); });
-        }
+        this.cached = options.cache !== false;
+        this.resetCache();
     }
     DocumentTransform.prototype.getCacheKey = function (document) {
         return [document];
@@ -45831,57 +46238,71 @@ var DocumentTransform =  (function () {
     };
     DocumentTransform.split = function (predicate, left, right) {
         if (right === void 0) { right = DocumentTransform.identity(); }
-        return new DocumentTransform(function (document) {
+        return Object.assign(new DocumentTransform(function (document) {
             var documentTransform = predicate(document) ? left : right;
             return documentTransform.transformDocument(document);
         },
-        { cache: false });
+        { cache: false }), { left: left, right: right });
+    };
+    DocumentTransform.prototype.resetCache = function () {
+        var _this = this;
+        if (this.cached) {
+            var stableCacheKeys_1 = new trie.Trie(canUseWeakMap);
+            this.performWork = optimism.wrap(DocumentTransform.prototype.performWork.bind(this), {
+                makeCacheKey: function (document) {
+                    var cacheKeys = _this.getCacheKey(document);
+                    if (cacheKeys) {
+                        globals.invariant(Array.isArray(cacheKeys), 66);
+                        return stableCacheKeys_1.lookupArray(cacheKeys);
+                    }
+                },
+                max: cacheSizes["documentTransform.cache"],
+                cache: (caches.WeakCache),
+            });
+        }
+    };
+    DocumentTransform.prototype.performWork = function (document) {
+        checkDocument(document);
+        return this.transform(document);
     };
     DocumentTransform.prototype.transformDocument = function (document) {
         if (this.resultCache.has(document)) {
             return document;
         }
-        var cacheEntry = this.getStableCacheEntry(document);
-        if (cacheEntry && cacheEntry.value) {
-            return cacheEntry.value;
-        }
-        checkDocument(document);
-        var transformedDocument = this.transform(document);
+        var transformedDocument = this.performWork(document);
         this.resultCache.add(transformedDocument);
-        if (cacheEntry) {
-            cacheEntry.value = transformedDocument;
-        }
         return transformedDocument;
     };
     DocumentTransform.prototype.concat = function (otherTransform) {
         var _this = this;
-        return new DocumentTransform(function (document) {
+        return Object.assign(new DocumentTransform(function (document) {
             return otherTransform.transformDocument(_this.transformDocument(document));
         },
-        { cache: false });
-    };
-    DocumentTransform.prototype.getStableCacheEntry = function (document) {
-        if (!this.stableCacheKeys)
-            return;
-        var cacheKeys = this.getCacheKey(document);
-        if (cacheKeys) {
-            globals.invariant(Array.isArray(cacheKeys), 65);
-            return this.stableCacheKeys.lookupArray(cacheKeys);
-        }
+        { cache: false }), {
+            left: this,
+            right: otherTransform,
+        });
     };
     return DocumentTransform;
 }());
 
-var printCache = canUseWeakMap ? new WeakMap() : undefined;
-var print = function (ast) {
-    var result;
-    result = printCache === null || printCache === void 0 ? void 0 : printCache.get(ast);
+var printCache;
+var print = Object.assign(function (ast) {
+    var result = printCache.get(ast);
     if (!result) {
         result = graphql.print(ast);
-        printCache === null || printCache === void 0 ? void 0 : printCache.set(ast, result);
+        printCache.set(ast, result);
     }
     return result;
-};
+}, {
+    reset: function () {
+        printCache = new AutoCleanedWeakCache(cacheSizes.print || 2000 );
+    },
+});
+print.reset();
+if (globalThis.__DEV__ !== false) {
+    registerGlobalCache("print", function () { return (printCache ? printCache.size : 0); });
+}
 
 var isArray = Array.isArray;
 function isNonEmptyArray(value) {
@@ -45961,7 +46382,7 @@ function removeDirectivesFromDocument(directives, doc) {
                 return getInUseByFragmentName(ancestor.name.value);
             }
         }
-        globalThis.__DEV__ !== false && globals.invariant.error(82);
+        globalThis.__DEV__ !== false && globals.invariant.error(83);
         return null;
     };
     var operationCount = 0;
@@ -46151,7 +46572,7 @@ var connectionRemoveConfig = {
         if (willRemove) {
             if (!directive.arguments ||
                 !directive.arguments.some(function (arg) { return arg.name.value === "key"; })) {
-                globalThis.__DEV__ !== false && globals.invariant.warn(83);
+                globalThis.__DEV__ !== false && globals.invariant.warn(84);
             }
         }
         return willRemove;
@@ -46698,7 +47119,7 @@ var Concast =  (function (_super) {
                         iterateObserversSafely(_this.observers, "complete");
                     }
                     else if (isPromiseLike(value)) {
-                        value.then(function (obs) { return (_this.sub = obs.subscribe(_this.handlers)); });
+                        value.then(function (obs) { return (_this.sub = obs.subscribe(_this.handlers)); }, _this.handlers.error);
                     }
                     else {
                         _this.sub = value.subscribe(_this.handlers);
@@ -46912,6 +47333,8 @@ function stripTypename(value) {
 exports.DEV = globals.DEV;
 exports.maybe = globals.maybe;
 exports.Observable = zenObservableTs.Observable;
+exports.AutoCleanedStrongCache = AutoCleanedStrongCache;
+exports.AutoCleanedWeakCache = AutoCleanedWeakCache;
 exports.Concast = Concast;
 exports.DeepMerger = DeepMerger;
 exports.DocumentTransform = DocumentTransform;
@@ -46919,12 +47342,14 @@ exports.addTypenameToDocument = addTypenameToDocument;
 exports.argumentsObjectFromField = argumentsObjectFromField;
 exports.asyncMap = asyncMap;
 exports.buildQueryFromSelectionSet = buildQueryFromSelectionSet;
+exports.cacheSizes = cacheSizes;
 exports.canUseAsyncIteratorSymbol = canUseAsyncIteratorSymbol;
 exports.canUseDOM = canUseDOM;
 exports.canUseLayoutEffect = canUseLayoutEffect;
 exports.canUseSymbol = canUseSymbol;
 exports.canUseWeakMap = canUseWeakMap;
 exports.canUseWeakSet = canUseWeakSet;
+exports.canonicalStringify = canonicalStringify;
 exports.checkDocument = checkDocument;
 exports.cloneDeep = cloneDeep;
 exports.compact = compact;
