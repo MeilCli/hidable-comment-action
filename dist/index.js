@@ -40372,7 +40372,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.3";
+var version = "3.9.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -41619,7 +41619,6 @@ var QueryInfo =  (function () {
     };
     QueryInfo.prototype.markResult = function (result, document, options, cacheWriteBehavior) {
         var _this = this;
-        result = tslib.__assign({}, result);
         var merger = new utilities.DeepMerger();
         var graphQLErrors = utilities.isNonEmptyArray(result.errors) ? result.errors.slice(0) : [];
         this.reset();
@@ -41646,7 +41645,7 @@ var QueryInfo =  (function () {
                             overwrite: cacheWriteBehavior === 1 ,
                         });
                         _this.lastWrite = {
-                            result: tslib.__assign({}, result),
+                            result: result,
                             variables: options.variables,
                             dmCount: destructiveMethodCounts.get(_this.cache),
                         };
@@ -41663,14 +41662,15 @@ var QueryInfo =  (function () {
                         _this.updateWatch(options.variables);
                     }
                     _this.updateLastDiff(diff, diffOptions);
-                    result.data = diff.result;
+                    if (diff.complete) {
+                        result.data = diff.result;
+                    }
                 });
             }
             else {
                 this.lastWrite = void 0;
             }
         }
-        return result;
     };
     QueryInfo.prototype.markReady = function () {
         this.networkError = null;
@@ -42345,7 +42345,7 @@ var QueryManager =  (function () {
                         graphQLErrors: graphQLErrors,
                     }));
                 }
-                result = queryInfo.markResult(result, linkDocument, options, cacheWriteBehavior);
+                queryInfo.markResult(result, linkDocument, options, cacheWriteBehavior);
                 queryInfo.markReady();
             }
             var aqr = {
@@ -44443,7 +44443,7 @@ function useLazyQuery(query, options) {
     var queryRef = React__namespace.useRef();
     var merged = utilities.mergeOptions(options, execOptionsRef.current || {});
     var document = (_a = merged === null || merged === void 0 ? void 0 : merged.query) !== null && _a !== void 0 ? _a : query;
-    optionsRef.current = merged;
+    optionsRef.current = options;
     queryRef.current = document;
     var internalState = useInternalState(useApolloClient(options && options.client), document);
     var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign({}, merged), { skip: !execOptionsRef.current }));
@@ -45575,7 +45575,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.3";
+var version = "3.9.4";
 
 function maybe(thunk) {
     try {
