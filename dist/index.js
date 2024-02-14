@@ -581,6 +581,8 @@ var FundingPlatform;
     FundingPlatform["Otechie"] = "OTECHIE";
     /** Patreon funding platform. */
     FundingPlatform["Patreon"] = "PATREON";
+    /** Polar funding platform. */
+    FundingPlatform["Polar"] = "POLAR";
     /** Tidelift funding platform. */
     FundingPlatform["Tidelift"] = "TIDELIFT";
 })(FundingPlatform || (exports.FundingPlatform = FundingPlatform = {}));
