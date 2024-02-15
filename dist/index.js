@@ -40374,7 +40374,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.4";
+var version = "3.9.5";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -41531,7 +41531,14 @@ var QueryInfo =  (function () {
     };
     QueryInfo.prototype.setDiff = function (diff) {
         var _this = this;
+        var _a;
         var oldDiff = this.lastDiff && this.lastDiff.diff;
+        if (diff &&
+            !diff.complete &&
+            !((_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a.options.returnPartialData) &&
+            !(oldDiff && oldDiff.complete)) {
+            return;
+        }
         this.updateLastDiff(diff);
         if (!this.dirty && !equal.equal(oldDiff && oldDiff.result, diff && diff.result)) {
             this.dirty = true;
@@ -45577,7 +45584,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.4";
+var version = "3.9.5";
 
 function maybe(thunk) {
     try {
