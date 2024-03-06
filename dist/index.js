@@ -40374,7 +40374,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.5";
+var version = "3.9.6";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -44147,9 +44147,64 @@ function checkIfSnapshotChanged(_a) {
     }
 }
 
+function useDeepMemo(memoFn, deps) {
+    var ref = React__namespace.useRef();
+    if (!ref.current || !equality.equal(ref.current.deps, deps)) {
+        ref.current = { value: memoFn(), deps: deps };
+    }
+    return ref.current.value;
+}
+
+function getRenderDispatcher() {
+    var _a, _b;
+    return (_b = (_a = React__namespace.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) === null || _a === void 0 ? void 0 : _a.ReactCurrentDispatcher) === null || _b === void 0 ? void 0 : _b.current;
+}
+var RenderDispatcher = null;
+function useRenderGuard() {
+    RenderDispatcher = getRenderDispatcher();
+    return React__namespace.useCallback(function () {
+        return (RenderDispatcher !== null && RenderDispatcher === getRenderDispatcher());
+    }, []);
+}
+
+var INIT = {};
+function useLazyRef(getInitialValue) {
+    var ref = React__namespace.useRef(INIT);
+    if (ref.current === INIT) {
+        ref.current = getInitialValue();
+    }
+    return ref;
+}
+
+var useKey = "use";
+var realHook = React__namespace[useKey];
+var __use = realHook ||
+    function __use(promise) {
+        var statefulPromise = utilities.wrapPromiseWithState(promise);
+        switch (statefulPromise.status) {
+            case "pending":
+                throw statefulPromise;
+            case "rejected":
+                throw statefulPromise.reason;
+            case "fulfilled":
+                return statefulPromise.value;
+        }
+    };
+
+var wrapperSymbol = Symbol.for("apollo.hook.wrappers");
+function wrapHook(hookName, useHook, clientOrObsQuery) {
+    var queryManager = clientOrObsQuery["queryManager"];
+    var wrappers = queryManager && queryManager[wrapperSymbol];
+    var wrapper = wrappers && wrappers[hookName];
+    return wrapper ? wrapper(useHook) : useHook;
+}
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function useQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
+    return wrapHook("useQuery", _useQuery, useApolloClient(options && options.client))(query, options);
+}
+function _useQuery(query, options) {
     return useInternalState(useApolloClient(options.client), query).useQuery(options);
 }
 function useInternalState(client, query) {
@@ -44754,51 +44809,10 @@ function useReactiveVar(rv) {
     }, [rv]), rv, rv);
 }
 
-function useDeepMemo(memoFn, deps) {
-    var ref = React__namespace.useRef();
-    if (!ref.current || !equality.equal(ref.current.deps, deps)) {
-        ref.current = { value: memoFn(), deps: deps };
-    }
-    return ref.current.value;
-}
-
-function getRenderDispatcher() {
-    var _a, _b;
-    return (_b = (_a = React__namespace.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) === null || _a === void 0 ? void 0 : _a.ReactCurrentDispatcher) === null || _b === void 0 ? void 0 : _b.current;
-}
-var RenderDispatcher = null;
-function useRenderGuard() {
-    RenderDispatcher = getRenderDispatcher();
-    return React__namespace.useCallback(function () {
-        return (RenderDispatcher !== null && RenderDispatcher === getRenderDispatcher());
-    }, []);
-}
-
-var INIT = {};
-function useLazyRef(getInitialValue) {
-    var ref = React__namespace.useRef(INIT);
-    if (ref.current === INIT) {
-        ref.current = getInitialValue();
-    }
-    return ref;
-}
-
-var useKey = "use";
-var realHook = React__namespace[useKey];
-var __use = realHook ||
-    function __use(promise) {
-        var statefulPromise = utilities.wrapPromiseWithState(promise);
-        switch (statefulPromise.status) {
-            case "pending":
-                throw statefulPromise;
-            case "rejected":
-                throw statefulPromise.reason;
-            case "fulfilled":
-                return statefulPromise.value;
-        }
-    };
-
 function useFragment(options) {
+    return wrapHook("useFragment", _useFragment, useApolloClient(options.client))(options);
+}
+function _useFragment(options) {
     var cache = useApolloClient(options.client).cache;
     var diffOptions = useDeepMemo(function () {
         var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, rest = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
@@ -44838,6 +44852,9 @@ var skipToken = Symbol.for("apollo.skipToken");
 
 function useSuspenseQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
+    return wrapHook("useSuspenseQuery", _useSuspenseQuery, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
+}
+function _useSuspenseQuery(query, options) {
     var client = useApolloClient(options.client);
     var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({
@@ -44955,6 +44972,9 @@ function useWatchQueryOptions(_a) {
 
 function useBackgroundQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
+    return wrapHook("useBackgroundQuery", _useBackgroundQuery, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
+}
+function _useBackgroundQuery(query, options) {
     var client = useApolloClient(options.client);
     var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({ client: client, query: query, options: options });
@@ -45069,6 +45089,9 @@ function useQueryRefHandlers(queryRef) {
 }
 
 function useReadQuery(queryRef) {
+    return wrapHook("useReadQuery", _useReadQuery, internal.unwrapQueryRef(queryRef)["observable"])(queryRef);
+}
+function _useReadQuery(queryRef) {
     var internalQueryRef = React__namespace.useMemo(function () { return internal.unwrapQueryRef(queryRef); }, [queryRef]);
     var getPromise = React__namespace.useCallback(function () { return internal.getWrappedPromise(queryRef); }, [queryRef]);
     if (internalQueryRef.disposed) {
@@ -45324,11 +45347,13 @@ var InternalQueryReference =  (function () {
         this.promise.catch(function () { });
         returnedPromise
             .then(function (result) {
-            var _a;
-            if (_this.promise.status === "pending") {
-                _this.result = result;
-                (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
-            }
+            setTimeout(function () {
+                var _a;
+                if (_this.promise.status === "pending") {
+                    _this.result = result;
+                    (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
+                }
+            });
         })
             .catch(function () { });
         return returnedPromise;
@@ -45584,7 +45609,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.5";
+var version = "3.9.6";
 
 function maybe(thunk) {
     try {
