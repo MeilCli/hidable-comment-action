@@ -14,13 +14,13 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: MeilCli/regex-match@v1
+      - uses: MeilCli/regex-match@v2
         id: regex
         with:
           regex_pattern: 'test: .*'
           regex_option: 'g'
           search_string: ${{ github.event.issue.title }}
-      - uses: MeilCli/hidable-comment-action@v1
+      - uses: MeilCli/hidable-comment-action@v2
         with:
           number: ${{ github.event.issue.number }}
           show: ${{ steps.regex.outputs.matched == 'false' }}
@@ -31,7 +31,7 @@ jobs:
             - test2
             - test3
 ```
-You can also pin to a [specific release](https://github.com/MeilCli/hidable-comment-action/releases) version in the format @v1.x.x
+You can also pin to a [specific release](https://github.com/MeilCli/hidable-comment-action/releases) version in the format @v2.x.x
 
 ### Check Pull Request title
 ```yml
@@ -44,13 +44,13 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: MeilCli/regex-match@v1
+      - uses: MeilCli/regex-match@v2
         id: regex
         with:
           regex_pattern: 'test: .*'
           regex_option: 'g'
           search_string: ${{ github.event.pull_request.title }}
-      - uses: MeilCli/hidable-comment-action@v1
+      - uses: MeilCli/hidable-comment-action@v2
         with:
           number: ${{ github.event.pull_request.number }}
           show: ${{ steps.regex.outputs.matched == 'false' }}
