@@ -64213,7 +64213,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.7";
+var version = "3.9.8";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68663,6 +68663,9 @@ function _useFragment(options) {
     var resultRef = useLazyRef(function () {
         return diffToResult(cache.diff(diffOptions));
     });
+    React__namespace.useMemo(function () {
+        resultRef.current = diffToResult(cache.diff(diffOptions));
+    }, [diffOptions, cache]);
     var getSnapshot = React__namespace.useCallback(function () { return resultRef.current; }, []);
     return useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         var lastTimeout = 0;
@@ -69102,7 +69105,8 @@ var InternalQueryReference =  (function () {
     InternalQueryReference.prototype.didChangeOptions = function (watchQueryOptions) {
         var _this = this;
         return OBSERVED_CHANGED_OPTIONS.some(function (option) {
-            return !equality.equal(_this.watchQueryOptions[option], watchQueryOptions[option]);
+            return option in watchQueryOptions &&
+                !equality.equal(_this.watchQueryOptions[option], watchQueryOptions[option]);
         });
     };
     InternalQueryReference.prototype.applyOptions = function (watchQueryOptions) {
@@ -69188,12 +69192,12 @@ var InternalQueryReference =  (function () {
         this.promise = this.createPendingPromise();
         this.promise.catch(function () { });
         returnedPromise
-            .then(function (result) {
+            .then(function () {
             setTimeout(function () {
                 var _a;
                 if (_this.promise.status === "pending") {
-                    _this.result = result;
-                    (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, result);
+                    _this.result = _this.observable.getCurrentResult();
+                    (_a = _this.resolve) === null || _a === void 0 ? void 0 : _a.call(_this, _this.result);
                 }
             });
         })
@@ -69451,7 +69455,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.7";
+var version = "3.9.8";
 
 function maybe(thunk) {
     try {
