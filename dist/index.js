@@ -64213,7 +64213,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.6";
+var version = "3.9.7";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -64988,9 +64988,9 @@ var LocalState =  (function () {
         return this.resolvers || {};
     };
     LocalState.prototype.runResolvers = function (_a) {
-        var document = _a.document, remoteResult = _a.remoteResult, context = _a.context, variables = _a.variables, _b = _a.onlyRunForcedResolvers, onlyRunForcedResolvers = _b === void 0 ? false : _b;
-        return tslib.__awaiter(this, void 0, void 0, function () {
-            return tslib.__generator(this, function (_c) {
+        return tslib.__awaiter(this, arguments, void 0, function (_b) {
+            var document = _b.document, remoteResult = _b.remoteResult, context = _b.context, variables = _b.variables, _c = _b.onlyRunForcedResolvers, onlyRunForcedResolvers = _c === void 0 ? false : _c;
+            return tslib.__generator(this, function (_d) {
                 if (document) {
                     return [2 , this.resolveDocument(document, remoteResult.data, context, variables, this.fragmentMatcher, onlyRunForcedResolvers).then(function (localResult) { return (tslib.__assign(tslib.__assign({}, remoteResult), { data: localResult.result })); })];
                 }
@@ -65022,10 +65022,10 @@ var LocalState =  (function () {
                 return cache.identify(obj);
             } });
     };
-    LocalState.prototype.addExportedVariables = function (document, variables, context) {
-        if (variables === void 0) { variables = {}; }
-        if (context === void 0) { context = {}; }
-        return tslib.__awaiter(this, void 0, void 0, function () {
+    LocalState.prototype.addExportedVariables = function (document_1) {
+        return tslib.__awaiter(this, arguments, void 0, function (document, variables, context) {
+            if (variables === void 0) { variables = {}; }
+            if (context === void 0) { context = {}; }
             return tslib.__generator(this, function (_a) {
                 if (document) {
                     return [2 , this.resolveDocument(document, this.buildRootValueFromCache(document, variables) || {}, this.prepareContext(context), variables).then(function (data) { return (tslib.__assign(tslib.__assign({}, variables), data.exportedVariables)); })];
@@ -65062,13 +65062,13 @@ var LocalState =  (function () {
             optimistic: false,
         }).result;
     };
-    LocalState.prototype.resolveDocument = function (document, rootValue, context, variables, fragmentMatcher, onlyRunForcedResolvers) {
-        if (context === void 0) { context = {}; }
-        if (variables === void 0) { variables = {}; }
-        if (fragmentMatcher === void 0) { fragmentMatcher = function () { return true; }; }
-        if (onlyRunForcedResolvers === void 0) { onlyRunForcedResolvers = false; }
-        return tslib.__awaiter(this, void 0, void 0, function () {
+    LocalState.prototype.resolveDocument = function (document_1, rootValue_1) {
+        return tslib.__awaiter(this, arguments, void 0, function (document, rootValue, context, variables, fragmentMatcher, onlyRunForcedResolvers) {
             var mainDefinition, fragments, fragmentMap, selectionsToResolve, definitionOperation, defaultOperationType, _a, cache, client, execContext, isClientFieldDescendant;
+            if (context === void 0) { context = {}; }
+            if (variables === void 0) { variables = {}; }
+            if (fragmentMatcher === void 0) { fragmentMatcher = function () { return true; }; }
+            if (onlyRunForcedResolvers === void 0) { onlyRunForcedResolvers = false; }
             return tslib.__generator(this, function (_b) {
                 mainDefinition = utilities.getMainDefinition(document);
                 fragments = utilities.getFragmentDefinitions(document);
@@ -65596,12 +65596,12 @@ var QueryManager =  (function () {
         this.fetchCancelFns.clear();
     };
     QueryManager.prototype.mutate = function (_a) {
-        var _b, _c;
-        var mutation = _a.mutation, variables = _a.variables, optimisticResponse = _a.optimisticResponse, updateQueries = _a.updateQueries, _d = _a.refetchQueries, refetchQueries = _d === void 0 ? [] : _d, _e = _a.awaitRefetchQueries, awaitRefetchQueries = _e === void 0 ? false : _e, updateWithProxyFn = _a.update, onQueryUpdated = _a.onQueryUpdated, _f = _a.fetchPolicy, fetchPolicy = _f === void 0 ? ((_b = this.defaultOptions.mutate) === null || _b === void 0 ? void 0 : _b.fetchPolicy) || "network-only" : _f, _g = _a.errorPolicy, errorPolicy = _g === void 0 ? ((_c = this.defaultOptions.mutate) === null || _c === void 0 ? void 0 : _c.errorPolicy) || "none" : _g, keepRootFields = _a.keepRootFields, context = _a.context;
-        return tslib.__awaiter(this, void 0, void 0, function () {
+        return tslib.__awaiter(this, arguments, void 0, function (_b) {
             var mutationId, hasClientExports, mutationStoreValue, isOptimistic, self;
-            return tslib.__generator(this, function (_h) {
-                switch (_h.label) {
+            var _c, _d;
+            var mutation = _b.mutation, variables = _b.variables, optimisticResponse = _b.optimisticResponse, updateQueries = _b.updateQueries, _e = _b.refetchQueries, refetchQueries = _e === void 0 ? [] : _e, _f = _b.awaitRefetchQueries, awaitRefetchQueries = _f === void 0 ? false : _f, updateWithProxyFn = _b.update, onQueryUpdated = _b.onQueryUpdated, _g = _b.fetchPolicy, fetchPolicy = _g === void 0 ? ((_c = this.defaultOptions.mutate) === null || _c === void 0 ? void 0 : _c.fetchPolicy) || "network-only" : _g, _h = _b.errorPolicy, errorPolicy = _h === void 0 ? ((_d = this.defaultOptions.mutate) === null || _d === void 0 ? void 0 : _d.errorPolicy) || "none" : _h, keepRootFields = _b.keepRootFields, context = _b.context;
+            return tslib.__generator(this, function (_j) {
+                switch (_j.label) {
                     case 0:
                         globals.invariant(mutation, 26);
                         globals.invariant(fetchPolicy === "network-only" || fetchPolicy === "no-cache", 27);
@@ -65612,8 +65612,8 @@ var QueryManager =  (function () {
                         if (!hasClientExports) return [3 , 2];
                         return [4 , this.localState.addExportedVariables(mutation, variables, context)];
                     case 1:
-                        variables = (_h.sent());
-                        _h.label = 2;
+                        variables = (_j.sent());
+                        _j.label = 2;
                     case 2:
                         mutationStoreValue = this.mutationStore &&
                             (this.mutationStore[mutationId] = {
@@ -67206,10 +67206,10 @@ function isApolloPayloadResult(value) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function readMultipartBody(response, nextValue) {
-    var _a;
     return tslib.__awaiter(this, void 0, void 0, function () {
-        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _b, value, done, chunk, searchFrom, bi, message, i, headers, contentType_1, body, result, next;
-        var _c, _d;
+        var decoder, contentType, delimiter, boundaryVal, boundary, buffer, iterator, running, _a, value, done, chunk, searchFrom, bi, message, i, headers, contentType_1, body, result, next;
+        var _b, _c;
+        var _d;
         return tslib.__generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
@@ -67217,7 +67217,7 @@ function readMultipartBody(response, nextValue) {
                         throw new Error("TextDecoder must be defined in the environment: please import a polyfill.");
                     }
                     decoder = new TextDecoder("utf-8");
-                    contentType = (_a = response.headers) === null || _a === void 0 ? void 0 : _a.get("content-type");
+                    contentType = (_d = response.headers) === null || _d === void 0 ? void 0 : _d.get("content-type");
                     delimiter = "boundary=";
                     boundaryVal = (contentType === null || contentType === void 0 ? void 0 : contentType.includes(delimiter)) ?
                         contentType === null || contentType === void 0 ? void 0 : contentType.substring((contentType === null || contentType === void 0 ? void 0 : contentType.indexOf(delimiter)) + delimiter.length).replace(/['"]/g, "").replace(/\;(.*)/gm, "").trim()
@@ -67231,7 +67231,7 @@ function readMultipartBody(response, nextValue) {
                     if (!running) return [3 , 3];
                     return [4 , iterator.next()];
                 case 2:
-                    _b = _e.sent(), value = _b.value, done = _b.done;
+                    _a = _e.sent(), value = _a.value, done = _a.done;
                     chunk = typeof value === "string" ? value : decoder.decode(value);
                     searchFrom = buffer.length - boundary.length + 1;
                     running = !done;
@@ -67239,10 +67239,10 @@ function readMultipartBody(response, nextValue) {
                     bi = buffer.indexOf(boundary, searchFrom);
                     while (bi > -1) {
                         message = void 0;
-                        _c = [
+                        _b = [
                             buffer.slice(0, bi),
                             buffer.slice(bi + boundary.length),
-                        ], message = _c[0], buffer = _c[1];
+                        ], message = _b[0], buffer = _b[1];
                         i = message.indexOf("\r\n\r\n");
                         headers = parseHeaders(message.slice(0, i));
                         contentType_1 = headers["content-type"];
@@ -67261,10 +67261,13 @@ function readMultipartBody(response, nextValue) {
                                 if (isApolloPayloadResult(result)) {
                                     next = {};
                                     if ("payload" in result) {
+                                        if (Object.keys(result).length === 1 && result.payload === null) {
+                                            return [2 ];
+                                        }
                                         next = tslib.__assign({}, result.payload);
                                     }
                                     if ("errors" in result) {
-                                        next = tslib.__assign(tslib.__assign({}, next), { extensions: tslib.__assign(tslib.__assign({}, ("extensions" in next ? next.extensions : null)), (_d = {}, _d[errors.PROTOCOL_ERRORS_SYMBOL] = result.errors, _d)) });
+                                        next = tslib.__assign(tslib.__assign({}, next), { extensions: tslib.__assign(tslib.__assign({}, ("extensions" in next ? next.extensions : null)), (_c = {}, _c[errors.PROTOCOL_ERRORS_SYMBOL] = result.errors, _c)) });
                                     }
                                     nextValue(next);
                                 }
@@ -68002,7 +68005,7 @@ var RenderDispatcher = null;
 function useRenderGuard() {
     RenderDispatcher = getRenderDispatcher();
     return React__namespace.useCallback(function () {
-        return (RenderDispatcher !== null && RenderDispatcher === getRenderDispatcher());
+        return (RenderDispatcher != null && RenderDispatcher === getRenderDispatcher());
     }, []);
 }
 
@@ -69448,7 +69451,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.6";
+var version = "3.9.7";
 
 function maybe(thunk) {
     try {
