@@ -64213,7 +64213,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.8";
+var version = "3.9.9";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68852,6 +68852,7 @@ function _useBackgroundQuery(query, options) {
         setWrappedQueryRef(internal.wrapQueryRef(queryRef));
         return promise;
     }, [queryRef]);
+    React__namespace.useEffect(function () { return queryRef.softRetain(); }, [queryRef]);
     return [
         didFetchResult.current ? wrappedQueryRef : void 0,
         { fetchMore: fetchMore, refetch: refetch },
@@ -69031,6 +69032,7 @@ var InternalQueryReference =  (function () {
         this.key = {};
         this.listeners = new Set();
         this.references = 0;
+        this.softReferences = 0;
         this.handleNext = this.handleNext.bind(this);
         this.handleError = this.handleError.bind(this);
         this.dispose = this.dispose.bind(this);
@@ -69097,6 +69099,23 @@ var InternalQueryReference =  (function () {
             _this.references--;
             setTimeout(function () {
                 if (!_this.references) {
+                    _this.dispose();
+                }
+            });
+        };
+    };
+    InternalQueryReference.prototype.softRetain = function () {
+        var _this = this;
+        this.softReferences++;
+        var disposed = false;
+        return function () {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+            _this.softReferences--;
+            setTimeout(function () {
+                if (!_this.softReferences && !_this.references) {
                     _this.dispose();
                 }
             });
@@ -69455,7 +69474,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.8";
+var version = "3.9.9";
 
 function maybe(thunk) {
     try {
