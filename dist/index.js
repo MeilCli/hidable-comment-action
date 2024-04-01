@@ -62616,12 +62616,14 @@ var StoreReader =  (function () {
                     }
                 }
                 else if (utilities.isArray(fieldValue)) {
-                    fieldValue = handleMissing(_this.executeSubSelectedArray({
-                        field: selection,
-                        array: fieldValue,
-                        enclosingRef: enclosingRef,
-                        context: context,
-                    }), resultName);
+                    if (fieldValue.length > 0) {
+                        fieldValue = handleMissing(_this.executeSubSelectedArray({
+                            field: selection,
+                            array: fieldValue,
+                            enclosingRef: enclosingRef,
+                            context: context,
+                        }), resultName);
+                    }
                 }
                 else if (!selection.selectionSet) {
                     if (context.canonizeResults) {
@@ -64213,7 +64215,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.9";
+var version = "3.9.10";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68735,6 +68737,12 @@ function _useSuspenseQuery(query, options) {
             dispose();
         };
     }, [queryRef]);
+    React__namespace.useEffect(function () {
+        if (queryRef.disposed) {
+            suspenseCache.add(cacheKey, queryRef);
+            queryRef.reinitialize();
+        }
+    });
     var skipResult = React__namespace.useMemo(function () {
         var error = toApolloError(queryRef.result);
         return {
@@ -68842,6 +68850,11 @@ function _useBackgroundQuery(query, options) {
         var promise = queryRef.applyOptions(watchQueryOptions);
         internal.updateWrappedQueryRef(wrappedQueryRef, promise);
     }
+    React__namespace.useEffect(function () {
+        if (queryRef.disposed) {
+            suspenseCache.add(cacheKey, queryRef);
+        }
+    });
     var fetchMore = React__namespace.useCallback(function (options) {
         var promise = queryRef.fetchMore(options);
         setWrappedQueryRef(internal.wrapQueryRef(queryRef));
@@ -68944,7 +68957,12 @@ function _useReadQuery(queryRef) {
         internalQueryRef.reinitialize();
         internal.updateWrappedQueryRef(queryRef, internalQueryRef.promise);
     }
-    React__namespace.useEffect(function () { return internalQueryRef.retain(); }, [internalQueryRef]);
+    React__namespace.useEffect(function () {
+        if (internalQueryRef.disposed) {
+            internalQueryRef.reinitialize();
+        }
+        return internalQueryRef.retain();
+    }, [internalQueryRef]);
     var promise = useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         return internalQueryRef.listen(function (promise) {
             internal.updateWrappedQueryRef(queryRef, promise);
@@ -69097,11 +69115,9 @@ var InternalQueryReference =  (function () {
             }
             disposed = true;
             _this.references--;
-            setTimeout(function () {
-                if (!_this.references) {
-                    _this.dispose();
-                }
-            });
+            if (!_this.references) {
+                _this.dispose();
+            }
         };
     };
     InternalQueryReference.prototype.softRetain = function () {
@@ -69268,6 +69284,10 @@ var SuspenseCache =  (function () {
             });
         }
         return ref.current;
+    };
+    SuspenseCache.prototype.add = function (cacheKey, queryRef) {
+        var ref = this.queryRefs.lookupArray(cacheKey);
+        ref.current = queryRef;
     };
     return SuspenseCache;
 }());
@@ -69474,7 +69494,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.9";
+var version = "3.9.10";
 
 function maybe(thunk) {
     try {
