@@ -35759,7 +35759,24 @@ if (process.env.NODE_ENV === 'production') {
 
 "use strict";
 
-module.exports = __nccwpck_require__(8444);
+if (false) {}
+// We don't want bundlers to error when they encounter usage of any of these exports.
+// It's up to the package author to ensure that if they access React internals,
+// they do so in a safe way that won't break if React changes how they use these internals.
+// (e.g. only access them in development, and only in an optional way that won't
+// break if internals are not there or do not have the expected structure)
+// @ts-ignore
+module.exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = undefined;
+// @ts-ignore
+module.exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = undefined;
+// @ts-ignore
+module.exports.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = undefined;
+// Here we actually pull in the React library and add everything
+// it exports to our own `module.exports`.
+// If React suddenly were to add one of the above "polyfilled" exports,
+// the React version would overwrite our version, so this should be
+// future-proof.
+Object.assign(module.exports, __nccwpck_require__(8444));
 
 
 /***/ }),
@@ -61745,6 +61762,33 @@ var ApolloCache =  (function () {
         if (optimistic === void 0) { optimistic = !!options.optimistic; }
         return this.read(tslib.__assign(tslib.__assign({}, options), { rootId: options.id || "ROOT_QUERY", optimistic: optimistic }));
     };
+    ApolloCache.prototype.watchFragment = function (options) {
+        var _this = this;
+        var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a;
+        var diffOptions = {
+            returnPartialData: true,
+            id: typeof from === "string" ? from : this.identify(from),
+            query: this.getFragmentDoc(fragment, fragmentName),
+            optimistic: optimistic,
+        };
+        var latestDiff;
+        return new utilities.Observable(function (observer) {
+            return _this.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, query: _this.getFragmentDoc(fragment, fragmentName), callback: function (diff) {
+                    if (equality.equal(diff, latestDiff)) {
+                        return;
+                    }
+                    var result = {
+                        data: diff.result,
+                        complete: !!diff.complete,
+                    };
+                    if (diff.missing) {
+                        result.missing = utilities.mergeDeepArray(diff.missing.map(function (error) { return error.missing; }));
+                    }
+                    latestDiff = diff;
+                    observer.next(result);
+                } }));
+        });
+    };
     ApolloCache.prototype.readFragment = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = !!options.optimistic; }
         return this.read(tslib.__assign(tslib.__assign({}, options), { query: this.getFragmentDoc(options.fragment, options.fragmentName), rootId: options.id, optimistic: optimistic }));
@@ -64246,7 +64290,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.9.11";
+var version = "3.10.1";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -66593,6 +66637,7 @@ var ApolloClient =  (function () {
         this.watchQuery = this.watchQuery.bind(this);
         this.query = this.query.bind(this);
         this.mutate = this.mutate.bind(this);
+        this.watchFragment = this.watchFragment.bind(this);
         this.resetStore = this.resetStore.bind(this);
         this.reFetchObservableQueries = this.reFetchObservableQueries.bind(this);
         this.version = version;
@@ -66714,6 +66759,9 @@ var ApolloClient =  (function () {
     ApolloClient.prototype.readQuery = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = false; }
         return this.cache.readQuery(options, optimistic);
+    };
+    ApolloClient.prototype.watchFragment = function (options) {
+        return this.cache.watchFragment(options);
     };
     ApolloClient.prototype.readFragment = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = false; }
@@ -67945,12 +67993,14 @@ var React = __nccwpck_require__(6970);
 var context = __nccwpck_require__(3673);
 var tslib = __nccwpck_require__(4351);
 var utilities = __nccwpck_require__(3150);
-var equality = __nccwpck_require__(3750);
+var equal = __nccwpck_require__(3750);
 var errors = __nccwpck_require__(1621);
 var core = __nccwpck_require__(1402);
 var parser = __nccwpck_require__(5043);
 var internal = __nccwpck_require__(6822);
 var cache = __nccwpck_require__(768);
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e["default"] : e; }
 
 function _interopNamespace(e) {
     if (e && e.__esModule) return e;
@@ -67965,6 +68015,7 @@ function _interopNamespace(e) {
 }
 
 var React__namespace = /*#__PURE__*/_interopNamespace(React);
+var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
 function useApolloClient(override) {
     var context$1 = React__namespace.useContext(context.getApolloContext());
@@ -68024,7 +68075,7 @@ function checkIfSnapshotChanged(_a) {
 
 function useDeepMemo(memoFn, deps) {
     var ref = React__namespace.useRef();
-    if (!ref.current || !equality.equal(ref.current.deps, deps)) {
+    if (!ref.current || !equal.equal(ref.current.deps, deps)) {
         ref.current = { value: memoFn(), deps: deps };
     }
     return ref.current.value;
@@ -68164,7 +68215,7 @@ var InternalState =  (function () {
                 if (previousResult &&
                     previousResult.loading === result.loading &&
                     previousResult.networkStatus === result.networkStatus &&
-                    equality.equal(previousResult.data, result.data)) {
+                    equal.equal(previousResult.data, result.data)) {
                     return;
                 }
                 _this.setResult(result);
@@ -68178,7 +68229,7 @@ var InternalState =  (function () {
                 var previousResult = _this.result;
                 if (!previousResult ||
                     (previousResult && previousResult.loading) ||
-                    !equality.equal(error, previousResult.error)) {
+                    !equal.equal(error, previousResult.error)) {
                     _this.setResult({
                         data: (previousResult && previousResult.data),
                         error: error,
@@ -68204,7 +68255,7 @@ var InternalState =  (function () {
         var _a;
         var watchQueryOptions = this.createWatchQueryOptions((this.queryHookOptions = options));
         var currentWatchQueryOptions = this.watchQueryOptions;
-        if (!equality.equal(watchQueryOptions, currentWatchQueryOptions)) {
+        if (!equal.equal(watchQueryOptions, currentWatchQueryOptions)) {
             this.watchQueryOptions = watchQueryOptions;
             if (currentWatchQueryOptions && this.observable) {
                 this.observable.reobserve(this.getObsQueryOptions());
@@ -68483,7 +68534,7 @@ function useMutation(mutation, options) {
                     error: error,
                     client: client,
                 };
-                if (ref.current.isMounted && !equality.equal(ref.current.result, result_1)) {
+                if (ref.current.isMounted && !equal.equal(ref.current.result, result_1)) {
                     setResult((ref.current.result = result_1));
                 }
             }
@@ -68503,7 +68554,7 @@ function useMutation(mutation, options) {
                     called: true,
                     client: client,
                 };
-                if (!equality.equal(ref.current.result, result_2)) {
+                if (!equal.equal(ref.current.result, result_2)) {
                     setResult((ref.current.result = result_2));
                 }
             }
@@ -68592,7 +68643,7 @@ function useSubscription(subscription, options) {
                 subscription !== ref.current.subscription ||
                 (options === null || options === void 0 ? void 0 : options.fetchPolicy) !== ((_b = ref.current.options) === null || _b === void 0 ? void 0 : _b.fetchPolicy) ||
                 !(options === null || options === void 0 ? void 0 : options.skip) !== !((_c = ref.current.options) === null || _c === void 0 ? void 0 : _c.skip) ||
-                !equality.equal(options === null || options === void 0 ? void 0 : options.variables, (_d = ref.current.options) === null || _d === void 0 ? void 0 : _d.variables))) ||
+                !equal.equal(options === null || options === void 0 ? void 0 : options.variables, (_d = ref.current.options) === null || _d === void 0 ? void 0 : _d.variables))) ||
             canResetObservableRef.current) {
             setResult({
                 loading: true,
@@ -68696,24 +68747,27 @@ function _useFragment(options) {
     var resultRef = useLazyRef(function () {
         return diffToResult(cache.diff(diffOptions));
     });
+    var stableOptions = useDeepMemo(function () { return options; }, [options]);
     React__namespace.useMemo(function () {
         resultRef.current = diffToResult(cache.diff(diffOptions));
     }, [diffOptions, cache]);
     var getSnapshot = React__namespace.useCallback(function () { return resultRef.current; }, []);
     return useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         var lastTimeout = 0;
-        var unsubscribe = cache.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
-                if (!equality.equal(diff.result, resultRef.current.data)) {
-                    resultRef.current = diffToResult(diff);
-                    clearTimeout(lastTimeout);
-                    lastTimeout = setTimeout(forceUpdate);
-                }
-            } }));
+        var subscription = cache.watchFragment(stableOptions).subscribe({
+            next: function (result) {
+                if (equal__default(result, resultRef.current))
+                    return;
+                resultRef.current = result;
+                clearTimeout(lastTimeout);
+                lastTimeout = setTimeout(forceUpdate);
+            },
+        });
         return function () {
-            unsubscribe();
+            subscription.unsubscribe();
             clearTimeout(lastTimeout);
         };
-    }, [cache, diffOptions]), getSnapshot, getSnapshot);
+    }, [cache, stableOptions]), getSnapshot, getSnapshot);
 }
 function diffToResult(diff) {
     var result = {
@@ -68955,6 +69009,12 @@ function useLoadableQuery(query, options) {
 }
 
 function useQueryRefHandlers(queryRef) {
+    var unwrapped = internal.unwrapQueryRef(queryRef);
+    return wrapHook("useQueryRefHandlers", _useQueryRefHandlers, unwrapped ?
+        unwrapped["observable"]
+        : useApolloClient())(queryRef);
+}
+function _useQueryRefHandlers(queryRef) {
     var _a = React__namespace.useState(queryRef), previousQueryRef = _a[0], setPreviousQueryRef = _a[1];
     var _b = React__namespace.useState(queryRef), wrappedQueryRef = _b[0], setWrappedQueryRef = _b[1];
     var internalQueryRef = internal.unwrapQueryRef(queryRef);
@@ -68979,7 +69039,10 @@ function useQueryRefHandlers(queryRef) {
 }
 
 function useReadQuery(queryRef) {
-    return wrapHook("useReadQuery", _useReadQuery, internal.unwrapQueryRef(queryRef)["observable"])(queryRef);
+    var unwrapped = internal.unwrapQueryRef(queryRef);
+    return wrapHook("useReadQuery", _useReadQuery, unwrapped ?
+        unwrapped["observable"]
+        : useApolloClient())(queryRef);
 }
 function _useReadQuery(queryRef) {
     var internalQueryRef = React__namespace.useMemo(function () { return internal.unwrapQueryRef(queryRef); }, [queryRef]);
@@ -69526,7 +69589,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.9.11";
+var version = "3.10.1";
 
 function maybe(thunk) {
     try {
@@ -69812,6 +69875,9 @@ function getFragmentFromSelection(selection, fragmentMap) {
 
 var scheduledCleanup = new WeakSet();
 function schedule(cache) {
+    if (cache.size <= (cache.max || -1)) {
+        return;
+    }
     if (!scheduledCleanup.has(cache)) {
         scheduledCleanup.add(cache);
         setTimeout(function () {
@@ -69823,16 +69889,18 @@ function schedule(cache) {
 var AutoCleanedWeakCache = function (max, dispose) {
     var cache = new caches.WeakCache(max, dispose);
     cache.set = function (key, value) {
+        var ret = caches.WeakCache.prototype.set.call(this, key, value);
         schedule(this);
-        return caches.WeakCache.prototype.set.call(this, key, value);
+        return ret;
     };
     return cache;
 };
 var AutoCleanedStrongCache = function (max, dispose) {
     var cache = new caches.StrongCache(max, dispose);
     cache.set = function (key, value) {
+        var ret = caches.StrongCache.prototype.set.call(this, key, value);
         schedule(this);
-        return caches.StrongCache.prototype.set.call(this, key, value);
+        return ret;
     };
     return cache;
 };
