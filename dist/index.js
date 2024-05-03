@@ -64320,7 +64320,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.1";
+var version = "3.10.2";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68852,12 +68852,6 @@ function _useSuspenseQuery(query, options) {
             dispose();
         };
     }, [queryRef]);
-    React__namespace.useEffect(function () {
-        if (queryRef.disposed) {
-            suspenseCache.add(cacheKey, queryRef);
-            queryRef.reinitialize();
-        }
-    });
     var skipResult = React__namespace.useMemo(function () {
         var error = toApolloError(queryRef.result);
         return {
@@ -68966,9 +68960,12 @@ function _useBackgroundQuery(query, options) {
         internal.updateWrappedQueryRef(wrappedQueryRef, promise);
     }
     React__namespace.useEffect(function () {
-        if (queryRef.disposed) {
-            suspenseCache.add(cacheKey, queryRef);
-        }
+        var id = setTimeout(function () {
+            if (queryRef.disposed) {
+                suspenseCache.add(cacheKey, queryRef);
+            }
+        });
+        return function () { return clearTimeout(id); };
     });
     var fetchMore = React__namespace.useCallback(function (options) {
         var promise = queryRef.fetchMore(options);
@@ -69081,12 +69078,7 @@ function _useReadQuery(queryRef) {
         internalQueryRef.reinitialize();
         internal.updateWrappedQueryRef(queryRef, internalQueryRef.promise);
     }
-    React__namespace.useEffect(function () {
-        if (internalQueryRef.disposed) {
-            internalQueryRef.reinitialize();
-        }
-        return internalQueryRef.retain();
-    }, [internalQueryRef]);
+    React__namespace.useEffect(function () { return internalQueryRef.retain(); }, [internalQueryRef]);
     var promise = useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         return internalQueryRef.listen(function (promise) {
             internal.updateWrappedQueryRef(queryRef, promise);
@@ -69240,9 +69232,11 @@ var InternalQueryReference =  (function () {
             }
             disposed = true;
             _this.references--;
-            if (!_this.references) {
-                _this.dispose();
-            }
+            setTimeout(function () {
+                if (!_this.references) {
+                    _this.dispose();
+                }
+            });
         };
     };
     InternalQueryReference.prototype.softRetain = function () {
@@ -69619,7 +69613,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.1";
+var version = "3.10.2";
 
 function maybe(thunk) {
     try {
