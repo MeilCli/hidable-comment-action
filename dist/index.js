@@ -63851,7 +63851,7 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
         "either ensure all objects of type " +
             childTypenames.join(" and ") +
             " have an ID or a custom merge function, or "
-        : "", typeDotName, existing, incoming);
+        : "", typeDotName, tslib.__assign({}, existing), tslib.__assign({}, incoming));
 }
 
 var InMemoryCache =  (function (_super) {
@@ -64320,7 +64320,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.2";
+var version = "3.10.3";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69613,7 +69613,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.2";
+var version = "3.10.3";
 
 function maybe(thunk) {
     try {
