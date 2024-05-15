@@ -61703,9 +61703,13 @@ var tslib = __nccwpck_require__(4351);
 var optimism = __nccwpck_require__(152);
 var utilities = __nccwpck_require__(3150);
 var caches = __nccwpck_require__(4599);
-var equality = __nccwpck_require__(3750);
+var equal = __nccwpck_require__(3750);
 var trie = __nccwpck_require__(4665);
 var graphql = __nccwpck_require__(6155);
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e["default"] : e; }
+
+var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
 var getInMemoryCacheMemoryInternals = globalThis.__DEV__ !== false ?
     _getInMemoryCacheMemoryInternals
@@ -61752,6 +61756,72 @@ function recurseTransformInfo(transform) {
         : [];
 }
 
+function equalByQuery(query, _a, _b, variables) {
+    var aData = _a.data, aRest = tslib.__rest(_a, ["data"]);
+    var bData = _b.data, bRest = tslib.__rest(_b, ["data"]);
+    return (equal__default(aRest, bRest) &&
+        equalBySelectionSet(utilities.getMainDefinition(query).selectionSet, aData, bData, {
+            fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(query)),
+            variables: variables,
+        }));
+}
+function equalBySelectionSet(selectionSet, aResult, bResult, context) {
+    if (aResult === bResult) {
+        return true;
+    }
+    var seenSelections = new Set();
+    return selectionSet.selections.every(function (selection) {
+        if (seenSelections.has(selection))
+            return true;
+        seenSelections.add(selection);
+        if (!utilities.shouldInclude(selection, context.variables))
+            return true;
+        if (selectionHasNonreactiveDirective(selection))
+            return true;
+        if (utilities.isField(selection)) {
+            var resultKey = utilities.resultKeyNameFromField(selection);
+            var aResultChild = aResult && aResult[resultKey];
+            var bResultChild = bResult && bResult[resultKey];
+            var childSelectionSet = selection.selectionSet;
+            if (!childSelectionSet) {
+                return equal__default(aResultChild, bResultChild);
+            }
+            var aChildIsArray = Array.isArray(aResultChild);
+            var bChildIsArray = Array.isArray(bResultChild);
+            if (aChildIsArray !== bChildIsArray)
+                return false;
+            if (aChildIsArray && bChildIsArray) {
+                var length_1 = aResultChild.length;
+                if (bResultChild.length !== length_1) {
+                    return false;
+                }
+                for (var i = 0; i < length_1; ++i) {
+                    if (!equalBySelectionSet(childSelectionSet, aResultChild[i], bResultChild[i], context)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return equalBySelectionSet(childSelectionSet, aResultChild, bResultChild, context);
+        }
+        else {
+            var fragment = utilities.getFragmentFromSelection(selection, context.fragmentMap);
+            if (fragment) {
+                if (selectionHasNonreactiveDirective(fragment))
+                    return true;
+                return equalBySelectionSet(fragment.selectionSet,
+                aResult, bResult, context);
+            }
+        }
+    });
+}
+function selectionHasNonreactiveDirective(selection) {
+    return (!!selection.directives && selection.directives.some(directiveIsNonreactive));
+}
+function directiveIsNonreactive(dir) {
+    return dir.name.value === "nonreactive";
+}
+
 var ApolloCache =  (function () {
     function ApolloCache() {
         this.assumeImmutableResults = false;
@@ -61795,16 +61865,19 @@ var ApolloCache =  (function () {
     ApolloCache.prototype.watchFragment = function (options) {
         var _this = this;
         var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a;
+        var query = this.getFragmentDoc(fragment, fragmentName);
         var diffOptions = {
             returnPartialData: true,
             id: typeof from === "string" ? from : this.identify(from),
-            query: this.getFragmentDoc(fragment, fragmentName),
+            query: query,
             optimistic: optimistic,
         };
         var latestDiff;
         return new utilities.Observable(function (observer) {
-            return _this.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, query: _this.getFragmentDoc(fragment, fragmentName), callback: function (diff) {
-                    if (equality.equal(diff, latestDiff)) {
+            return _this.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
+                    if (
+                    latestDiff &&
+                        equalByQuery(query, { data: latestDiff === null || latestDiff === void 0 ? void 0 : latestDiff.result }, { data: diff.result })) {
                         return;
                     }
                     var result = {
@@ -62427,7 +62500,7 @@ var Layer =  (function (_super) {
                     }
                     else if (ownStoreObject !== parentStoreObject) {
                         Object.keys(ownStoreObject).forEach(function (storeFieldName) {
-                            if (!equality.equal(ownStoreObject[storeFieldName], parentStoreObject[storeFieldName])) {
+                            if (!equal.equal(ownStoreObject[storeFieldName], parentStoreObject[storeFieldName])) {
                                 _this.group.dirty(dataId, storeFieldName);
                             }
                         });
@@ -62472,7 +62545,7 @@ var Stump =  (function (_super) {
 function storeObjectReconciler(existingObject, incomingObject, property) {
     var existingValue = existingObject[property];
     var incomingValue = incomingObject[property];
-    return equality.equal(existingValue, incomingValue) ? existingValue : incomingValue;
+    return equal.equal(existingValue, incomingValue) ? existingValue : incomingValue;
 }
 function supportsResultCaching(store) {
     return !!(store instanceof exports.EntityStore && store.group.caching);
@@ -63826,7 +63899,7 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
         return;
     if (utilities.isReference(existing))
         return;
-    if (equality.equal(existing, incoming))
+    if (equal.equal(existing, incoming))
         return;
     if (Object.keys(existing).every(function (key) { return store.getFieldValue(incoming, key) !== void 0; })) {
         return;
@@ -64149,7 +64222,7 @@ var InMemoryCache =  (function (_super) {
                 return;
             }
         }
-        if (!lastDiff || !equality.equal(lastDiff.result, diff.result)) {
+        if (!lastDiff || !equal.equal(lastDiff.result, diff.result)) {
             c.callback((c.lastDiff = diff), lastDiff);
         }
     };
@@ -64320,7 +64393,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.3";
+var version = "3.10.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -64864,7 +64937,7 @@ var ObservableQuery =  (function (_super) {
             return;
         }
         var _a = this, pollingInfo = _a.pollingInfo, pollInterval = _a.options.pollInterval;
-        if (!pollInterval) {
+        if (!pollInterval || !this.hasObservers()) {
             if (pollingInfo) {
                 clearTimeout(pollingInfo.timeout);
                 delete this.pollingInfo;
@@ -65479,10 +65552,7 @@ var QueryInfo =  (function () {
         var _this = this;
         var _a;
         var oldDiff = this.lastDiff && this.lastDiff.diff;
-        if (diff &&
-            !diff.complete &&
-            !((_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a.options.returnPartialData) &&
-            !(oldDiff && oldDiff.complete)) {
+        if (diff && !diff.complete && ((_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a.getLastError())) {
             return;
         }
         this.updateLastDiff(diff);
@@ -66723,7 +66793,8 @@ var ApolloClient =  (function () {
                 if (typeof window !== "undefined" &&
                     window.document &&
                     window.top === window.self &&
-                    !window.__APOLLO_DEVTOOLS_GLOBAL_HOOK__) {
+                    !window.__APOLLO_DEVTOOLS_GLOBAL_HOOK__ &&
+                    /^(https?|file):$/.test(window.location.protocol)) {
                     var nav = window.navigator;
                     var ua = nav && nav.userAgent;
                     var url = void 0;
@@ -68991,6 +69062,7 @@ function useLoadableQuery(query, options) {
     var watchQueryOptions = useWatchQueryOptions({ client: client, query: query, options: options });
     var _a = options.queryKey, queryKey = _a === void 0 ? [] : _a;
     var _b = React__namespace.useState(null), queryRef = _b[0], setQueryRef = _b[1];
+    internal.assertWrappedQueryRef(queryRef);
     var internalQueryRef = queryRef && internal.unwrapQueryRef(queryRef);
     if (queryRef && (internalQueryRef === null || internalQueryRef === void 0 ? void 0 : internalQueryRef.didChangeOptions(watchQueryOptions))) {
         var promise = internalQueryRef.applyOptions(watchQueryOptions);
@@ -69042,6 +69114,7 @@ function useQueryRefHandlers(queryRef) {
         : useApolloClient())(queryRef);
 }
 function _useQueryRefHandlers(queryRef) {
+    internal.assertWrappedQueryRef(queryRef);
     var _a = React__namespace.useState(queryRef), previousQueryRef = _a[0], setPreviousQueryRef = _a[1];
     var _b = React__namespace.useState(queryRef), wrappedQueryRef = _b[0], setWrappedQueryRef = _b[1];
     var internalQueryRef = internal.unwrapQueryRef(queryRef);
@@ -69072,6 +69145,7 @@ function useReadQuery(queryRef) {
         : useApolloClient())(queryRef);
 }
 function _useReadQuery(queryRef) {
+    internal.assertWrappedQueryRef(queryRef);
     var internalQueryRef = React__namespace.useMemo(function () { return internal.unwrapQueryRef(queryRef); }, [queryRef]);
     var getPromise = React__namespace.useCallback(function () { return internal.getWrappedPromise(queryRef); }, [queryRef]);
     if (internalQueryRef.disposed) {
@@ -69125,6 +69199,94 @@ var trie = __nccwpck_require__(4665);
 var utilities = __nccwpck_require__(3150);
 var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
+var tsInvariant = __nccwpck_require__(7371);
+
+var version = "3.10.4";
+
+function maybe(thunk) {
+    try {
+        return thunk();
+    }
+    catch (_a) { }
+}
+
+var global$1 = (maybe(function () { return globalThis; }) ||
+    maybe(function () { return window; }) ||
+    maybe(function () { return self; }) ||
+    maybe(function () { return global; }) ||
+maybe(function () {
+    return maybe.constructor("return this")();
+}));
+
+var prefixCounts = new Map();
+function makeUniqueId(prefix) {
+    var count = prefixCounts.get(prefix) || 1;
+    prefixCounts.set(prefix, count + 1);
+    return "".concat(prefix, ":").concat(count, ":").concat(Math.random().toString(36).slice(2));
+}
+
+function stringifyForDisplay(value, space) {
+    if (space === void 0) { space = 0; }
+    var undefId = makeUniqueId("stringifyForDisplay");
+    return JSON.stringify(value, function (key, value) {
+        return value === void 0 ? undefId : value;
+    }, space)
+        .split(JSON.stringify(undefId))
+        .join("<undefined>");
+}
+
+function wrap(fn) {
+    return function (message) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (typeof message === "number") {
+            var arg0 = message;
+            message = getHandledErrorMsg(arg0);
+            if (!message) {
+                message = getFallbackErrorMsg(arg0, args);
+                args = [];
+            }
+        }
+        fn.apply(void 0, [message].concat(args));
+    };
+}
+var invariant = Object.assign(function invariant(condition, message) {
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
+    if (!condition) {
+        tsInvariant.invariant(condition, getHandledErrorMsg(message, args) || getFallbackErrorMsg(message, args));
+    }
+}, {
+    debug: wrap(tsInvariant.invariant.debug),
+    log: wrap(tsInvariant.invariant.log),
+    warn: wrap(tsInvariant.invariant.warn),
+    error: wrap(tsInvariant.invariant.error),
+});
+var ApolloErrorMessageHandler = Symbol.for("ApolloErrorMessageHandler_" + version);
+function stringify(arg) {
+    return typeof arg == "string" ? arg : (stringifyForDisplay(arg, 2).slice(0, 1000));
+}
+function getHandledErrorMsg(message, messageArgs) {
+    if (messageArgs === void 0) { messageArgs = []; }
+    if (!message)
+        return;
+    return (global$1[ApolloErrorMessageHandler] &&
+        global$1[ApolloErrorMessageHandler](message, messageArgs.map(stringify)));
+}
+function getFallbackErrorMsg(message, messageArgs) {
+    if (messageArgs === void 0) { messageArgs = []; }
+    if (!message)
+        return;
+    return "An error occurred! For more details, see the full error text at https://go.apollo.dev/c/err#".concat(encodeURIComponent(JSON.stringify({
+        version: version,
+        message: message,
+        args: messageArgs.map(stringify),
+    })));
+}
 
 var QUERY_REFERENCE_SYMBOL = Symbol();
 var PROMISE_SYMBOL = Symbol();
@@ -69139,6 +69301,9 @@ function wrapQueryRef(internalQueryRef) {
         _a[PROMISE_SYMBOL] = internalQueryRef.promise,
         _a);
     return ref;
+}
+function assertWrappedQueryRef(queryRef) {
+    invariant(!queryRef || QUERY_REFERENCE_SYMBOL in queryRef, 59);
 }
 function getWrappedPromise(queryRef) {
     var internalQueryRef = unwrapQueryRef(queryRef);
@@ -69421,6 +69586,7 @@ function getSuspenseCache(client) {
 }
 
 exports.InternalQueryReference = InternalQueryReference;
+exports.assertWrappedQueryRef = assertWrappedQueryRef;
 exports.getSuspenseCache = getSuspenseCache;
 exports.getWrappedPromise = getWrappedPromise;
 exports.unwrapQueryRef = unwrapQueryRef;
@@ -69478,7 +69644,7 @@ function parser(document) {
     if (cached)
         return cached;
     var variables, type, name;
-    globals.invariant(!!document && !!document.kind, 59, document);
+    globals.invariant(!!document && !!document.kind, 60, document);
     var fragments = [];
     var queries = [];
     var mutations = [];
@@ -69506,10 +69672,10 @@ function parser(document) {
     globals.invariant(!fragments.length ||
         queries.length ||
         mutations.length ||
-        subscriptions.length, 60);
+        subscriptions.length, 61);
     globals.invariant(
         queries.length + mutations.length + subscriptions.length <= 1,
-        61,
+        62,
         document,
         queries.length,
         subscriptions.length,
@@ -69521,7 +69687,7 @@ function parser(document) {
     var definitions = queries.length ? queries
         : mutations.length ? mutations
             : subscriptions;
-    globals.invariant(definitions.length === 1, 62, document, definitions.length);
+    globals.invariant(definitions.length === 1, 63, document, definitions.length);
     var definition = definitions[0];
     variables = definition.variableDefinitions || [];
     if (definition.name && definition.name.kind === "Name") {
@@ -69546,7 +69712,7 @@ function verifyDocumentType(document, type) {
     var usedOperationName = operationName(operation.type);
     globals.invariant(
         operation.type === type,
-        63,
+        64,
         requiredOperationName,
         requiredOperationName,
         usedOperationName
@@ -69613,7 +69779,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.3";
+var version = "3.10.4";
 
 function maybe(thunk) {
     try {
@@ -69750,7 +69916,7 @@ function shouldInclude(_a, variables) {
         if (ifArgument.value.kind === "Variable") {
             evaledValue =
                 variables && variables[ifArgument.value.name.value];
-            globals.invariant(evaledValue !== void 0, 67, directive.name.value);
+            globals.invariant(evaledValue !== void 0, 68, directive.name.value);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -69800,12 +69966,12 @@ function getInclusionDirectives(directives) {
                 return;
             var directiveArguments = directive.arguments;
             var directiveName = directive.name.value;
-            globals.invariant(directiveArguments && directiveArguments.length === 1, 68, directiveName);
+            globals.invariant(directiveArguments && directiveArguments.length === 1, 69, directiveName);
             var ifArgument = directiveArguments[0];
-            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 69, directiveName);
+            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 70, directiveName);
             var ifValue = ifArgument.value;
             globals.invariant(ifValue &&
-                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 70, directiveName);
+                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 71, directiveName);
             result.push({ directive: directive, ifArgument: ifArgument });
         });
     }
@@ -69838,7 +70004,7 @@ function getFragmentQueryDocument(document, fragmentName) {
     document.definitions.forEach(function (definition) {
         if (definition.kind === "OperationDefinition") {
             throw globals.newInvariantError(
-                71,
+                72,
                 definition.operation,
                 definition.name ? " named '".concat(definition.name.value, "'") : ""
             );
@@ -69848,7 +70014,7 @@ function getFragmentQueryDocument(document, fragmentName) {
         }
     });
     if (typeof actualFragmentName === "undefined") {
-        globals.invariant(fragments.length === 1, 72, fragments.length);
+        globals.invariant(fragments.length === 1, 73, fragments.length);
         actualFragmentName = fragments[0].name.value;
     }
     var query = tslib.__assign(tslib.__assign({}, document), { definitions: tslib.__spreadArray([
@@ -69889,7 +70055,7 @@ function getFragmentFromSelection(selection, fragmentMap) {
                 return fragmentMap(fragmentName);
             }
             var fragment = fragmentMap && fragmentMap[fragmentName];
-            globals.invariant(fragment, 73, fragmentName);
+            globals.invariant(fragment, 74, fragmentName);
             return fragment || null;
         }
         default:
@@ -70048,7 +70214,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
         argObj[name.value] = null;
     }
     else {
-        throw globals.newInvariantError(82, name.value, value.kind);
+        throw globals.newInvariantError(83, name.value, value.kind);
     }
 }
 function storeKeyNameFromField(field, variables) {
@@ -70182,16 +70348,16 @@ function isInlineFragment(selection) {
 }
 
 function checkDocument(doc) {
-    globals.invariant(doc && doc.kind === "Document", 74);
+    globals.invariant(doc && doc.kind === "Document", 75);
     var operations = doc.definitions
         .filter(function (d) { return d.kind !== "FragmentDefinition"; })
         .map(function (definition) {
         if (definition.kind !== "OperationDefinition") {
-            throw globals.newInvariantError(75, definition.kind);
+            throw globals.newInvariantError(76, definition.kind);
         }
         return definition;
     });
-    globals.invariant(operations.length <= 1, 76, operations.length);
+    globals.invariant(operations.length <= 1, 77, operations.length);
     return doc;
 }
 function getOperationDefinition(doc) {
@@ -70214,14 +70380,14 @@ function getFragmentDefinitions(doc) {
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
-    globals.invariant(queryDef && queryDef.operation === "query", 77);
+    globals.invariant(queryDef && queryDef.operation === "query", 78);
     return queryDef;
 }
 function getFragmentDefinition(doc) {
-    globals.invariant(doc.kind === "Document", 78);
-    globals.invariant(doc.definitions.length <= 1, 79);
+    globals.invariant(doc.kind === "Document", 79);
+    globals.invariant(doc.definitions.length <= 1, 80);
     var fragmentDef = doc.definitions[0];
-    globals.invariant(fragmentDef.kind === "FragmentDefinition", 80);
+    globals.invariant(fragmentDef.kind === "FragmentDefinition", 81);
     return fragmentDef;
 }
 function getMainDefinition(queryDoc) {
@@ -70244,7 +70410,7 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw globals.newInvariantError(81);
+    throw globals.newInvariantError(82);
 }
 function getDefaultValues(definition) {
     var defaultValues = Object.create(null);
@@ -70295,7 +70461,7 @@ var DocumentTransform =  (function () {
                 makeCacheKey: function (document) {
                     var cacheKeys = _this.getCacheKey(document);
                     if (cacheKeys) {
-                        globals.invariant(Array.isArray(cacheKeys), 66);
+                        globals.invariant(Array.isArray(cacheKeys), 67);
                         return stableCacheKeys_1.lookupArray(cacheKeys);
                     }
                 },
@@ -70425,7 +70591,7 @@ function removeDirectivesFromDocument(directives, doc) {
                 return getInUseByFragmentName(ancestor.name.value);
             }
         }
-        globalThis.__DEV__ !== false && globals.invariant.error(83);
+        globalThis.__DEV__ !== false && globals.invariant.error(84);
         return null;
     };
     var operationCount = 0;
@@ -70615,7 +70781,7 @@ var connectionRemoveConfig = {
         if (willRemove) {
             if (!directive.arguments ||
                 !directive.arguments.some(function (arg) { return arg.name.value === "key"; })) {
-                globalThis.__DEV__ !== false && globals.invariant.warn(84);
+                globalThis.__DEV__ !== false && globals.invariant.warn(85);
             }
         }
         return willRemove;
