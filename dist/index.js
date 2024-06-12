@@ -9726,16 +9726,21 @@ exports.instanceOf = void 0;
 
 var _inspect = __nccwpck_require__(102);
 
+/* c8 ignore next 3 */
+const isProduction =
+  globalThis.process && // eslint-disable-next-line no-undef
+  process.env.NODE_ENV === 'production';
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
+
 const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  globalThis.process && globalThis.process.env.NODE_ENV === 'production'
+  isProduction
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }
@@ -29027,7 +29032,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.8.1';
+const version = '16.8.2';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -29036,7 +29041,7 @@ exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
   minor: 8,
-  patch: 1,
+  patch: 2,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
@@ -64411,7 +64416,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.4";
+var version = "3.10.5";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68200,15 +68205,26 @@ function useDeepMemo(memoFn, deps) {
     return ref.current.value;
 }
 
-function getRenderDispatcher() {
-    var _a, _b;
-    return (_b = (_a = React__namespace.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) === null || _a === void 0 ? void 0 : _a.ReactCurrentDispatcher) === null || _b === void 0 ? void 0 : _b.current;
-}
-var RenderDispatcher = null;
+var Ctx;
+function noop() { }
 function useRenderGuard() {
-    RenderDispatcher = getRenderDispatcher();
-    return React__namespace.useCallback(function () {
-        return (RenderDispatcher != null && RenderDispatcher === getRenderDispatcher());
+    if (!Ctx) {
+        Ctx = React__namespace.createContext(null);
+    }
+    return React__namespace.useCallback(
+ function () {
+        var orig = console.error;
+        try {
+            console.error = noop;
+            React__namespace["useContext" ](Ctx);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+        finally {
+            console.error = orig;
+        }
     }, []);
 }
 
@@ -68253,14 +68269,16 @@ function _useQuery(query, options) {
     return useInternalState(useApolloClient(options.client), query).useQuery(options);
 }
 function useInternalState(client, query) {
-    var stateRef = React__namespace.useRef();
-    if (!stateRef.current ||
-        client !== stateRef.current.client ||
-        query !== stateRef.current.query) {
-        stateRef.current = new InternalState(client, query, stateRef.current);
+    var forceUpdateState = React__namespace.useReducer(function (tick) { return tick + 1; }, 0)[1];
+    function createInternalState(previous) {
+        return Object.assign(new InternalState(client, query, previous), {
+            forceUpdateState: forceUpdateState,
+        });
     }
-    var state = stateRef.current;
-    state.forceUpdateState = React__namespace.useReducer(function (tick) { return tick + 1; }, 0)[1];
+    var _a = React__namespace.useState(createInternalState), state = _a[0], updateState = _a[1];
+    if (client !== state.client || query !== state.query) {
+        updateState((state = createInternalState(state)));
+    }
     return state;
 }
 var InternalState =  (function () {
@@ -68323,7 +68341,8 @@ var InternalState =  (function () {
         this.renderPromises = React__namespace.useContext(context.getApolloContext()).renderPromises;
         this.useOptions(options);
         var obsQuery = this.useObservableQuery();
-        var result = useSyncExternalStore(React__namespace.useCallback(function (handleStoreChange) {
+        var result = useSyncExternalStore(
+        React__namespace.useCallback(function (handleStoreChange) {
             if (_this.renderPromises) {
                 return function () { };
             }
@@ -68558,17 +68577,15 @@ function useLazyQuery(query, options) {
     var useQueryResult = internalState.useQuery(tslib.__assign(tslib.__assign({}, merged), { skip: !execOptionsRef.current }));
     var initialFetchPolicy = useQueryResult.observable.options.initialFetchPolicy ||
         internalState.getDefaultFetchPolicy();
-    var result = Object.assign(useQueryResult, {
-        called: !!execOptionsRef.current,
-    });
+    var forceUpdateState = internalState.forceUpdateState, obsQueryFields = internalState.obsQueryFields;
     var eagerMethods = React__namespace.useMemo(function () {
         var eagerMethods = {};
         var _loop_1 = function (key) {
-            var method = result[key];
+            var method = obsQueryFields[key];
             eagerMethods[key] = function () {
                 if (!execOptionsRef.current) {
                     execOptionsRef.current = Object.create(null);
-                    internalState.forceUpdateState();
+                    forceUpdateState();
                 }
                 return method.apply(this, arguments);
             };
@@ -68578,8 +68595,9 @@ function useLazyQuery(query, options) {
             _loop_1(key);
         }
         return eagerMethods;
-    }, []);
-    Object.assign(result, eagerMethods);
+    }, [forceUpdateState, obsQueryFields]);
+    var called = !!execOptionsRef.current;
+    var result = React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign(tslib.__assign({}, useQueryResult), eagerMethods), { called: called })); }, [useQueryResult, eagerMethods, called]);
     var execute = React__namespace.useCallback(function (executeOptions) {
         execOptionsRef.current =
             executeOptions ? tslib.__assign(tslib.__assign({}, executeOptions), { fetchPolicy: executeOptions.fetchPolicy || initialFetchPolicy }) : {
@@ -68591,7 +68609,7 @@ function useLazyQuery(query, options) {
             .then(function (queryResult) { return Object.assign(queryResult, eagerMethods); });
         promise.catch(function () { });
         return promise;
-    }, []);
+    }, [eagerMethods, initialFetchPolicy, internalState]);
     return [execute, result];
 }
 
@@ -68611,9 +68629,9 @@ function useMutation(mutation, options) {
         mutation: mutation,
         options: options,
     });
-    {
+    React__namespace.useLayoutEffect(function () {
         Object.assign(ref.current, { client: client, options: options, mutation: mutation });
-    }
+    });
     var execute = React__namespace.useCallback(function (executeOptions) {
         if (executeOptions === void 0) { executeOptions = {}; }
         var _a = ref.current, options = _a.options, mutation = _a.mutation;
@@ -68687,15 +68705,20 @@ function useMutation(mutation, options) {
     }, []);
     var reset = React__namespace.useCallback(function () {
         if (ref.current.isMounted) {
-            var result_3 = { called: false, loading: false, client: client };
+            var result_3 = {
+                called: false,
+                loading: false,
+                client: ref.current.client,
+            };
             Object.assign(ref.current, { mutationId: 0, result: result_3 });
             setResult(result_3);
         }
     }, []);
     React__namespace.useEffect(function () {
-        ref.current.isMounted = true;
+        var current = ref.current;
+        current.isMounted = true;
         return function () {
-            ref.current.isMounted = false;
+            current.isMounted = false;
         };
     }, []);
     return [execute, tslib.__assign({ reset: reset }, result)];
@@ -68951,11 +68974,11 @@ function _useSuspenseQuery(query, options) {
         };
     }, [queryRef.result]);
     var result = fetchPolicy === "standby" ? skipResult : __use(promise);
-    var fetchMore = React__namespace.useCallback((function (options) {
+    var fetchMore = React__namespace.useCallback(function (options) {
         var promise = queryRef.fetchMore(options);
         setPromise([queryRef.key, queryRef.promise]);
         return promise;
-    }), [queryRef]);
+    }, [queryRef]);
     var refetch = React__namespace.useCallback(function (variables) {
         var promise = queryRef.refetch(variables);
         setPromise([queryRef.key, queryRef.promise]);
@@ -69118,10 +69141,17 @@ function useLoadableQuery(query, options) {
             return client.watchQuery(tslib.__assign(tslib.__assign({}, watchQueryOptions), { variables: variables }));
         });
         setQueryRef(internal.wrapQueryRef(queryRef));
-    }, [query, queryKey, suspenseCache, watchQueryOptions, calledDuringRender]);
+    }, [
+        query,
+        queryKey,
+        suspenseCache,
+        watchQueryOptions,
+        calledDuringRender,
+        client,
+    ]);
     var reset = React__namespace.useCallback(function () {
         setQueryRef(null);
-    }, [queryRef]);
+    }, []);
     return [loadQuery, queryRef, { fetchMore: fetchMore, refetch: refetch, reset: reset }];
 }
 
@@ -69176,7 +69206,7 @@ function _useReadQuery(queryRef) {
             internal.updateWrappedQueryRef(queryRef, promise);
             forceUpdate();
         });
-    }, [internalQueryRef]), getPromise, getPromise);
+    }, [internalQueryRef, queryRef]), getPromise, getPromise);
     var result = __use(promise);
     return React__namespace.useMemo(function () {
         return {
@@ -69219,7 +69249,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.4";
+var version = "3.10.5";
 
 function maybe(thunk) {
     try {
@@ -69797,7 +69827,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.4";
+var version = "3.10.5";
 
 function maybe(thunk) {
     try {
