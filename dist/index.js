@@ -3327,7 +3327,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GitHubClient = exports.githubClient = void 0;
+exports.GitHubClient = void 0;
+exports.githubClient = githubClient;
 const cross_fetch_1 = __importDefault(__nccwpck_require__(9805));
 const client_1 = __nccwpck_require__(7856);
 const graphql_1 = __nccwpck_require__(3089);
@@ -3341,7 +3342,6 @@ function githubClient(option) {
         cache: new client_1.InMemoryCache(),
     }));
 }
-exports.githubClient = githubClient;
 class GitHubClient {
     constructor(client) {
         this.client = client;
@@ -3393,18 +3393,17 @@ exports.GitHubClient = GitHubClient;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createHidableComment = exports.isHidableComment = void 0;
+exports.isHidableComment = isHidableComment;
+exports.createHidableComment = createHidableComment;
 function hidableCommentIdentifier(id) {
     return `<!-- hidable-coment-action: ${id} -->`;
 }
 function isHidableComment(body, id) {
     return body.startsWith(hidableCommentIdentifier(id));
 }
-exports.isHidableComment = isHidableComment;
 function createHidableComment(body, id) {
     return `${hidableCommentIdentifier(id)}  ${body}`;
 }
-exports.createHidableComment = createHidableComment;
 
 
 /***/ }),
@@ -3540,7 +3539,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getOption = void 0;
+exports.getOption = getOption;
 const core = __importStar(__nccwpck_require__(2186));
 function getOption() {
     return {
@@ -3552,7 +3551,6 @@ function getOption() {
         body: getInput("body"),
     };
 }
-exports.getOption = getOption;
 function getInput(key) {
     return core.getInput(key, { required: true });
 }
@@ -3566,7 +3564,7 @@ function getInput(key) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getIssueOrPullRequestCommentWithPaging = void 0;
+exports.getIssueOrPullRequestCommentWithPaging = getIssueOrPullRequestCommentWithPaging;
 // guard for infinity loop
 const maxLoop = 100;
 async function getIssueOrPullRequestCommentWithPaging(client, variables) {
@@ -3632,7 +3630,6 @@ async function getIssueOrPullRequestCommentWithPaging(client, variables) {
         comments: comments,
     };
 }
-exports.getIssueOrPullRequestCommentWithPaging = getIssueOrPullRequestCommentWithPaging;
 
 
 /***/ }),
