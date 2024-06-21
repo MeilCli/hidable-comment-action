@@ -64805,7 +64805,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.5";
+var version = "3.10.6";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68594,6 +68594,8 @@ function useDeepMemo(memoFn, deps) {
     return ref.current.value;
 }
 
+var useIsomorphicLayoutEffect = utilities.canUseDOM ? React__namespace.useLayoutEffect : React__namespace.useEffect;
+
 var Ctx;
 function noop() { }
 function useRenderGuard() {
@@ -69018,7 +69020,7 @@ function useMutation(mutation, options) {
         mutation: mutation,
         options: options,
     });
-    React__namespace.useLayoutEffect(function () {
+    useIsomorphicLayoutEffect(function () {
         Object.assign(ref.current, { client: client, options: options, mutation: mutation });
     });
     var execute = React__namespace.useCallback(function (executeOptions) {
@@ -69638,7 +69640,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.5";
+var version = "3.10.6";
 
 function maybe(thunk) {
     try {
@@ -70216,7 +70218,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.5";
+var version = "3.10.6";
 
 function maybe(thunk) {
     try {
