@@ -64805,7 +64805,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.10.6";
+var version = "3.10.7";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69640,7 +69640,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.6";
+var version = "3.10.7";
 
 function maybe(thunk) {
     try {
@@ -69707,7 +69707,15 @@ var invariant = Object.assign(function invariant(condition, message) {
 });
 var ApolloErrorMessageHandler = Symbol.for("ApolloErrorMessageHandler_" + version);
 function stringify(arg) {
-    return typeof arg == "string" ? arg : (stringifyForDisplay(arg, 2).slice(0, 1000));
+    if (typeof arg == "string") {
+        return arg;
+    }
+    try {
+        return stringifyForDisplay(arg, 2).slice(0, 1000);
+    }
+    catch (_a) {
+        return "<non-serializable>";
+    }
 }
 function getHandledErrorMsg(message, messageArgs) {
     if (messageArgs === void 0) { messageArgs = []; }
@@ -70218,7 +70226,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.10.6";
+var version = "3.10.7";
 
 function maybe(thunk) {
     try {
@@ -70293,7 +70301,15 @@ function newInvariantError(message) {
 }
 var ApolloErrorMessageHandler = Symbol.for("ApolloErrorMessageHandler_" + version);
 function stringify(arg) {
-    return typeof arg == "string" ? arg : (stringifyForDisplay(arg, 2).slice(0, 1000));
+    if (typeof arg == "string") {
+        return arg;
+    }
+    try {
+        return stringifyForDisplay(arg, 2).slice(0, 1000);
+    }
+    catch (_a) {
+        return "<non-serializable>";
+    }
 }
 function getHandledErrorMsg(message, messageArgs) {
     if (messageArgs === void 0) { messageArgs = []; }
@@ -70417,15 +70433,16 @@ function getInclusionDirectives(directives) {
     return result;
 }
 
+var isReactNative = globals.maybe(function () { return navigator.product; }) == "ReactNative";
 var canUseWeakMap = typeof WeakMap === "function" &&
-    !globals.maybe(function () { return navigator.product == "ReactNative" && !global.HermesInternal; });
+    !(isReactNative && !global.HermesInternal);
 var canUseWeakSet = typeof WeakSet === "function";
 var canUseSymbol = typeof Symbol === "function" && typeof Symbol.for === "function";
 var canUseAsyncIteratorSymbol = canUseSymbol && Symbol.asyncIterator;
 var canUseDOM = typeof globals.maybe(function () { return window.document.createElement; }) === "function";
 var usingJSDOM =
 globals.maybe(function () { return navigator.userAgent.indexOf("jsdom") >= 0; }) || false;
-var canUseLayoutEffect = canUseDOM && !usingJSDOM;
+var canUseLayoutEffect = (canUseDOM || isReactNative) && !usingJSDOM;
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
