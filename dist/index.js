@@ -64810,7 +64810,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.1";
+var version = "3.11.2";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69296,7 +69296,7 @@ function useSubscription(subscription, options) {
         return observable && !skip && !ignoreResults ?
             observable.__.result
             : fallbackResult;
-    });
+    }, function () { return fallbackResult; });
     return React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign({}, ret), { restart: function () {
             globals.invariant(!optionsRef.current.skip, 56);
             setObservable(recreateRef.current());
@@ -69724,7 +69724,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.1";
+var version = "3.11.2";
 
 function maybe(thunk) {
     try {
@@ -70321,7 +70321,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.1";
+var version = "3.11.2";
 
 function maybe(thunk) {
     try {
