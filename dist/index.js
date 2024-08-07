@@ -64810,7 +64810,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.3";
+var version = "3.11.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -65464,6 +65464,9 @@ var ObservableQuery =  (function (_super) {
             },
             error: function (error) {
                 if (equal.equal(_this.variables, variables)) {
+                    if (!errors.isApolloError(error)) {
+                        error = new errors.ApolloError({ networkError: error });
+                    }
                     finishWaitingForOwnResult();
                     _this.reportError(error, variables);
                 }
@@ -69743,7 +69746,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.3";
+var version = "3.11.4";
 
 function maybe(thunk) {
     try {
@@ -70340,7 +70343,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.3";
+var version = "3.11.4";
 
 function maybe(thunk) {
     try {
@@ -71910,7 +71913,7 @@ var Concast =  (function (_super) {
         _this.cancel = function (reason) {
             _this.reject(reason);
             _this.sources = [];
-            _this.handlers.complete();
+            _this.handlers.error(reason);
         };
         _this.promise.catch(function (_) { });
         if (typeof sources === "function") {
