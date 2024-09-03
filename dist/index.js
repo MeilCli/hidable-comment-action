@@ -64810,7 +64810,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.5";
+var version = "3.11.6";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69310,10 +69310,11 @@ function useSubscription(subscription, options) {
             observable.__.result
             : fallbackResult;
     }, function () { return fallbackResult; });
-    return React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign({}, ret), { restart: function () {
-            globals.invariant(!optionsRef.current.skip, 57);
-            setObservable(recreateRef.current());
-        } })); }, [ret]);
+    var restart = React__namespace.useCallback(function () {
+        globals.invariant(!optionsRef.current.skip, 57);
+        setObservable(recreateRef.current());
+    }, [optionsRef, recreateRef]);
+    return React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign({}, ret), { restart: restart })); }, [ret, restart]);
 }
 function createSubscription(client, query, variables, fetchPolicy, errorPolicy, context, extensions) {
     var options = {
@@ -69360,30 +69361,30 @@ function _useFragment(options) {
     var cache = useApolloClient(options.client).cache;
     var from = options.from, rest = tslib.__rest(options, ["from"]);
     var id = React__namespace.useMemo(function () { return (typeof from === "string" ? from : cache.identify(from)); }, [cache, from]);
-    var resultRef = React__namespace.useRef();
     var stableOptions = useDeepMemo(function () { return (tslib.__assign(tslib.__assign({}, rest), { from: id })); }, [rest, id]);
-    var currentDiff = React__namespace.useMemo(function () {
+    var diff = React__namespace.useMemo(function () {
         var fragment = stableOptions.fragment, fragmentName = stableOptions.fragmentName, from = stableOptions.from, _a = stableOptions.optimistic, optimistic = _a === void 0 ? true : _a;
-        return diffToResult(cache.diff(tslib.__assign(tslib.__assign({}, stableOptions), { returnPartialData: true, id: from, query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic })));
+        return {
+            result: diffToResult(cache.diff(tslib.__assign(tslib.__assign({}, stableOptions), { returnPartialData: true, id: from, query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic }))),
+        };
     }, [stableOptions, cache]);
-    var getSnapshot = React__namespace.useCallback(function () { return resultRef.current || currentDiff; }, [currentDiff]);
+    var getSnapshot = React__namespace.useCallback(function () { return diff.result; }, [diff]);
     return useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         var lastTimeout = 0;
         var subscription = cache.watchFragment(stableOptions).subscribe({
             next: function (result) {
-                if (equal__default(result, currentDiff))
+                if (equal__default(result, diff.result))
                     return;
-                resultRef.current = result;
+                diff.result = result;
                 clearTimeout(lastTimeout);
                 lastTimeout = setTimeout(forceUpdate);
             },
         });
         return function () {
-            resultRef.current = void 0;
             subscription.unsubscribe();
             clearTimeout(lastTimeout);
         };
-    }, [cache, stableOptions, currentDiff]), getSnapshot, getSnapshot);
+    }, [cache, stableOptions, diff]), getSnapshot, getSnapshot);
 }
 function diffToResult(diff) {
     var result = {
@@ -69735,7 +69736,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.5";
+var version = "3.11.6";
 
 function maybe(thunk) {
     try {
@@ -70332,7 +70333,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.5";
+var version = "3.11.6";
 
 function maybe(thunk) {
     try {
