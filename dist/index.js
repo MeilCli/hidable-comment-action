@@ -62288,7 +62288,10 @@ var ApolloCache =  (function () {
         var _this = this;
         var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, otherOptions = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
         var query = this.getFragmentDoc(fragment, fragmentName);
-        var diffOptions = tslib.__assign(tslib.__assign({}, otherOptions), { returnPartialData: true, id: typeof from === "string" ? from : this.identify(from), query: query, optimistic: optimistic });
+        var diffOptions = tslib.__assign(tslib.__assign({}, otherOptions), { returnPartialData: true, id:
+            typeof from === "undefined" || typeof from === "string" ?
+                from
+                : this.identify(from), query: query, optimistic: optimistic });
         var latestDiff;
         return new utilities.Observable(function (observer) {
             return _this.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
@@ -64810,7 +64813,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.6";
+var version = "3.11.7";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69736,7 +69739,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.6";
+var version = "3.11.7";
 
 function maybe(thunk) {
     try {
@@ -70333,7 +70336,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.6";
+var version = "3.11.7";
 
 function maybe(thunk) {
     try {
