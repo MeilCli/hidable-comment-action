@@ -64813,7 +64813,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.7";
+var version = "3.11.8";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -68053,20 +68053,20 @@ function selectHttpOptionsAndBodyInternal(operation, printer) {
 }
 function removeDuplicateHeaders(headers, preserveHeaderCase) {
     if (!preserveHeaderCase) {
-        var normalizedHeaders_1 = Object.create(null);
+        var normalizedHeaders_1 = {};
         Object.keys(Object(headers)).forEach(function (name) {
             normalizedHeaders_1[name.toLowerCase()] = headers[name];
         });
         return normalizedHeaders_1;
     }
-    var headerData = Object.create(null);
+    var headerData = {};
     Object.keys(Object(headers)).forEach(function (name) {
         headerData[name.toLowerCase()] = {
             originalName: name,
             value: headers[name],
         };
     });
-    var normalizedHeaders = Object.create(null);
+    var normalizedHeaders = {};
     Object.keys(headerData).forEach(function (name) {
         normalizedHeaders[headerData[name].originalName] = headerData[name].value;
     });
@@ -69739,7 +69739,7 @@ var tslib = __nccwpck_require__(4351);
 var equality = __nccwpck_require__(3750);
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.7";
+var version = "3.11.8";
 
 function maybe(thunk) {
     try {
@@ -70336,7 +70336,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(7371);
 
-var version = "3.11.7";
+var version = "3.11.8";
 
 function maybe(thunk) {
     try {
