@@ -65535,7 +65535,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.9";
+var version = "3.11.10";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -67877,13 +67877,14 @@ var hasSuggestedDevtools = false;
 var ApolloClient =  (function () {
     function ApolloClient(options) {
         var _this = this;
+        var _a;
         this.resetStoreCallbacks = [];
         this.clearStoreCallbacks = [];
         if (!options.cache) {
             throw globals.newInvariantError(15);
         }
-        var uri = options.uri, credentials = options.credentials, headers = options.headers, cache = options.cache, documentTransform = options.documentTransform, _a = options.ssrMode, ssrMode = _a === void 0 ? false : _a, _b = options.ssrForceFetchDelay, ssrForceFetchDelay = _b === void 0 ? 0 : _b,
-        connectToDevTools = options.connectToDevTools, _c = options.queryDeduplication, queryDeduplication = _c === void 0 ? true : _c, defaultOptions = options.defaultOptions, defaultContext = options.defaultContext, _d = options.assumeImmutableResults, assumeImmutableResults = _d === void 0 ? cache.assumeImmutableResults : _d, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version, devtools = options.devtools;
+        var uri = options.uri, credentials = options.credentials, headers = options.headers, cache = options.cache, documentTransform = options.documentTransform, _b = options.ssrMode, ssrMode = _b === void 0 ? false : _b, _c = options.ssrForceFetchDelay, ssrForceFetchDelay = _c === void 0 ? 0 : _c,
+        connectToDevTools = options.connectToDevTools, _d = options.queryDeduplication, queryDeduplication = _d === void 0 ? true : _d, defaultOptions = options.defaultOptions, defaultContext = options.defaultContext, _e = options.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? cache.assumeImmutableResults : _e, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version, devtools = options.devtools;
         var link = options.link;
         if (!link) {
             link =
@@ -67895,7 +67896,7 @@ var ApolloClient =  (function () {
         this.queryDeduplication = queryDeduplication;
         this.defaultOptions = defaultOptions || Object.create(null);
         this.typeDefs = typeDefs;
-        this.devtoolsConfig = tslib.__assign(tslib.__assign({}, devtools), { enabled: (devtools === null || devtools === void 0 ? void 0 : devtools.enabled) || connectToDevTools });
+        this.devtoolsConfig = tslib.__assign(tslib.__assign({}, devtools), { enabled: (_a = devtools === null || devtools === void 0 ? void 0 : devtools.enabled) !== null && _a !== void 0 ? _a : connectToDevTools });
         if (this.devtoolsConfig.enabled === undefined) {
             this.devtoolsConfig.enabled = globalThis.__DEV__ !== false;
         }
@@ -70461,7 +70462,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.11.9";
+var version = "3.11.10";
 
 function maybe(thunk) {
     try {
@@ -71058,7 +71059,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.11.9";
+var version = "3.11.10";
 
 function maybe(thunk) {
     try {
