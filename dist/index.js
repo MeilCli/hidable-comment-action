@@ -62868,6 +62868,7 @@ var optimism = __nccwpck_require__(467);
 var utilities = __nccwpck_require__(1103);
 var caches = __nccwpck_require__(5955);
 var equal = __nccwpck_require__(2044);
+var masking = __nccwpck_require__(6128);
 var trie = __nccwpck_require__(5704);
 var graphql = __nccwpck_require__(7645);
 
@@ -62995,6 +62996,9 @@ var ApolloCache =  (function () {
             cache: caches.WeakCache,
         });
     }
+    ApolloCache.prototype.lookupFragment = function (fragmentName) {
+        return null;
+    };
     ApolloCache.prototype.batch = function (options) {
         var _this = this;
         var optimisticId = typeof options.optimistic === "string" ? options.optimistic
@@ -63030,26 +63034,36 @@ var ApolloCache =  (function () {
         var _this = this;
         var fragment = options.fragment, fragmentName = options.fragmentName, from = options.from, _a = options.optimistic, optimistic = _a === void 0 ? true : _a, otherOptions = tslib.__rest(options, ["fragment", "fragmentName", "from", "optimistic"]);
         var query = this.getFragmentDoc(fragment, fragmentName);
-        var diffOptions = tslib.__assign(tslib.__assign({}, otherOptions), { returnPartialData: true, id:
-            typeof from === "undefined" || typeof from === "string" ?
-                from
-                : this.identify(from), query: query, optimistic: optimistic });
+        var id = typeof from === "undefined" || typeof from === "string" ?
+            from
+            : this.identify(from);
+        var dataMasking = !!options[Symbol.for("apollo.dataMasking")];
+        if (globalThis.__DEV__ !== false) {
+            var actualFragmentName = fragmentName || utilities.getFragmentDefinition(fragment).name.value;
+            if (!id) {
+                globalThis.__DEV__ !== false && globals.invariant.warn(1, actualFragmentName);
+            }
+        }
+        var diffOptions = tslib.__assign(tslib.__assign({}, otherOptions), { returnPartialData: true, id: id, query: query, optimistic: optimistic });
         var latestDiff;
         return new utilities.Observable(function (observer) {
             return _this.watch(tslib.__assign(tslib.__assign({}, diffOptions), { immediate: true, callback: function (diff) {
+                    var data = dataMasking ?
+                        masking.maskFragment(diff.result, fragment, _this, fragmentName)
+                        : diff.result;
                     if (
                     latestDiff &&
-                        equalByQuery(query, { data: latestDiff === null || latestDiff === void 0 ? void 0 : latestDiff.result }, { data: diff.result })) {
+                        equalByQuery(query, { data: latestDiff === null || latestDiff === void 0 ? void 0 : latestDiff.result }, { data: data })) {
                         return;
                     }
                     var result = {
-                        data: diff.result,
+                        data: data,
                         complete: !!diff.complete,
                     };
                     if (diff.missing) {
                         result.missing = utilities.mergeDeepArray(diff.missing.map(function (error) { return error.missing; }));
                     }
-                    latestDiff = diff;
+                    latestDiff = tslib.__assign(tslib.__assign({}, diff), { result: data });
                     observer.next(result);
                 } }));
         });
@@ -63299,7 +63313,7 @@ exports.EntityStore =  (function () {
         var incoming = typeof newer === "string" ? this.lookup((dataId = newer)) : newer;
         if (!incoming)
             return;
-        globals.invariant(typeof dataId === "string", 1);
+        globals.invariant(typeof dataId === "string", 2);
         var merged = new utilities.DeepMerger(storeObjectReconciler).merge(existing, incoming);
         this.data[dataId] = merged;
         if (merged !== existing) {
@@ -63376,7 +63390,7 @@ exports.EntityStore =  (function () {
                             if (globalThis.__DEV__ !== false) {
                                 var checkReference = function (ref) {
                                     if (_this.lookup(ref.__ref) === undefined) {
-                                        globalThis.__DEV__ !== false && globals.invariant.warn(2, ref);
+                                        globalThis.__DEV__ !== false && globals.invariant.warn(3, ref);
                                         return true;
                                     }
                                 };
@@ -63402,7 +63416,7 @@ exports.EntityStore =  (function () {
                                             }
                                         }
                                         if (seenReference && someNonReference !== undefined) {
-                                            globalThis.__DEV__ !== false && globals.invariant.warn(3, someNonReference);
+                                            globalThis.__DEV__ !== false && globals.invariant.warn(4, someNonReference);
                                             break;
                                         }
                                     }
@@ -63985,7 +63999,7 @@ var StoreReader =  (function () {
             else {
                 var fragment = utilities.getFragmentFromSelection(selection, context.lookupFragment);
                 if (!fragment && selection.kind === graphql.Kind.FRAGMENT_SPREAD) {
-                    throw globals.newInvariantError(9, selection.name.value);
+                    throw globals.newInvariantError(10, selection.name.value);
                 }
                 if (fragment && policies.fragmentMatches(fragment, typename)) {
                     fragment.selectionSet.selections.forEach(workSet.add, workSet);
@@ -64068,7 +64082,7 @@ function assertSelectionSetForIdValue(store, field, fieldValue) {
             if (utilities.isNonNullObject(value)) {
                 globals.invariant(
                     !utilities.isReference(value),
-                    10,
+                    11,
                     getTypenameFromStoreObject(store, value),
                     field.name.value
                 );
@@ -64161,7 +64175,7 @@ function keyFieldsFnFromSpecifier(specifier) {
                     hasOwn.call(object, schemaKeyPath[0])) {
                     extracted = extractKeyPath(object, schemaKeyPath, extractKey);
                 }
-                globals.invariant(extracted !== void 0, 4, schemaKeyPath.join("."), object);
+                globals.invariant(extracted !== void 0, 5, schemaKeyPath.join("."), object);
                 return extracted;
             }));
             return "".concat(context.typename, ":").concat(JSON.stringify(keyObject));
@@ -64319,16 +64333,18 @@ var Policies =  (function () {
         var id;
         var policy = typename && this.getTypePolicy(typename);
         var keyFn = (policy && policy.keyFn) || this.config.dataIdFromObject;
-        while (keyFn) {
-            var specifierOrId = keyFn(tslib.__assign(tslib.__assign({}, object), storeObject), context);
-            if (utilities.isArray(specifierOrId)) {
-                keyFn = keyFieldsFnFromSpecifier(specifierOrId);
+        masking.disableWarningsSlot.withValue(true, function () {
+            while (keyFn) {
+                var specifierOrId = keyFn(tslib.__assign(tslib.__assign({}, object), storeObject), context);
+                if (utilities.isArray(specifierOrId)) {
+                    keyFn = keyFieldsFnFromSpecifier(specifierOrId);
+                }
+                else {
+                    id = specifierOrId;
+                    break;
+                }
             }
-            else {
-                id = specifierOrId;
-                break;
-            }
-        }
+        });
         id = id ? String(id) : void 0;
         return context.keyObject ? [id, context.keyObject] : [id];
     };
@@ -64397,7 +64413,7 @@ var Policies =  (function () {
         var rootId = "ROOT_" + which.toUpperCase();
         var old = this.rootTypenamesById[rootId];
         if (typename !== old) {
-            globals.invariant(!old || old === which, 5, which);
+            globals.invariant(!old || old === which, 6, which);
             if (old)
                 delete this.rootIdsByTypename[old];
             this.rootIdsByTypename[typename] = rootId;
@@ -64494,7 +64510,7 @@ var Policies =  (function () {
                 if (supertypeSet.has(supertype)) {
                     if (!typenameSupertypeSet.has(supertype)) {
                         if (checkingFuzzySubtypes) {
-                            globalThis.__DEV__ !== false && globals.invariant.warn(6, typename, supertype);
+                            globalThis.__DEV__ !== false && globals.invariant.warn(7, typename, supertype);
                         }
                         typenameSupertypeSet.add(supertype);
                     }
@@ -64657,7 +64673,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
         }
     }
     if (globalThis.__DEV__ !== false && options.from === void 0) {
-        globalThis.__DEV__ !== false && globals.invariant.warn(7, utilities.stringifyForDisplay(Array.from(readFieldArgs)));
+        globalThis.__DEV__ !== false && globals.invariant.warn(8, utilities.stringifyForDisplay(Array.from(readFieldArgs)));
     }
     if (void 0 === options.variables) {
         options.variables = variables;
@@ -64667,7 +64683,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
 function makeMergeObjectsFunction(store) {
     return function mergeObjects(existing, incoming) {
         if (utilities.isArray(existing) || utilities.isArray(incoming)) {
-            throw globals.newInvariantError(8);
+            throw globals.newInvariantError(9);
         }
         if (utilities.isNonNullObject(existing) && utilities.isNonNullObject(incoming)) {
             var eType = store.getFieldValue(existing, "__typename");
@@ -64727,7 +64743,7 @@ var StoreWriter =  (function () {
             context: context,
         });
         if (!utilities.isReference(ref)) {
-            throw globals.newInvariantError(11, result);
+            throw globals.newInvariantError(12, result);
         }
         context.incomingById.forEach(function (_a, dataId) {
             var storeObject = _a.storeObject, mergeTree = _a.mergeTree, fieldNodeSet = _a.fieldNodeSet;
@@ -64835,7 +64851,7 @@ var StoreWriter =  (function () {
                 !context.deferred &&
                 !utilities.addTypenameToDocument.added(field) &&
                 !policies.getReadFunction(typename, field.name.value)) {
-                globalThis.__DEV__ !== false && globals.invariant.error(12, utilities.resultKeyNameFromField(field), result);
+                globalThis.__DEV__ !== false && globals.invariant.error(13, utilities.resultKeyNameFromField(field), result);
             }
         });
         try {
@@ -64942,7 +64958,7 @@ var StoreWriter =  (function () {
                 else {
                     var fragment = utilities.getFragmentFromSelection(selection, context.lookupFragment);
                     if (!fragment && selection.kind === graphql.Kind.FRAGMENT_SPREAD) {
-                        throw globals.newInvariantError(13, selection.name.value);
+                        throw globals.newInvariantError(14, selection.name.value);
                     }
                     if (fragment &&
                         policies.fragmentMatches(fragment, typename, result, context.variables)) {
@@ -65082,7 +65098,7 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
             }
         });
     }
-    globalThis.__DEV__ !== false && globals.invariant.warn(14, fieldName, parentType, childTypenames.length ?
+    globalThis.__DEV__ !== false && globals.invariant.warn(15, fieldName, parentType, childTypenames.length ?
         "either ensure all objects of type " +
             childTypenames.join(" and ") +
             " have an ID or a custom merge function, or "
@@ -65356,6 +65372,13 @@ var InMemoryCache =  (function (_super) {
     InMemoryCache.prototype.transformDocument = function (document) {
         return this.addTypenameToDocument(this.addFragmentsToDocument(document));
     };
+    InMemoryCache.prototype.fragmentMatches = function (fragment, typename) {
+        return this.policies.fragmentMatches(fragment, typename);
+    };
+    InMemoryCache.prototype.lookupFragment = function (fragmentName) {
+        var _a;
+        return ((_a = this.config.fragments) === null || _a === void 0 ? void 0 : _a.lookup(fragmentName)) || null;
+    };
     InMemoryCache.prototype.broadcastWatches = function (options) {
         var _this = this;
         if (!this.txCount) {
@@ -65546,6 +65569,7 @@ var utilities = __nccwpck_require__(1103);
 var cache = __nccwpck_require__(503);
 var errors = __nccwpck_require__(2955);
 var trie = __nccwpck_require__(5704);
+var masking = __nccwpck_require__(6128);
 var graphql = __nccwpck_require__(7645);
 var utils = __nccwpck_require__(2314);
 var tsInvariant = __nccwpck_require__(3747);
@@ -65555,7 +65579,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.11.10";
+var version = "3.12.0";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -65748,7 +65772,7 @@ var ObservableQuery =  (function (_super) {
                 observer.error && observer.error(last.error);
             }
             else if (last && last.result) {
-                observer.next && observer.next(last.result);
+                observer.next && observer.next(_this.maskResult(last.result));
             }
             if (first) {
                 _this.reobserve().catch(function () { });
@@ -65766,6 +65790,7 @@ var ObservableQuery =  (function (_super) {
         _this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy);
         _this.isTornDown = false;
         _this.subscribeToMore = _this.subscribeToMore.bind(_this);
+        _this.maskResult = _this.maskResult.bind(_this);
         var _b = queryManager.defaultOptions.watchQuery, _c = _b === void 0 ? {} : _b, _d = _c.fetchPolicy, defaultFetchPolicy = _d === void 0 ? "cache-first" : _d;
         var _e = options.fetchPolicy, fetchPolicy = _e === void 0 ? defaultFetchPolicy : _e,
         _f = options.initialFetchPolicy,
@@ -65814,7 +65839,7 @@ var ObservableQuery =  (function (_super) {
     ObservableQuery.prototype.resetDiff = function () {
         this.queryInfo.resetDiff();
     };
-    ObservableQuery.prototype.getCurrentResult = function (saveAsLastResult) {
+    ObservableQuery.prototype.getCurrentFullResult = function (saveAsLastResult) {
         if (saveAsLastResult === void 0) { saveAsLastResult = true; }
         var lastResult = this.getLastResult(true);
         var networkStatus = this.queryInfo.networkStatus ||
@@ -65862,12 +65887,19 @@ var ObservableQuery =  (function (_super) {
         }
         return result;
     };
+    ObservableQuery.prototype.getCurrentResult = function (saveAsLastResult) {
+        if (saveAsLastResult === void 0) { saveAsLastResult = true; }
+        return this.maskResult(this.getCurrentFullResult(saveAsLastResult));
+    };
     ObservableQuery.prototype.isDifferentFromLastResult = function (newResult, variables) {
         if (!this.last) {
             return true;
         }
-        var resultIsDifferent = this.queryManager.getDocumentInfo(this.query).hasNonreactiveDirective ?
-            !equalByQuery(this.query, this.last.result, newResult, this.variables)
+        var documentInfo = this.queryManager.getDocumentInfo(this.query);
+        var dataMasking = this.queryManager.dataMasking;
+        var query = dataMasking ? documentInfo.nonReactiveQuery : this.query;
+        var resultIsDifferent = dataMasking || documentInfo.hasNonreactiveDirective ?
+            !equalByQuery(query, this.last.result, newResult, this.variables)
             : !equal.equal(this.last.result, newResult);
         return (resultIsDifferent || (variables && !equal.equal(this.last.variables, variables)));
     };
@@ -65912,7 +65944,7 @@ var ObservableQuery =  (function (_super) {
             var vars = queryDef.variableDefinitions;
             if (!vars || !vars.some(function (v) { return v.variable.name.value === "variables"; })) {
                 globalThis.__DEV__ !== false && globals.invariant.warn(
-                    20,
+                    21,
                     variables,
                     ((_a = queryDef.name) === null || _a === void 0 ? void 0 : _a.value) || queryDef
                 );
@@ -65944,7 +65976,7 @@ var ObservableQuery =  (function (_super) {
         var updateQuery = fetchMoreOptions === null || fetchMoreOptions === void 0 ? void 0 : fetchMoreOptions.updateQuery;
         var isCached = this.options.fetchPolicy !== "no-cache";
         if (!isCached) {
-            globals.invariant(updateQuery, 21);
+            globals.invariant(updateQuery, 22);
         }
         return this.queryManager
             .fetchQuery(qid, combinedOptions, exports.NetworkStatus.fetchMore)
@@ -65991,7 +66023,7 @@ var ObservableQuery =  (function (_super) {
                 });
                 _this.reportResult(tslib.__assign(tslib.__assign({}, lastResult), { data: data }), _this.variables);
             }
-            return fetchMoreResult;
+            return _this.maskResult(fetchMoreResult);
         })
             .finally(function () {
             if (isCached && !updatedQuerySet.has(_this.query)) {
@@ -66025,7 +66057,7 @@ var ObservableQuery =  (function (_super) {
                     options.onError(err);
                     return;
                 }
-                globalThis.__DEV__ !== false && globals.invariant.error(22, err);
+                globalThis.__DEV__ !== false && globals.invariant.error(23, err);
             },
         });
         this.subscriptions.add(subscription);
@@ -66125,7 +66157,7 @@ var ObservableQuery =  (function (_super) {
         if (pollingInfo && pollingInfo.interval === pollInterval) {
             return;
         }
-        globals.invariant(pollInterval, 23);
+        globals.invariant(pollInterval, 24);
         var info = pollingInfo || (this.pollingInfo = {});
         info.interval = pollInterval;
         var maybeFetch = function () {
@@ -66228,8 +66260,7 @@ var ObservableQuery =  (function (_super) {
         return concast;
     };
     ObservableQuery.prototype.reobserve = function (newOptions, newNetworkStatus) {
-        return this.reobserveAsConcast(newOptions, newNetworkStatus)
-            .promise;
+        return utilities.preventUnhandledRejection(this.reobserveAsConcast(newOptions, newNetworkStatus).promise.then(this.maskResult));
     };
     ObservableQuery.prototype.resubscribeAfterError = function () {
         var args = [];
@@ -66244,7 +66275,7 @@ var ObservableQuery =  (function (_super) {
     };
     ObservableQuery.prototype.observe = function () {
         this.reportResult(
-        this.getCurrentResult(false), this.variables);
+        this.getCurrentFullResult(false), this.variables);
     };
     ObservableQuery.prototype.reportResult = function (result, variables) {
         var lastError = this.getLastError();
@@ -66253,7 +66284,7 @@ var ObservableQuery =  (function (_super) {
             this.updateLastResult(result, variables);
         }
         if (lastError || isDifferent) {
-            utilities.iterateObserversSafely(this.observers, "next", result);
+            utilities.iterateObserversSafely(this.observers, "next", this.maskResult(result));
         }
     };
     ObservableQuery.prototype.reportError = function (error, variables) {
@@ -66282,6 +66313,14 @@ var ObservableQuery =  (function (_super) {
     ObservableQuery.prototype.transformDocument = function (document) {
         return this.queryManager.transform(document);
     };
+    ObservableQuery.prototype.maskResult = function (result) {
+        return result && "data" in result ? tslib.__assign(tslib.__assign({}, result), { data: this.queryManager.maskOperation({
+                document: this.query,
+                data: result.data,
+                fetchPolicy: this.options.fetchPolicy,
+                id: this.queryId,
+            }) }) : result;
+    };
     return ObservableQuery;
 }(utilities.Observable));
 utilities.fixObservableSubclass(ObservableQuery);
@@ -66302,11 +66341,11 @@ function reobserveCacheFirst(obsQuery) {
     return obsQuery.reobserve();
 }
 function defaultSubscriptionObserverErrorCallback(error) {
-    globalThis.__DEV__ !== false && globals.invariant.error(24, error.message, error.stack);
+    globalThis.__DEV__ !== false && globals.invariant.error(25, error.message, error.stack);
 }
 function logMissingFieldErrors(missing) {
     if (globalThis.__DEV__ !== false && missing) {
-        globalThis.__DEV__ !== false && globals.invariant.debug(25, missing);
+        globalThis.__DEV__ !== false && globals.invariant.debug(26, missing);
     }
 }
 function skipCacheDataFor(fetchPolicy ) {
@@ -66607,6 +66646,7 @@ var QueryManager =  (function () {
         this.requestIdCounter = 1;
         this.mutationIdCounter = 1;
         this.inFlightLinkObservables = new trie.Trie(false);
+        this.noCacheWarningsByQueryId = new Set();
         var defaultDocumentTransform = new utilities.DocumentTransform(function (document) { return _this.cache.transformDocument(document); },
         { cache: false });
         this.cache = options.cache;
@@ -66617,6 +66657,7 @@ var QueryManager =  (function () {
         this.localState = options.localState;
         this.ssrMode = options.ssrMode;
         this.assumeImmutableResults = options.assumeImmutableResults;
+        this.dataMasking = options.dataMasking;
         var documentTransform = options.documentTransform;
         this.documentTransform =
             documentTransform ?
@@ -66634,7 +66675,7 @@ var QueryManager =  (function () {
         this.queries.forEach(function (_info, queryId) {
             _this.stopQueryNoBroadcast(queryId);
         });
-        this.cancelPendingFetches(globals.newInvariantError(26));
+        this.cancelPendingFetches(globals.newInvariantError(27));
     };
     QueryManager.prototype.cancelPendingFetches = function (error) {
         this.fetchCancelFns.forEach(function (cancel) { return cancel(error); });
@@ -66648,8 +66689,8 @@ var QueryManager =  (function () {
             return tslib.__generator(this, function (_j) {
                 switch (_j.label) {
                     case 0:
-                        globals.invariant(mutation, 27);
-                        globals.invariant(fetchPolicy === "network-only" || fetchPolicy === "no-cache", 28);
+                        globals.invariant(mutation, 28);
+                        globals.invariant(fetchPolicy === "network-only" || fetchPolicy === "no-cache", 29);
                         mutationId = this.generateMutationId();
                         mutation = this.cache.transformForLink(this.transform(mutation));
                         hasClientExports = this.getDocumentInfo(mutation).hasClientExports;
@@ -66719,7 +66760,12 @@ var QueryManager =  (function () {
                                     next: function (storeResult) {
                                         self.broadcastQueries();
                                         if (!("hasNext" in storeResult) || storeResult.hasNext === false) {
-                                            resolve(storeResult);
+                                            resolve(tslib.__assign(tslib.__assign({}, storeResult), { data: self.maskOperation({
+                                                    document: mutation,
+                                                    data: storeResult.data,
+                                                    fetchPolicy: fetchPolicy,
+                                                    id: mutationId,
+                                                }) }));
                                         }
                                     },
                                     error: function (err) {
@@ -66925,11 +66971,13 @@ var QueryManager =  (function () {
                 hasClientExports: utilities.hasClientExports(document),
                 hasForcedResolvers: this.localState.shouldForceResolvers(document),
                 hasNonreactiveDirective: utilities.hasDirectives(["nonreactive"], document),
+                nonReactiveQuery: utilities.addNonReactiveToNamedFragments(document),
                 clientQuery: this.localState.clientQuery(document),
                 serverQuery: utilities.removeDirectivesFromDocument([
                     { name: "client", remove: true },
                     { name: "connection" },
                     { name: "nonreactive" },
+                    { name: "unmask" },
                 ], document),
                 defaultVars: utilities.getDefaultValues(utilities.getOperationDefinition(document)),
                 asQuery: tslib.__assign(tslib.__assign({}, document), { definitions: document.definitions.map(function (def) {
@@ -66971,11 +67019,21 @@ var QueryManager =  (function () {
     QueryManager.prototype.query = function (options, queryId) {
         var _this = this;
         if (queryId === void 0) { queryId = this.generateQueryId(); }
-        globals.invariant(options.query, 29);
-        globals.invariant(options.query.kind === "Document", 30);
-        globals.invariant(!options.returnPartialData, 31);
-        globals.invariant(!options.pollInterval, 32);
-        return this.fetchQuery(queryId, tslib.__assign(tslib.__assign({}, options), { query: this.transform(options.query) })).finally(function () { return _this.stopQuery(queryId); });
+        globals.invariant(options.query, 30);
+        globals.invariant(options.query.kind === "Document", 31);
+        globals.invariant(!options.returnPartialData, 32);
+        globals.invariant(!options.pollInterval, 33);
+        var query = this.transform(options.query);
+        return this.fetchQuery(queryId, tslib.__assign(tslib.__assign({}, options), { query: query }))
+            .then(function (result) {
+            return result && tslib.__assign(tslib.__assign({}, result), { data: _this.maskOperation({
+                    document: query,
+                    data: result.data,
+                    fetchPolicy: options.fetchPolicy,
+                    id: queryId,
+                }) });
+        })
+            .finally(function () { return _this.stopQuery(queryId); });
     };
     QueryManager.prototype.generateQueryId = function () {
         return String(this.queryIdCounter++);
@@ -66999,7 +67057,7 @@ var QueryManager =  (function () {
         if (options === void 0) { options = {
             discardWatches: true,
         }; }
-        this.cancelPendingFetches(globals.newInvariantError(33));
+        this.cancelPendingFetches(globals.newInvariantError(34));
         this.queries.forEach(function (queryInfo) {
             if (queryInfo.observableQuery) {
                 queryInfo.networkStatus = exports.NetworkStatus.loading;
@@ -67075,7 +67133,7 @@ var QueryManager =  (function () {
         if (globalThis.__DEV__ !== false && queryNamesAndDocs.size) {
             queryNamesAndDocs.forEach(function (included, nameOrDoc) {
                 if (!included) {
-                    globalThis.__DEV__ !== false && globals.invariant.warn(typeof nameOrDoc === "string" ? 34 : 35, nameOrDoc);
+                    globalThis.__DEV__ !== false && globals.invariant.warn(typeof nameOrDoc === "string" ? 35 : 36, nameOrDoc);
                 }
             });
         }
@@ -67100,9 +67158,10 @@ var QueryManager =  (function () {
     QueryManager.prototype.setObservableQuery = function (observableQuery) {
         this.getQuery(observableQuery.queryId).setObservableQuery(observableQuery);
     };
-    QueryManager.prototype.startGraphQLSubscription = function (_a) {
+    QueryManager.prototype.startGraphQLSubscription = function (options) {
         var _this = this;
-        var query = _a.query, fetchPolicy = _a.fetchPolicy, _b = _a.errorPolicy, errorPolicy = _b === void 0 ? "none" : _b, variables = _a.variables, _c = _a.context, context = _c === void 0 ? {} : _c, _d = _a.extensions, extensions = _d === void 0 ? {} : _d;
+        var query = options.query, variables = options.variables;
+        var fetchPolicy = options.fetchPolicy, _a = options.errorPolicy, errorPolicy = _a === void 0 ? "none" : _a, _b = options.context, context = _b === void 0 ? {} : _b, _c = options.extensions, extensions = _c === void 0 ? {} : _c;
         query = this.transform(query);
         variables = this.getVariables(query, variables);
         var makeObservable = function (variables) {
@@ -67383,6 +67442,34 @@ var QueryManager =  (function () {
             this.cache.removeOptimistic(removeOptimistic);
         }
         return results;
+    };
+    QueryManager.prototype.maskOperation = function (options) {
+        var _a, _b, _c;
+        var document = options.document, data = options.data;
+        if (globalThis.__DEV__ !== false) {
+            var fetchPolicy = options.fetchPolicy, id = options.id;
+            var operationType = (_a = utilities.getOperationDefinition(document)) === null || _a === void 0 ? void 0 : _a.operation;
+            var operationId = ((_b = operationType === null || operationType === void 0 ? void 0 : operationType[0]) !== null && _b !== void 0 ? _b : "o") + id;
+            if (this.dataMasking &&
+                fetchPolicy === "no-cache" &&
+                !utilities.isFullyUnmaskedOperation(document) &&
+                !this.noCacheWarningsByQueryId.has(operationId)) {
+                this.noCacheWarningsByQueryId.add(operationId);
+                globalThis.__DEV__ !== false && globals.invariant.warn(
+                    37,
+                    (_c = utilities.getOperationName(document)) !== null && _c !== void 0 ? _c : "Unnamed ".concat(operationType !== null && operationType !== void 0 ? operationType : "operation")
+                );
+            }
+        }
+        return (this.dataMasking ?
+            masking.maskOperation(data, document, this.cache)
+            : data);
+    };
+    QueryManager.prototype.maskFragment = function (options) {
+        var data = options.data, fragment = options.fragment, fragmentName = options.fragmentName;
+        return this.dataMasking ?
+            masking.maskFragment(data, fragment, this.cache, fragmentName)
+            : data;
     };
     QueryManager.prototype.fetchQueryByPolicy = function (queryInfo, _a,
     networkStatus) {
@@ -67684,7 +67771,7 @@ var LocalState =  (function () {
                         }
                         else {
                             fragment = fragmentMap[selection.name.value];
-                            globals.invariant(fragment, 18, selection.name.value);
+                            globals.invariant(fragment, 19, selection.name.value);
                         }
                         if (fragment && fragment.typeCondition) {
                             typeCondition = fragment.typeCondition.name.value;
@@ -67798,7 +67885,7 @@ var LocalState =  (function () {
                     },
                     FragmentSpread: function (spread, _, __, ___, ancestors) {
                         var fragment = fragmentMap[spread.name.value];
-                        globals.invariant(fragment, 19, spread.name.value);
+                        globals.invariant(fragment, 20, spread.name.value);
                         var fragmentSelections = collectByDefinition(fragment);
                         if (fragmentSelections.size > 0) {
                             ancestors.forEach(function (node) {
@@ -67901,10 +67988,10 @@ var ApolloClient =  (function () {
         this.resetStoreCallbacks = [];
         this.clearStoreCallbacks = [];
         if (!options.cache) {
-            throw globals.newInvariantError(15);
+            throw globals.newInvariantError(16);
         }
         var uri = options.uri, credentials = options.credentials, headers = options.headers, cache = options.cache, documentTransform = options.documentTransform, _b = options.ssrMode, ssrMode = _b === void 0 ? false : _b, _c = options.ssrForceFetchDelay, ssrForceFetchDelay = _c === void 0 ? 0 : _c,
-        connectToDevTools = options.connectToDevTools, _d = options.queryDeduplication, queryDeduplication = _d === void 0 ? true : _d, defaultOptions = options.defaultOptions, defaultContext = options.defaultContext, _e = options.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? cache.assumeImmutableResults : _e, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version, devtools = options.devtools;
+        connectToDevTools = options.connectToDevTools, _d = options.queryDeduplication, queryDeduplication = _d === void 0 ? true : _d, defaultOptions = options.defaultOptions, defaultContext = options.defaultContext, _e = options.assumeImmutableResults, assumeImmutableResults = _e === void 0 ? cache.assumeImmutableResults : _e, resolvers = options.resolvers, typeDefs = options.typeDefs, fragmentMatcher = options.fragmentMatcher, clientAwarenessName = options.name, clientAwarenessVersion = options.version, devtools = options.devtools, dataMasking = options.dataMasking;
         var link = options.link;
         if (!link) {
             link =
@@ -67944,6 +68031,7 @@ var ApolloClient =  (function () {
             documentTransform: documentTransform,
             queryDeduplication: queryDeduplication,
             ssrMode: ssrMode,
+            dataMasking: !!dataMasking,
             clientAwareness: {
                 name: clientAwarenessName,
                 version: clientAwarenessVersion,
@@ -68032,7 +68120,7 @@ var ApolloClient =  (function () {
         if (this.defaultOptions.query) {
             options = utilities.mergeOptions(this.defaultOptions.query, options);
         }
-        globals.invariant(options.fetchPolicy !== "cache-and-network", 16);
+        globals.invariant(options.fetchPolicy !== "cache-and-network", 17);
         if (this.disableNetworkFetches && options.fetchPolicy === "network-only") {
             options = tslib.__assign(tslib.__assign({}, options), { fetchPolicy: "cache-first" });
         }
@@ -68045,14 +68133,24 @@ var ApolloClient =  (function () {
         return this.queryManager.mutate(options);
     };
     ApolloClient.prototype.subscribe = function (options) {
-        return this.queryManager.startGraphQLSubscription(options);
+        var _this = this;
+        var id = this.queryManager.generateQueryId();
+        return this.queryManager
+            .startGraphQLSubscription(options)
+            .map(function (result) { return (tslib.__assign(tslib.__assign({}, result), { data: _this.queryManager.maskOperation({
+                document: options.query,
+                data: result.data,
+                fetchPolicy: options.fetchPolicy,
+                id: id,
+            }) })); });
     };
     ApolloClient.prototype.readQuery = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = false; }
         return this.cache.readQuery(options, optimistic);
     };
     ApolloClient.prototype.watchFragment = function (options) {
-        return this.cache.watchFragment(options);
+        var _a;
+        return this.cache.watchFragment(tslib.__assign(tslib.__assign({}, options), (_a = {}, _a[Symbol.for("apollo.dataMasking")] = this.queryManager.dataMasking, _a)));
     };
     ApolloClient.prototype.readFragment = function (options, optimistic) {
         if (optimistic === void 0) { optimistic = false; }
@@ -68128,7 +68226,7 @@ var ApolloClient =  (function () {
         result.queries = queries;
         result.results = results;
         result.catch(function (error) {
-            globalThis.__DEV__ !== false && globals.invariant.debug(17, error);
+            globalThis.__DEV__ !== false && globals.invariant.debug(18, error);
         });
         return result;
     };
@@ -68332,7 +68430,7 @@ var ApolloLink =  (function () {
     ApolloLink.concat = function (first, second) {
         var firstLink = toLink(first);
         if (isTerminating(firstLink)) {
-            globalThis.__DEV__ !== false && globals.invariant.warn(36, firstLink);
+            globalThis.__DEV__ !== false && globals.invariant.warn(38, firstLink);
             return firstLink;
         }
         var nextLink = toLink(second);
@@ -68358,7 +68456,7 @@ var ApolloLink =  (function () {
         return ApolloLink.concat(this, next);
     };
     ApolloLink.prototype.request = function (operation, forward) {
-        throw globals.newInvariantError(37);
+        throw globals.newInvariantError(39);
     };
     ApolloLink.prototype.onError = function (error, observer) {
         if (observer && observer.error) {
@@ -68732,7 +68830,7 @@ var serializeFetchParameter = function (p, label) {
         serialized = JSON.stringify(p);
     }
     catch (e) {
-        var parseError = globals.newInvariantError(40, label, e.message);
+        var parseError = globals.newInvariantError(42, label, e.message);
         parseError.parseError = e;
         throw parseError;
     }
@@ -68818,7 +68916,7 @@ function removeDuplicateHeaders(headers, preserveHeaderCase) {
 
 var checkFetcher = function (fetcher) {
     if (!fetcher && typeof fetch === "undefined") {
-        throw globals.newInvariantError(38);
+        throw globals.newInvariantError(40);
     }
 };
 
@@ -68952,7 +69050,7 @@ var createHttpLink = function (linkOptions) {
             options.headers = options.headers || {};
             var acceptHeader = "multipart/mixed;";
             if (isSubscription && hasDefer) {
-                globalThis.__DEV__ !== false && globals.invariant.warn(39);
+                globalThis.__DEV__ !== false && globals.invariant.warn(41);
             }
             if (isSubscription) {
                 acceptHeader +=
@@ -69062,7 +69160,7 @@ function toPromise(observable) {
         observable.subscribe({
             next: function (data) {
                 if (completed) {
-                    globalThis.__DEV__ !== false && globals.invariant.warn(43);
+                    globalThis.__DEV__ !== false && globals.invariant.warn(45);
                 }
                 else {
                     completed = true;
@@ -69105,7 +69203,7 @@ function validateOperation(operation) {
     for (var _i = 0, _a = Object.keys(operation); _i < _a.length; _i++) {
         var key = _a[_i];
         if (OPERATION_FIELDS.indexOf(key) < 0) {
-            throw globals.newInvariantError(44, key);
+            throw globals.newInvariantError(46, key);
         }
     }
     return operation;
@@ -69203,6 +69301,219 @@ for (var k in react) {
 
 /***/ }),
 
+/***/ 6128:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+var optimism = __nccwpck_require__(467);
+var globals = __nccwpck_require__(526);
+var utilities = __nccwpck_require__(1103);
+var graphql = __nccwpck_require__(7645);
+var equal = __nccwpck_require__(2044);
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e["default"] : e; }
+
+var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
+
+var MapImpl = utilities.canUseWeakMap ? WeakMap : Map;
+var SetImpl = utilities.canUseWeakSet ? WeakSet : Set;
+var disableWarningsSlot = new optimism.Slot();
+var issuedWarning = false;
+function warnOnImproperCacheImplementation() {
+    if (!issuedWarning) {
+        issuedWarning = true;
+        globalThis.__DEV__ !== false && globals.invariant.warn(52);
+    }
+}
+
+function maskDefinition(data, selectionSet, context) {
+    return disableWarningsSlot.withValue(true, function () {
+        var masked = maskSelectionSet(data, selectionSet, context, false);
+        if (Object.isFrozen(data)) {
+            utilities.maybeDeepFreeze(masked);
+        }
+        return masked;
+    });
+}
+function getMutableTarget(data, mutableTargets) {
+    if (mutableTargets.has(data)) {
+        return mutableTargets.get(data);
+    }
+    var mutableTarget = Array.isArray(data) ? [] : Object.create(null);
+    mutableTargets.set(data, mutableTarget);
+    return mutableTarget;
+}
+function maskSelectionSet(data, selectionSet, context, migration, path) {
+    var _a;
+    var knownChanged = context.knownChanged;
+    var memo = getMutableTarget(data, context.mutableTargets);
+    if (Array.isArray(data)) {
+        for (var _i = 0, _b = Array.from(data.entries()); _i < _b.length; _i++) {
+            var _c = _b[_i], index = _c[0], item = _c[1];
+            if (item === null) {
+                memo[index] = null;
+                continue;
+            }
+            var masked = maskSelectionSet(item, selectionSet, context, migration, globalThis.__DEV__ !== false ? "".concat(path || "", "[").concat(index, "]") : void 0);
+            if (knownChanged.has(masked)) {
+                knownChanged.add(memo);
+            }
+            memo[index] = masked;
+        }
+        return knownChanged.has(memo) ? memo : data;
+    }
+    for (var _d = 0, _e = selectionSet.selections; _d < _e.length; _d++) {
+        var selection = _e[_d];
+        var value = void 0;
+        if (migration) {
+            knownChanged.add(memo);
+        }
+        if (selection.kind === graphql.Kind.FIELD) {
+            var keyName = utilities.resultKeyNameFromField(selection);
+            var childSelectionSet = selection.selectionSet;
+            value = memo[keyName] || data[keyName];
+            if (value === void 0) {
+                continue;
+            }
+            if (childSelectionSet && value !== null) {
+                var masked = maskSelectionSet(data[keyName], childSelectionSet, context, migration, globalThis.__DEV__ !== false ? "".concat(path || "", ".").concat(keyName) : void 0);
+                if (knownChanged.has(masked)) {
+                    value = masked;
+                }
+            }
+            if (!(globalThis.__DEV__ !== false)) {
+                memo[keyName] = value;
+            }
+            if (globalThis.__DEV__ !== false) {
+                if (migration &&
+                    keyName !== "__typename" &&
+                    !((_a = Object.getOwnPropertyDescriptor(memo, keyName)) === null || _a === void 0 ? void 0 : _a.value)) {
+                    Object.defineProperty(memo, keyName, getAccessorWarningDescriptor(keyName, value, path || "", context.operationName, context.operationType));
+                }
+                else {
+                    delete memo[keyName];
+                    memo[keyName] = value;
+                }
+            }
+        }
+        if (selection.kind === graphql.Kind.INLINE_FRAGMENT &&
+            (!selection.typeCondition ||
+                context.cache.fragmentMatches(selection, data.__typename))) {
+            value = maskSelectionSet(data, selection.selectionSet, context, migration, path);
+        }
+        if (selection.kind === graphql.Kind.FRAGMENT_SPREAD) {
+            var fragmentName = selection.name.value;
+            var fragment = context.fragmentMap[fragmentName] ||
+                (context.fragmentMap[fragmentName] =
+                    context.cache.lookupFragment(fragmentName));
+            globals.invariant(fragment, 47, fragmentName);
+            var mode = utilities.getFragmentMaskMode(selection);
+            if (mode !== "mask") {
+                value = maskSelectionSet(data, fragment.selectionSet, context, mode === "migrate", path);
+            }
+        }
+        if (knownChanged.has(value)) {
+            knownChanged.add(memo);
+        }
+    }
+    if ("__typename" in data && !("__typename" in memo)) {
+        memo.__typename = data.__typename;
+    }
+    if (Object.keys(memo).length !== Object.keys(data).length) {
+        knownChanged.add(memo);
+    }
+    return knownChanged.has(memo) ? memo : data;
+}
+function getAccessorWarningDescriptor(fieldName, value, path, operationName, operationType) {
+    var getValue = function () {
+        if (disableWarningsSlot.getValue()) {
+            return value;
+        }
+        globalThis.__DEV__ !== false && globals.invariant.warn(48, operationName ?
+            "".concat(operationType, " '").concat(operationName, "'")
+            : "anonymous ".concat(operationType), "".concat(path, ".").concat(fieldName).replace(/^\./, ""));
+        getValue = function () { return value; };
+        return value;
+    };
+    return {
+        get: function () {
+            return getValue();
+        },
+        set: function (newValue) {
+            getValue = function () { return newValue; };
+        },
+        enumerable: true,
+        configurable: true,
+    };
+}
+
+function maskFragment(data, document, cache, fragmentName) {
+    if (!cache.fragmentMatches) {
+        if (globalThis.__DEV__ !== false) {
+            warnOnImproperCacheImplementation();
+        }
+        return data;
+    }
+    var fragments = document.definitions.filter(function (node) {
+        return node.kind === graphql.Kind.FRAGMENT_DEFINITION;
+    });
+    if (typeof fragmentName === "undefined") {
+        globals.invariant(fragments.length === 1, 49, fragments.length);
+        fragmentName = fragments[0].name.value;
+    }
+    var fragment = fragments.find(function (fragment) { return fragment.name.value === fragmentName; });
+    globals.invariant(!!fragment, 50, fragmentName);
+    if (data == null) {
+        return data;
+    }
+    if (equal__default(data, {})) {
+        return data;
+    }
+    return maskDefinition(data, fragment.selectionSet, {
+        operationType: "fragment",
+        operationName: fragment.name.value,
+        fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(document)),
+        cache: cache,
+        mutableTargets: new MapImpl(),
+        knownChanged: new SetImpl(),
+    });
+}
+
+function maskOperation(data, document, cache) {
+    var _a;
+    if (!cache.fragmentMatches) {
+        if (globalThis.__DEV__ !== false) {
+            warnOnImproperCacheImplementation();
+        }
+        return data;
+    }
+    var definition = utilities.getOperationDefinition(document);
+    globals.invariant(definition, 51);
+    if (data == null) {
+        return data;
+    }
+    return maskDefinition(data, definition.selectionSet, {
+        operationType: definition.operation,
+        operationName: (_a = definition.name) === null || _a === void 0 ? void 0 : _a.value,
+        fragmentMap: utilities.createFragmentMap(utilities.getFragmentDefinitions(document)),
+        cache: cache,
+        mutableTargets: new MapImpl(),
+        knownChanged: new SetImpl(),
+    });
+}
+
+exports.disableWarningsSlot = disableWarningsSlot;
+exports.maskFragment = maskFragment;
+exports.maskOperation = maskOperation;
+//# sourceMappingURL=masking.cjs.map
+
+
+/***/ }),
+
 /***/ 2415:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -69232,7 +69543,7 @@ var React__namespace = /*#__PURE__*/_interopNamespace(React);
 
 var contextKey = utilities.canUseSymbol ? Symbol.for("__APOLLO_CONTEXT__") : "__APOLLO_CONTEXT__";
 function getApolloContext() {
-    globals.invariant("createContext" in React__namespace, 46);
+    globals.invariant("createContext" in React__namespace, 54);
     var context = React__namespace.createContext[contextKey];
     if (!context) {
         Object.defineProperty(React__namespace.createContext, contextKey, {
@@ -69250,7 +69561,7 @@ var resetApolloContext = getApolloContext;
 var ApolloConsumer = function (props) {
     var ApolloContext = getApolloContext();
     return (React__namespace.createElement(ApolloContext.Consumer, null, function (context) {
-        globals.invariant(context && context.client, 45);
+        globals.invariant(context && context.client, 53);
         return props.children(context.client);
     }));
 };
@@ -69262,7 +69573,7 @@ var ApolloProvider = function (_a) {
     var context = React__namespace.useMemo(function () {
         return tslib.__assign(tslib.__assign({}, parentContext), { client: client || parentContext.client });
     }, [parentContext, client]);
-    globals.invariant(context.client, 47);
+    globals.invariant(context.client, 55);
     return (React__namespace.createElement(ApolloContext.Provider, { value: context }, children));
 };
 
@@ -69315,7 +69626,7 @@ var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 function useApolloClient(override) {
     var context$1 = React__namespace.useContext(context.getApolloContext());
     var client = override || context$1.client;
-    globals.invariant(!!client, 50);
+    globals.invariant(!!client, 58);
     return client;
 }
 
@@ -69330,7 +69641,7 @@ var useSyncExternalStore = realHook$1 ||
             !didWarnUncachedGetSnapshot &&
             value !== getSnapshot()) {
             didWarnUncachedGetSnapshot = true;
-            globalThis.__DEV__ !== false && globals.invariant.error(60);
+            globalThis.__DEV__ !== false && globals.invariant.error(68);
         }
         var _a = React__namespace.useState({
             inst: { value: value, getSnapshot: getSnapshot },
@@ -69544,7 +69855,8 @@ function useObservableSubscriptionResult(resultData, observable, client, options
                 (previousResult && previousResult.loading) ||
                 !equal.equal(error, previousResult.error)) {
                 setResult({
-                    data: (previousResult && previousResult.data),
+                    data: (previousResult &&
+                        previousResult.data),
                     error: error,
                     loading: false,
                     networkStatus: core.NetworkStatus.error,
@@ -69808,7 +70120,7 @@ function executeQuery(resultData, observable, client, currentQuery, options, onQ
                 resolve(toQueryResult(observable.getCurrentResult(), resultData.previousData, observable, client));
             },
             complete: function () {
-                resolve(toQueryResult(result, resultData.previousData, observable, client));
+                resolve(toQueryResult(observable["maskResult"](result), resultData.previousData, observable, client));
             },
         });
     });
@@ -69933,10 +70245,10 @@ function useSubscription(subscription, options) {
     if (!hasIssuedDeprecationWarningRef.current) {
         hasIssuedDeprecationWarningRef.current = true;
         if (options.onSubscriptionData) {
-            globalThis.__DEV__ !== false && globals.invariant.warn(options.onData ? 53 : 54);
+            globalThis.__DEV__ !== false && globals.invariant.warn(options.onData ? 61 : 62);
         }
         if (options.onSubscriptionComplete) {
-            globalThis.__DEV__ !== false && globals.invariant.warn(options.onComplete ? 55 : 56);
+            globalThis.__DEV__ !== false && globals.invariant.warn(options.onComplete ? 63 : 64);
         }
     }
     var skip = options.skip, fetchPolicy = options.fetchPolicy, errorPolicy = options.errorPolicy, shouldResubscribe = options.shouldResubscribe, context = options.context, extensions = options.extensions, ignoreResults = options.ignoreResults;
@@ -70057,7 +70369,7 @@ function useSubscription(subscription, options) {
             : fallbackResult;
     }, function () { return fallbackResult; });
     var restart = React__namespace.useCallback(function () {
-        globals.invariant(!optionsRef.current.skip, 57);
+        globals.invariant(!optionsRef.current.skip, 65);
         setObservable(recreateRef.current());
     }, [optionsRef, recreateRef]);
     return React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign({}, ret), { restart: restart })); }, [ret, restart]);
@@ -70104,33 +70416,54 @@ function useFragment(options) {
     return wrapHook("useFragment", _useFragment, useApolloClient(options.client))(options);
 }
 function _useFragment(options) {
-    var cache = useApolloClient(options.client).cache;
+    var client = useApolloClient(options.client);
+    var cache = client.cache;
     var from = options.from, rest = tslib.__rest(options, ["from"]);
-    var id = React__namespace.useMemo(function () { return (typeof from === "string" ? from : cache.identify(from)); }, [cache, from]);
+    var id = React__namespace.useMemo(function () {
+        return typeof from === "string" ? from
+            : from === null ? null
+                : cache.identify(from);
+    }, [cache, from]);
     var stableOptions = useDeepMemo(function () { return (tslib.__assign(tslib.__assign({}, rest), { from: id })); }, [rest, id]);
     var diff = React__namespace.useMemo(function () {
         var fragment = stableOptions.fragment, fragmentName = stableOptions.fragmentName, from = stableOptions.from, _a = stableOptions.optimistic, optimistic = _a === void 0 ? true : _a;
+        if (from === null) {
+            return {
+                result: diffToResult({
+                    result: {},
+                    complete: false,
+                }),
+            };
+        }
+        var cache = client.cache;
+        var diff = cache.diff(tslib.__assign(tslib.__assign({}, stableOptions), { returnPartialData: true, id: from, query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic }));
         return {
-            result: diffToResult(cache.diff(tslib.__assign(tslib.__assign({}, stableOptions), { returnPartialData: true, id: from, query: cache["getFragmentDoc"](fragment, fragmentName), optimistic: optimistic }))),
+            result: diffToResult(tslib.__assign(tslib.__assign({}, diff), { result: client["queryManager"].maskFragment({
+                    fragment: fragment,
+                    fragmentName: fragmentName,
+                    data: diff.result,
+                }) })),
         };
-    }, [stableOptions, cache]);
+    }, [client, stableOptions]);
     var getSnapshot = React__namespace.useCallback(function () { return diff.result; }, [diff]);
     return useSyncExternalStore(React__namespace.useCallback(function (forceUpdate) {
         var lastTimeout = 0;
-        var subscription = cache.watchFragment(stableOptions).subscribe({
-            next: function (result) {
-                if (equal__default(result, diff.result))
-                    return;
-                diff.result = result;
-                clearTimeout(lastTimeout);
-                lastTimeout = setTimeout(forceUpdate);
-            },
-        });
+        var subscription = stableOptions.from === null ?
+            null
+            : client.watchFragment(stableOptions).subscribe({
+                next: function (result) {
+                    if (equal__default(result, diff.result))
+                        return;
+                    diff.result = result;
+                    clearTimeout(lastTimeout);
+                    lastTimeout = setTimeout(forceUpdate);
+                },
+            });
         return function () {
-            subscription.unsubscribe();
+            subscription === null || subscription === void 0 ? void 0 : subscription.unsubscribe();
             clearTimeout(lastTimeout);
         };
-    }, [cache, stableOptions, diff]), getSnapshot, getSnapshot);
+    }, [client, stableOptions, diff]), getSnapshot, getSnapshot);
 }
 function diffToResult(diff) {
     var result = {
@@ -70232,11 +70565,11 @@ function validateFetchPolicy(fetchPolicy) {
         "no-cache",
         "cache-and-network",
     ];
-    globals.invariant(supportedFetchPolicies.includes(fetchPolicy), 58, fetchPolicy);
+    globals.invariant(supportedFetchPolicies.includes(fetchPolicy), 66, fetchPolicy);
 }
 function validatePartialDataReturn(fetchPolicy, returnPartialData) {
     if (fetchPolicy === "no-cache" && returnPartialData) {
-        globalThis.__DEV__ !== false && globals.invariant.warn(59);
+        globalThis.__DEV__ !== false && globals.invariant.warn(67);
     }
 }
 function toApolloError(result) {
@@ -70356,7 +70689,7 @@ function useLoadableQuery(query, options) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        globals.invariant(!calledDuringRender(), 51);
+        globals.invariant(!calledDuringRender(), 59);
         var variables = args[0];
         var cacheKey = tslib.__spreadArray([
             query,
@@ -70375,7 +70708,7 @@ function useLoadableQuery(query, options) {
         client,
     ]);
     var subscribeToMore = React__namespace.useCallback(function (options) {
-        globals.invariant(internalQueryRef, 52);
+        globals.invariant(internalQueryRef, 60);
         return internalQueryRef.observable.subscribeToMore(options);
     }, [internalQueryRef]);
     var reset = React__namespace.useCallback(function () {
@@ -70482,7 +70815,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.11.10";
+var version = "3.12.0";
 
 function maybe(thunk) {
     try {
@@ -70592,7 +70925,7 @@ function wrapQueryRef(internalQueryRef) {
     return ref;
 }
 function assertWrappedQueryRef(queryRef) {
-    invariant(!queryRef || QUERY_REFERENCE_SYMBOL in queryRef, 61);
+    invariant(!queryRef || QUERY_REFERENCE_SYMBOL in queryRef, 69);
 }
 function getWrappedPromise(queryRef) {
     var internalQueryRef = unwrapQueryRef(queryRef);
@@ -70933,7 +71266,7 @@ function parser(document) {
     if (cached)
         return cached;
     var variables, type, name;
-    globals.invariant(!!document && !!document.kind, 62, document);
+    globals.invariant(!!document && !!document.kind, 70, document);
     var fragments = [];
     var queries = [];
     var mutations = [];
@@ -70961,10 +71294,10 @@ function parser(document) {
     globals.invariant(!fragments.length ||
         queries.length ||
         mutations.length ||
-        subscriptions.length, 63);
+        subscriptions.length, 71);
     globals.invariant(
         queries.length + mutations.length + subscriptions.length <= 1,
-        64,
+        72,
         document,
         queries.length,
         subscriptions.length,
@@ -70976,7 +71309,7 @@ function parser(document) {
     var definitions = queries.length ? queries
         : mutations.length ? mutations
             : subscriptions;
-    globals.invariant(definitions.length === 1, 65, document, definitions.length);
+    globals.invariant(definitions.length === 1, 73, document, definitions.length);
     var definition = definitions[0];
     variables = definition.variableDefinitions || [];
     if (definition.name && definition.name.kind === "Name") {
@@ -71001,7 +71334,7 @@ function verifyDocumentType(document, type) {
     var usedOperationName = operationName(operation.type);
     globals.invariant(
         operation.type === type,
-        66,
+        74,
         requiredOperationName,
         requiredOperationName,
         usedOperationName
@@ -71079,7 +71412,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.11.10";
+var version = "3.12.0";
 
 function maybe(thunk) {
     try {
@@ -71224,7 +71557,7 @@ function shouldInclude(_a, variables) {
         if (ifArgument.value.kind === "Variable") {
             evaledValue =
                 variables && variables[ifArgument.value.name.value];
-            globals.invariant(evaledValue !== void 0, 70, directive.name.value);
+            globals.invariant(evaledValue !== void 0, 78, directive.name.value);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -71274,16 +71607,49 @@ function getInclusionDirectives(directives) {
                 return;
             var directiveArguments = directive.arguments;
             var directiveName = directive.name.value;
-            globals.invariant(directiveArguments && directiveArguments.length === 1, 71, directiveName);
+            globals.invariant(directiveArguments && directiveArguments.length === 1, 79, directiveName);
             var ifArgument = directiveArguments[0];
-            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 72, directiveName);
+            globals.invariant(ifArgument.name && ifArgument.name.value === "if", 80, directiveName);
             var ifValue = ifArgument.value;
             globals.invariant(ifValue &&
-                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 73, directiveName);
+                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 81, directiveName);
             result.push({ directive: directive, ifArgument: ifArgument });
         });
     }
     return result;
+}
+function getFragmentMaskMode(fragment) {
+    var _a, _b;
+    var directive = (_a = fragment.directives) === null || _a === void 0 ? void 0 : _a.find(function (_a) {
+        var name = _a.name;
+        return name.value === "unmask";
+    });
+    if (!directive) {
+        return "mask";
+    }
+    var modeArg = (_b = directive.arguments) === null || _b === void 0 ? void 0 : _b.find(function (_a) {
+        var name = _a.name;
+        return name.value === "mode";
+    });
+    if (globalThis.__DEV__ !== false) {
+        if (modeArg) {
+            if (modeArg.value.kind === graphql.Kind.VARIABLE) {
+                globalThis.__DEV__ !== false && globals.invariant.warn(82);
+            }
+            else if (modeArg.value.kind !== graphql.Kind.STRING) {
+                globalThis.__DEV__ !== false && globals.invariant.warn(83);
+            }
+            else if (modeArg.value.value !== "migrate") {
+                globalThis.__DEV__ !== false && globals.invariant.warn(84, modeArg.value.value);
+            }
+        }
+    }
+    if (modeArg &&
+        "value" in modeArg.value &&
+        modeArg.value.value === "migrate") {
+        return "migrate";
+    }
+    return "unmask";
 }
 
 var isReactNative = globals.maybe(function () { return navigator.product; }) == "ReactNative";
@@ -71313,7 +71679,7 @@ function getFragmentQueryDocument(document, fragmentName) {
     document.definitions.forEach(function (definition) {
         if (definition.kind === "OperationDefinition") {
             throw globals.newInvariantError(
-                74,
+                85,
                 definition.operation,
                 definition.name ? " named '".concat(definition.name.value, "'") : ""
             );
@@ -71323,7 +71689,7 @@ function getFragmentQueryDocument(document, fragmentName) {
         }
     });
     if (typeof actualFragmentName === "undefined") {
-        globals.invariant(fragments.length === 1, 75, fragments.length);
+        globals.invariant(fragments.length === 1, 86, fragments.length);
         actualFragmentName = fragments[0].name.value;
     }
     var query = tslib.__assign(tslib.__assign({}, document), { definitions: tslib.__spreadArray([
@@ -71364,12 +71730,26 @@ function getFragmentFromSelection(selection, fragmentMap) {
                 return fragmentMap(fragmentName);
             }
             var fragment = fragmentMap && fragmentMap[fragmentName];
-            globals.invariant(fragment, 76, fragmentName);
+            globals.invariant(fragment, 87, fragmentName);
             return fragment || null;
         }
         default:
             return null;
     }
+}
+function isFullyUnmaskedOperation(document) {
+    var isUnmasked = true;
+    graphql.visit(document, {
+        FragmentSpread: function (node) {
+            isUnmasked =
+                !!node.directives &&
+                    node.directives.some(function (directive) { return directive.name.value === "unmask"; });
+            if (!isUnmasked) {
+                return graphql.BREAK;
+            }
+        },
+    });
+    return isUnmasked;
 }
 
 var scheduledCleanup = new WeakSet();
@@ -71523,7 +71903,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
         argObj[name.value] = null;
     }
     else {
-        throw globals.newInvariantError(85, name.value, value.kind);
+        throw globals.newInvariantError(96, name.value, value.kind);
     }
 }
 function storeKeyNameFromField(field, variables) {
@@ -71657,16 +72037,16 @@ function isInlineFragment(selection) {
 }
 
 function checkDocument(doc) {
-    globals.invariant(doc && doc.kind === "Document", 77);
+    globals.invariant(doc && doc.kind === "Document", 88);
     var operations = doc.definitions
         .filter(function (d) { return d.kind !== "FragmentDefinition"; })
         .map(function (definition) {
         if (definition.kind !== "OperationDefinition") {
-            throw globals.newInvariantError(78, definition.kind);
+            throw globals.newInvariantError(89, definition.kind);
         }
         return definition;
     });
-    globals.invariant(operations.length <= 1, 79, operations.length);
+    globals.invariant(operations.length <= 1, 90, operations.length);
     return doc;
 }
 function getOperationDefinition(doc) {
@@ -71689,14 +72069,14 @@ function getFragmentDefinitions(doc) {
 }
 function getQueryDefinition(doc) {
     var queryDef = getOperationDefinition(doc);
-    globals.invariant(queryDef && queryDef.operation === "query", 80);
+    globals.invariant(queryDef && queryDef.operation === "query", 91);
     return queryDef;
 }
 function getFragmentDefinition(doc) {
-    globals.invariant(doc.kind === "Document", 81);
-    globals.invariant(doc.definitions.length <= 1, 82);
+    globals.invariant(doc.kind === "Document", 92);
+    globals.invariant(doc.definitions.length <= 1, 93);
     var fragmentDef = doc.definitions[0];
-    globals.invariant(fragmentDef.kind === "FragmentDefinition", 83);
+    globals.invariant(fragmentDef.kind === "FragmentDefinition", 94);
     return fragmentDef;
 }
 function getMainDefinition(queryDoc) {
@@ -71719,7 +72099,7 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw globals.newInvariantError(84);
+    throw globals.newInvariantError(95);
 }
 function getDefaultValues(definition) {
     var defaultValues = Object.create(null);
@@ -71770,7 +72150,7 @@ var DocumentTransform =  (function () {
                 makeCacheKey: function (document) {
                     var cacheKeys = _this.getCacheKey(document);
                     if (cacheKeys) {
-                        globals.invariant(Array.isArray(cacheKeys), 69);
+                        globals.invariant(Array.isArray(cacheKeys), 77);
                         return stableCacheKeys_1.lookupArray(cacheKeys);
                     }
                 },
@@ -71900,7 +72280,7 @@ function removeDirectivesFromDocument(directives, doc) {
                 return getInUseByFragmentName(ancestor.name.value);
             }
         }
-        globalThis.__DEV__ !== false && globals.invariant.error(86);
+        globalThis.__DEV__ !== false && globals.invariant.error(97);
         return null;
     };
     var operationCount = 0;
@@ -72090,7 +72470,7 @@ var connectionRemoveConfig = {
         if (willRemove) {
             if (!directive.arguments ||
                 !directive.arguments.some(function (arg) { return arg.name.value === "key"; })) {
-                globalThis.__DEV__ !== false && globals.invariant.warn(87);
+                globalThis.__DEV__ !== false && globals.invariant.warn(98);
             }
         }
         return willRemove;
@@ -72185,6 +72565,23 @@ function removeClientSetsFromDocument(document) {
         },
     ], document);
     return modifiedDoc;
+}
+function addNonReactiveToNamedFragments(document) {
+    checkDocument(document);
+    return graphql.visit(document, {
+        FragmentSpread: function (node) {
+            var _a;
+            if ((_a = node.directives) === null || _a === void 0 ? void 0 : _a.some(function (directive) { return directive.name.value === "unmask"; })) {
+                return;
+            }
+            return tslib.__assign(tslib.__assign({}, node), { directives: tslib.__spreadArray(tslib.__spreadArray([], (node.directives || []), true), [
+                    {
+                        kind: graphql.Kind.DIRECTIVE,
+                        name: { kind: graphql.Kind.NAME, value: "nonreactive" },
+                    },
+                ], false) });
+        },
+    });
 }
 
 function isOperation(document, operation) {
@@ -72465,6 +72862,11 @@ function wrapPromiseWithState(promise) {
             rejectedPromise.reason = reason;
         }
     });
+    return promise;
+}
+
+function preventUnhandledRejection(promise) {
+    promise.catch(function () { });
     return promise;
 }
 
@@ -72856,6 +73258,7 @@ exports.AutoCleanedWeakCache = AutoCleanedWeakCache;
 exports.Concast = Concast;
 exports.DeepMerger = DeepMerger;
 exports.DocumentTransform = DocumentTransform;
+exports.addNonReactiveToNamedFragments = addNonReactiveToNamedFragments;
 exports.addTypenameToDocument = addTypenameToDocument;
 exports.argumentsObjectFromField = argumentsObjectFromField;
 exports.asyncMap = asyncMap;
@@ -72881,6 +73284,7 @@ exports.getDirectiveNames = getDirectiveNames;
 exports.getFragmentDefinition = getFragmentDefinition;
 exports.getFragmentDefinitions = getFragmentDefinitions;
 exports.getFragmentFromSelection = getFragmentFromSelection;
+exports.getFragmentMaskMode = getFragmentMaskMode;
 exports.getFragmentQueryDocument = getFragmentQueryDocument;
 exports.getGraphQLErrorsFromResult = getGraphQLErrorsFromResult;
 exports.getInclusionDirectives = getInclusionDirectives;
@@ -72902,6 +73306,7 @@ exports.isExecutionPatchIncrementalResult = isExecutionPatchIncrementalResult;
 exports.isExecutionPatchInitialResult = isExecutionPatchInitialResult;
 exports.isExecutionPatchResult = isExecutionPatchResult;
 exports.isField = isField;
+exports.isFullyUnmaskedOperation = isFullyUnmaskedOperation;
 exports.isInlineFragment = isInlineFragment;
 exports.isMutationOperation = isMutationOperation;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -72921,6 +73326,7 @@ exports.mergeIncrementalData = mergeIncrementalData;
 exports.mergeOptions = mergeOptions;
 exports.offsetLimitPagination = offsetLimitPagination;
 exports.omitDeep = omitDeep;
+exports.preventUnhandledRejection = preventUnhandledRejection;
 exports.print = print;
 exports.relayStylePagination = relayStylePagination;
 exports.removeArgumentsFromDocument = removeArgumentsFromDocument;
