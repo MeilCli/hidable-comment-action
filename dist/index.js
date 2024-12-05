@@ -65579,7 +65579,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.12.0";
+var version = "3.12.2";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -70815,7 +70815,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.0";
+var version = "3.12.2";
 
 function maybe(thunk) {
     try {
@@ -71412,7 +71412,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.0";
+var version = "3.12.2";
 
 function maybe(thunk) {
     try {
