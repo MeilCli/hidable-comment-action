@@ -65579,7 +65579,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.12.2";
+var version = "3.12.3";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69680,7 +69680,7 @@ function checkIfSnapshotChanged(_a) {
 }
 
 function useDeepMemo(memoFn, deps) {
-    var ref = React__namespace.useRef();
+    var ref = React__namespace.useRef(void 0);
     if (!ref.current || !equal.equal(ref.current.deps, deps)) {
         ref.current = { value: memoFn(), deps: deps };
     }
@@ -70042,9 +70042,9 @@ var EAGER_METHODS = [
 ];
 function useLazyQuery(query, options) {
     var _a;
-    var execOptionsRef = React__namespace.useRef();
-    var optionsRef = React__namespace.useRef();
-    var queryRef = React__namespace.useRef();
+    var execOptionsRef = React__namespace.useRef(void 0);
+    var optionsRef = React__namespace.useRef(void 0);
+    var queryRef = React__namespace.useRef(void 0);
     var merged = utilities.mergeOptions(options, execOptionsRef.current || {});
     var document = (_a = merged === null || merged === void 0 ? void 0 : merged.query) !== null && _a !== void 0 ? _a : query;
     optionsRef.current = options;
@@ -70815,7 +70815,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.2";
+var version = "3.12.3";
 
 function maybe(thunk) {
     try {
@@ -71412,7 +71412,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.2";
+var version = "3.12.3";
 
 function maybe(thunk) {
     try {
