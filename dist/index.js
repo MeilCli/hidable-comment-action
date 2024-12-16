@@ -13851,7 +13851,12 @@ var _tokenKind = __nccwpck_require__(1743);
  */
 function parse(source, options) {
   const parser = new Parser(source, options);
-  return parser.parseDocument();
+  const document = parser.parseDocument();
+  Object.defineProperty(document, 'tokenCount', {
+    enumerable: false,
+    value: parser.tokenCount,
+  });
+  return document;
 }
 /**
  * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
@@ -13921,6 +13926,10 @@ class Parser {
     this._lexer = new _lexer.Lexer(sourceObj);
     this._options = options;
     this._tokenCounter = 0;
+  }
+
+  get tokenCount() {
+    return this._tokenCounter;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -15357,10 +15366,10 @@ class Parser {
 
     const token = this._lexer.advance();
 
-    if (maxTokens !== undefined && token.kind !== _tokenKind.TokenKind.EOF) {
+    if (token.kind !== _tokenKind.TokenKind.EOF) {
       ++this._tokenCounter;
 
-      if (this._tokenCounter > maxTokens) {
+      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
         throw (0, _syntaxError.syntaxError)(
           this._lexer.source,
           token.start,
@@ -20494,8 +20503,14 @@ function validateDirectives(context) {
       continue;
     } // Ensure they are named correctly.
 
-    validateName(context, directive); // TODO: Ensure proper locations.
-    // Ensure the arguments are valid.
+    validateName(context, directive);
+
+    if (directive.locations.length === 0) {
+      context.reportError(
+        `Directive @${directive.name} must include 1 or more locations.`,
+        directive.astNode,
+      );
+    } // Ensure the arguments are valid.
 
     for (const arg of directive.args) {
       // Ensure they are named correctly.
@@ -23894,9 +23909,9 @@ function getIntrospectionQuery(options) {
     query IntrospectionQuery {
       __schema {
         ${schemaDescription}
-        queryType { name }
-        mutationType { name }
-        subscriptionType { name }
+        queryType { name kind }
+        mutationType { name kind }
+        subscriptionType { name kind }
         types {
           ...FullType
         }
@@ -27530,9 +27545,10 @@ function reasonMessage(reason) {
  */
 
 function OverlappingFieldsCanBeMergedRule(context) {
-  // A memoization for when two fragments are compared "between" each other for
-  // conflicts. Two fragments may be compared many times, so memoizing this can
-  // dramatically improve the performance of this validator.
+  // A memoization for when fields and a fragment or two fragments are compared
+  // "between" each other for conflicts. Comparisons made be made many times,
+  // so memoizing this can dramatically improve the performance of this validator.
+  const comparedFieldsAndFragmentPairs = new OrderedPairSet();
   const comparedFragmentPairs = new PairSet(); // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
   // times, so this improves the performance of this validator.
@@ -27543,6 +27559,7 @@ function OverlappingFieldsCanBeMergedRule(context) {
       const conflicts = findConflictsWithinSelectionSet(
         context,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         context.getParentType(),
         selectionSet,
@@ -27623,6 +27640,7 @@ function OverlappingFieldsCanBeMergedRule(context) {
 function findConflictsWithinSelectionSet(
   context,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   parentType,
   selectionSet,
@@ -27640,6 +27658,7 @@ function findConflictsWithinSelectionSet(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     fieldMap,
   );
@@ -27652,6 +27671,7 @@ function findConflictsWithinSelectionSet(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         false,
         fieldMap,
@@ -27666,6 +27686,7 @@ function findConflictsWithinSelectionSet(
           context,
           conflicts,
           cachedFieldsAndFragmentNames,
+          comparedFieldsAndFragmentPairs,
           comparedFragmentPairs,
           false,
           fragmentNames[i],
@@ -27683,11 +27704,29 @@ function collectConflictsBetweenFieldsAndFragment(
   context,
   conflicts,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   areMutuallyExclusive,
   fieldMap,
   fragmentName,
 ) {
+  // Memoize so the fields and fragments are not compared for conflicts more
+  // than once.
+  if (
+    comparedFieldsAndFragmentPairs.has(
+      fieldMap,
+      fragmentName,
+      areMutuallyExclusive,
+    )
+  ) {
+    return;
+  }
+
+  comparedFieldsAndFragmentPairs.add(
+    fieldMap,
+    fragmentName,
+    areMutuallyExclusive,
+  );
   const fragment = context.getFragment(fragmentName);
 
   if (!fragment) {
@@ -27710,6 +27749,7 @@ function collectConflictsBetweenFieldsAndFragment(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap,
@@ -27718,26 +27758,11 @@ function collectConflictsBetweenFieldsAndFragment(
   // and any fragment names found in the given fragment.
 
   for (const referencedFragmentName of referencedFragmentNames) {
-    // Memoize so two fragments are not compared for conflicts more than once.
-    if (
-      comparedFragmentPairs.has(
-        referencedFragmentName,
-        fragmentName,
-        areMutuallyExclusive,
-      )
-    ) {
-      continue;
-    }
-
-    comparedFragmentPairs.add(
-      referencedFragmentName,
-      fragmentName,
-      areMutuallyExclusive,
-    );
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap,
@@ -27751,6 +27776,7 @@ function collectConflictsBetweenFragments(
   context,
   conflicts,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   areMutuallyExclusive,
   fragmentName1,
@@ -27797,6 +27823,7 @@ function collectConflictsBetweenFragments(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap1,
@@ -27809,6 +27836,7 @@ function collectConflictsBetweenFragments(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fragmentName1,
@@ -27822,6 +27850,7 @@ function collectConflictsBetweenFragments(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       referencedFragmentName1,
@@ -27835,6 +27864,7 @@ function collectConflictsBetweenFragments(
 function findConflictsBetweenSubSelectionSets(
   context,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   areMutuallyExclusive,
   parentType1,
@@ -27860,6 +27890,7 @@ function findConflictsBetweenSubSelectionSets(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap1,
@@ -27872,6 +27903,7 @@ function findConflictsBetweenSubSelectionSets(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap1,
@@ -27885,6 +27917,7 @@ function findConflictsBetweenSubSelectionSets(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap2,
@@ -27900,6 +27933,7 @@ function findConflictsBetweenSubSelectionSets(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         areMutuallyExclusive,
         fragmentName1,
@@ -27915,6 +27949,7 @@ function collectConflictsWithin(
   context,
   conflicts,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   fieldMap,
 ) {
@@ -27932,6 +27967,7 @@ function collectConflictsWithin(
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
+            comparedFieldsAndFragmentPairs,
             comparedFragmentPairs,
             false, // within one collection is never mutually exclusive
             responseName,
@@ -27956,6 +27992,7 @@ function collectConflictsBetween(
   context,
   conflicts,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   parentFieldsAreMutuallyExclusive,
   fieldMap1,
@@ -27975,6 +28012,7 @@ function collectConflictsBetween(
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
+            comparedFieldsAndFragmentPairs,
             comparedFragmentPairs,
             parentFieldsAreMutuallyExclusive,
             responseName,
@@ -27995,6 +28033,7 @@ function collectConflictsBetween(
 function findConflict(
   context,
   cachedFieldsAndFragmentNames,
+  comparedFieldsAndFragmentPairs,
   comparedFragmentPairs,
   parentFieldsAreMutuallyExclusive,
   responseName,
@@ -28064,6 +28103,7 @@ function findConflict(
     const conflicts = findConflictsBetweenSubSelectionSets(
       context,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       (0, _definition.getNamedType)(type1),
@@ -28266,42 +28306,65 @@ function subfieldConflicts(conflicts, responseName, node1, node2) {
   }
 }
 /**
- * A way to keep track of pairs of things when the ordering of the pair does not matter.
+ * A way to keep track of pairs of things where the ordering of the pair
+ * matters.
+ *
+ * Provides a third argument for has/set to allow flagging the pair as
+ * weakly or strongly present within the collection.
  */
 
-class PairSet {
+class OrderedPairSet {
   constructor() {
     this._data = new Map();
   }
 
-  has(a, b, areMutuallyExclusive) {
+  has(a, b, weaklyPresent) {
     var _this$_data$get;
 
-    const [key1, key2] = a < b ? [a, b] : [b, a];
     const result =
-      (_this$_data$get = this._data.get(key1)) === null ||
+      (_this$_data$get = this._data.get(a)) === null ||
       _this$_data$get === void 0
         ? void 0
-        : _this$_data$get.get(key2);
+        : _this$_data$get.get(b);
 
     if (result === undefined) {
       return false;
-    } // areMutuallyExclusive being false is a superset of being true, hence if
-    // we want to know if this PairSet "has" these two with no exclusivity,
-    // we have to ensure it was added as such.
+    }
 
-    return areMutuallyExclusive ? true : areMutuallyExclusive === result;
+    return weaklyPresent ? true : weaklyPresent === result;
   }
 
-  add(a, b, areMutuallyExclusive) {
-    const [key1, key2] = a < b ? [a, b] : [b, a];
-
-    const map = this._data.get(key1);
+  add(a, b, weaklyPresent) {
+    const map = this._data.get(a);
 
     if (map === undefined) {
-      this._data.set(key1, new Map([[key2, areMutuallyExclusive]]));
+      this._data.set(a, new Map([[b, weaklyPresent]]));
     } else {
-      map.set(key2, areMutuallyExclusive);
+      map.set(b, weaklyPresent);
+    }
+  }
+}
+/**
+ * A way to keep track of pairs of similar things when the ordering of the pair
+ * does not matter.
+ */
+
+class PairSet {
+  constructor() {
+    this._orderedPairSet = new OrderedPairSet();
+  }
+
+  has(a, b, weaklyPresent) {
+    return a < b
+      ? this._orderedPairSet.has(a, b, weaklyPresent)
+      : this._orderedPairSet.has(b, a, weaklyPresent);
+  }
+
+  add(a, b, weaklyPresent) {
+    if (a < b) {
+      this._orderedPairSet.add(a, b, weaklyPresent);
+    } else {
+      this._orderedPairSet.add(b, a, weaklyPresent);
     }
   }
 }
@@ -28810,6 +28873,17 @@ function ScalarLeafsRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
+              {
+                nodes: node,
+              },
+            ),
+          );
+        } else if (selectionSet.selections.length === 0) {
+          const fieldName = node.name.value;
+          const typeStr = (0, _inspect.inspect)(type);
+          context.reportError(
+            new _GraphQLError.GraphQLError(
+              `Field "${fieldName}" of type "${typeStr}" must have at least one field selected.`,
               {
                 nodes: node,
               },
@@ -30803,7 +30877,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.9.0';
+const version = '16.10.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -30811,7 +30885,7 @@ const version = '16.9.0';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 9,
+  minor: 10,
   patch: 0,
   preReleaseTag: null,
 });
