@@ -65653,7 +65653,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.12.3";
+var version = "3.12.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -67149,15 +67149,19 @@ var QueryManager =  (function () {
         var _this = this;
         if (include === void 0) { include = "active"; }
         var queries = new Map();
-        var queryNamesAndDocs = new Map();
+        var queryNames = new Map();
+        var queryNamesAndQueryStrings = new Map();
         var legacyQueryOptions = new Set();
         if (Array.isArray(include)) {
             include.forEach(function (desc) {
                 if (typeof desc === "string") {
-                    queryNamesAndDocs.set(desc, false);
+                    queryNames.set(desc, desc);
+                    queryNamesAndQueryStrings.set(desc, false);
                 }
                 else if (utilities.isDocumentNode(desc)) {
-                    queryNamesAndDocs.set(_this.transform(desc), false);
+                    var queryString = utilities.print(_this.transform(desc));
+                    queryNames.set(queryString, utilities.getOperationName(desc));
+                    queryNamesAndQueryStrings.set(queryString, false);
                 }
                 else if (utilities.isNonNullObject(desc) && desc.query) {
                     legacyQueryOptions.add(desc);
@@ -67177,13 +67181,13 @@ var QueryManager =  (function () {
                     return;
                 }
                 if (include === "active" ||
-                    (queryName && queryNamesAndDocs.has(queryName)) ||
-                    (document && queryNamesAndDocs.has(document))) {
+                    (queryName && queryNamesAndQueryStrings.has(queryName)) ||
+                    (document && queryNamesAndQueryStrings.has(utilities.print(document)))) {
                     queries.set(queryId, oq);
                     if (queryName)
-                        queryNamesAndDocs.set(queryName, true);
+                        queryNamesAndQueryStrings.set(queryName, true);
                     if (document)
-                        queryNamesAndDocs.set(document, true);
+                        queryNamesAndQueryStrings.set(utilities.print(document), true);
                 }
             }
         });
@@ -67204,10 +67208,16 @@ var QueryManager =  (function () {
                 queries.set(queryId, oq);
             });
         }
-        if (globalThis.__DEV__ !== false && queryNamesAndDocs.size) {
-            queryNamesAndDocs.forEach(function (included, nameOrDoc) {
+        if (globalThis.__DEV__ !== false && queryNamesAndQueryStrings.size) {
+            queryNamesAndQueryStrings.forEach(function (included, nameOrQueryString) {
                 if (!included) {
-                    globalThis.__DEV__ !== false && globals.invariant.warn(typeof nameOrDoc === "string" ? 35 : 36, nameOrDoc);
+                    var queryName = queryNames.get(nameOrQueryString);
+                    if (queryName) {
+                        globalThis.__DEV__ !== false && globals.invariant.warn(35, queryName);
+                    }
+                    else {
+                        globalThis.__DEV__ !== false && globals.invariant.warn(36);
+                    }
                 }
             });
         }
@@ -70889,7 +70899,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.3";
+var version = "3.12.4";
 
 function maybe(thunk) {
     try {
@@ -71486,7 +71496,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.3";
+var version = "3.12.4";
 
 function maybe(thunk) {
     try {
