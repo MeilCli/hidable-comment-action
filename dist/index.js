@@ -65650,7 +65650,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.12.6";
+var version = "3.12.7";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69821,9 +69821,10 @@ function noop() { }
 var lastWatchOptions = Symbol();
 function useQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
-    return wrapHook("useQuery", _useQuery, useApolloClient(options && options.client))(query, options);
+    return wrapHook("useQuery",
+    useQuery_, useApolloClient(options && options.client))(query, options);
 }
-function _useQuery(query, options) {
+function useQuery_(query, options) {
     var _a = useQueryInternals(query, options), result = _a.result, obsQueryFields = _a.obsQueryFields;
     return React__namespace.useMemo(function () { return (tslib.__assign(tslib.__assign({}, result), obsQueryFields)); }, [result, obsQueryFields]);
 }
@@ -70494,9 +70495,10 @@ function useReactiveVar(rv) {
 }
 
 function useFragment(options) {
-    return wrapHook("useFragment", _useFragment, useApolloClient(options.client))(options);
+    return wrapHook("useFragment",
+    useFragment_, useApolloClient(options.client))(options);
 }
-function _useFragment(options) {
+function useFragment_(options) {
     var client = useApolloClient(options.client);
     var cache = client.cache;
     var from = options.from, rest = tslib.__rest(options, ["from"]);
@@ -70561,9 +70563,10 @@ var skipToken = Symbol.for("apollo.skipToken");
 
 function useSuspenseQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
-    return wrapHook("useSuspenseQuery", _useSuspenseQuery, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
+    return wrapHook("useSuspenseQuery",
+    useSuspenseQuery_, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
 }
-function _useSuspenseQuery(query, options) {
+function useSuspenseQuery_(query, options) {
     var client = useApolloClient(options.client);
     var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({
@@ -70681,9 +70684,10 @@ function useWatchQueryOptions(_a) {
 
 function useBackgroundQuery(query, options) {
     if (options === void 0) { options = Object.create(null); }
-    return wrapHook("useBackgroundQuery", _useBackgroundQuery, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
+    return wrapHook("useBackgroundQuery",
+    useBackgroundQuery_, useApolloClient(typeof options === "object" ? options.client : undefined))(query, options);
 }
-function _useBackgroundQuery(query, options) {
+function useBackgroundQuery_(query, options) {
     var client = useApolloClient(options.client);
     var suspenseCache = internal.getSuspenseCache(client);
     var watchQueryOptions = useWatchQueryOptions({ client: client, query: query, options: options });
@@ -70800,11 +70804,11 @@ function useLoadableQuery(query, options) {
 
 function useQueryRefHandlers(queryRef) {
     var unwrapped = internal.unwrapQueryRef(queryRef);
-    return wrapHook("useQueryRefHandlers", _useQueryRefHandlers, unwrapped ?
+    return wrapHook("useQueryRefHandlers", useQueryRefHandlers_, unwrapped ?
         unwrapped["observable"]
         : useApolloClient())(queryRef);
 }
-function _useQueryRefHandlers(queryRef) {
+function useQueryRefHandlers_(queryRef) {
     internal.assertWrappedQueryRef(queryRef);
     var _a = React__namespace.useState(queryRef), previousQueryRef = _a[0], setPreviousQueryRef = _a[1];
     var _b = React__namespace.useState(queryRef), wrappedQueryRef = _b[0], setWrappedQueryRef = _b[1];
@@ -70835,11 +70839,11 @@ function _useQueryRefHandlers(queryRef) {
 
 function useReadQuery(queryRef) {
     var unwrapped = internal.unwrapQueryRef(queryRef);
-    return wrapHook("useReadQuery", _useReadQuery, unwrapped ?
+    return wrapHook("useReadQuery", useReadQuery_, unwrapped ?
         unwrapped["observable"]
         : useApolloClient())(queryRef);
 }
-function _useReadQuery(queryRef) {
+function useReadQuery_(queryRef) {
     internal.assertWrappedQueryRef(queryRef);
     var internalQueryRef = React__namespace.useMemo(function () { return internal.unwrapQueryRef(queryRef); }, [queryRef]);
     var getPromise = React__namespace.useCallback(function () { return internal.getWrappedPromise(queryRef); }, [queryRef]);
@@ -70896,7 +70900,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.6";
+var version = "3.12.7";
 
 function maybe(thunk) {
     try {
@@ -71493,7 +71497,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.6";
+var version = "3.12.7";
 
 function maybe(thunk) {
     try {
