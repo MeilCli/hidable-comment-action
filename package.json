@@ -17,7 +17,7 @@
     "dependencies": {
         "@actions/core": "^1.11.1",
         "@actions/github": "^6.0.0",
-        "@apollo/client": "^3.12.8",
+        "@apollo/client": "^3.12.11",
         "cross-fetch": "^4.1.0",
         "graphql": "^16.10.0"
     },
