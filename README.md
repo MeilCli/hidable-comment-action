@@ -15,6 +15,46 @@ Features:
   - You can use this action in enterprise server.
 
 ## Example
+### Stick pull request comment
+```yml
+name: 'Example: Sticky Comment Body'
+
+on:
+  pull_request:
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: MeilCli/hidable-comment-action@v2
+        with:
+          number: ${{ github.event.pull_request.number }}
+          show: true
+          id: 'example-sticky-comment-body'
+          body: 'your comment body'
+```
+
+You can also pin to a [specific release](https://github.com/MeilCli/hidable-comment-action/releases) version in the format @v2.x.x
+
+And, you can use `body_path` to read comment body from file.
+
+```yml
+name: 'Example: Sticky Comment Body Path'
+
+on:
+  pull_request:
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: MeilCli/hidable-comment-action@v2
+        with:
+          number: ${{ github.event.pull_request.number }}
+          show: true
+          id: 'example-sticky-comment-body-path'
+          body_path: 'file_path_to_your_comment_body'
+```
+
 ### Check issue title
 ```yml
 name: 'Check-Issue-Title'
@@ -43,7 +83,6 @@ jobs:
             - test2
             - test3
 ```
-You can also pin to a [specific release](https://github.com/MeilCli/hidable-comment-action/releases) version in the format @v2.x.x
 
 ### Check Pull Request title
 ```yml
