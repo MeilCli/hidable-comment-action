@@ -23,7 +23,7 @@ export function githubClient(option: Option): GitHubClient {
     return new GitHubClient(
         new ApolloClient({
             link: new HttpLink({
-                uri: "https://api.github.com/graphql",
+                uri: option.graphqlUrl,
                 headers: { authorization: `token ${option.githubToken}` },
                 fetch,
             }),
@@ -36,10 +36,7 @@ export class GitHubClient {
     constructor(private readonly client: ApolloClient<NormalizedCacheObject>) {}
 
     async addComment(variables: AddCommentMutationVariables): Promise<AddCommentMutation | null | undefined> {
-        const result = await this.client.mutate<AddCommentMutation>({
-            mutation: AddComment,
-            variables: variables,
-        });
+        const result = await this.client.mutate<AddCommentMutation>({ mutation: AddComment, variables: variables });
         return result.data;
     }
 
@@ -62,10 +59,7 @@ export class GitHubClient {
     }
 
     async getLoginUser(variables: GetLoginUserQueryVariables): Promise<GetLoginUserQuery> {
-        const result = await this.client.query<GetLoginUserQuery>({
-            query: GetLoginUser,
-            variables: variables,
-        });
+        const result = await this.client.query<GetLoginUserQuery>({ query: GetLoginUser, variables: variables });
         return result.data;
     }
 

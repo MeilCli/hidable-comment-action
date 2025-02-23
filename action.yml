@@ -13,6 +13,10 @@ inputs:
     description: 'executed repository name. for example, MeilCli/hidable-comment-action'
     required: true
     default: ${{ github.repository }}
+  graphql_url:
+    description: 'github graphql url'
+    required: true
+    default: ${{ github.graphql_url }}
   number:
     description: 'issue or pull request number'
     required: true

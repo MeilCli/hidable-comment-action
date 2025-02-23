@@ -2,6 +2,16 @@
 [![CI-Master](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml/badge.svg)](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml)    
 Create, update or delete comment by action argument
 
+Features:
+- Sticky comment
+  - This action upsert comment.
+- Conditional comment
+  - This action can hide comment by action argument.
+- Multiple comment type support
+  - You can set multiple sticky comment by using `id`.
+- Enterprise server support
+  - You can use this action in enterprise server.
+
 ## Example
 ### Check issue title
 ```yml
@@ -72,6 +82,10 @@ jobs:
   - executed repository name
   - for example: MeilCli/hidable-comment-action
   - default: `${{ github.repository }}`
+- `graphql_url`
+  - required
+  - github graphql api url
+  - default: `${{ github.graphql_url }}`
 - `number`
   - required
   - issue or pull request number
