@@ -3365,7 +3365,7 @@ const graphql_1 = __nccwpck_require__(2411);
 function githubClient(option) {
     return new GitHubClient(new client_1.ApolloClient({
         link: new client_1.HttpLink({
-            uri: "https://api.github.com/graphql",
+            uri: option.graphqlUrl,
             headers: { authorization: `token ${option.githubToken}` },
             fetch: cross_fetch_1.default,
         }),
@@ -3377,10 +3377,7 @@ class GitHubClient {
         this.client = client;
     }
     async addComment(variables) {
-        const result = await this.client.mutate({
-            mutation: graphql_1.AddComment,
-            variables: variables,
-        });
+        const result = await this.client.mutate({ mutation: graphql_1.AddComment, variables: variables });
         return result.data;
     }
     async deleteComment(variables) {
@@ -3398,10 +3395,7 @@ class GitHubClient {
         return result.data;
     }
     async getLoginUser(variables) {
-        const result = await this.client.query({
-            query: graphql_1.GetLoginUser,
-            variables: variables,
-        });
+        const result = await this.client.query({ query: graphql_1.GetLoginUser, variables: variables });
         return result.data;
     }
     async updateComment(variables) {
@@ -3478,10 +3472,23 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
+const fs = __importStar(__nccwpck_require__(9896));
 const option_1 = __nccwpck_require__(3912);
 const client_1 = __nccwpck_require__(8574);
 const paging_1 = __nccwpck_require__(1361);
 const comment_1 = __nccwpck_require__(832);
+function getCommentBody(option) {
+    if (option.body != null) {
+        return option.body;
+    }
+    if (option.bodyPath == null) {
+        throw Error("body or body_path is required");
+    }
+    if (fs.existsSync(option.bodyPath) == false) {
+        throw Error("body_path does not exist");
+    }
+    return fs.readFileSync(option.bodyPath).toString();
+}
 async function run() {
     try {
         const option = (0, option_1.getOption)();
@@ -3514,7 +3521,7 @@ async function run() {
             if (option.show) {
                 await client.addComment({
                     id: issueOrPullRequest.id,
-                    body: (0, comment_1.createHidableComment)(option.body, option.id),
+                    body: (0, comment_1.createHidableComment)(getCommentBody(option), option.id),
                 });
                 core.info(`added comment to ${issueOrPullRequest.id}`);
             }
@@ -3524,7 +3531,7 @@ async function run() {
         }
         else {
             if (option.show) {
-                const expectBody = (0, comment_1.createHidableComment)(option.body, option.id);
+                const expectBody = (0, comment_1.createHidableComment)(getCommentBody(option), option.id);
                 if (expectBody != targetCommentBody) {
                     await client.updateComment({ id: targetCommentId, body: expectBody });
                     core.info(`updated comment at ${targetCommentId}`);
@@ -3595,14 +3602,23 @@ function getOption() {
     return {
         githubToken: getInput("github_token"),
         repository: getInput("repository"),
+        graphqlUrl: getInput("graphql_url"),
         number: parseInt(getInput("number")),
         id: getInput("id"),
         show: getInput("show") == "true",
-        body: getInput("body"),
+        body: getInputOrNull("body"),
+        bodyPath: getInputOrNull("body_path"),
     };
 }
 function getInput(key) {
     return core.getInput(key, { required: true });
+}
+function getInputOrNull(key) {
+    const value = core.getInput(key, { required: false });
+    if (value.length == 0) {
+        return null;
+    }
+    return value;
 }
 
 
