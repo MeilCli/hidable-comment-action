@@ -11,5 +11,5 @@ jobs:
         with:
           number: ${{ github.event.pull_request.number }}
           show: true
-          id: 'example-sticky-comment-body'
+          id: 'example-sticky-comment-body-path'
           body_path: '.github/workflows/example-sticky-comment-body-path.md'
