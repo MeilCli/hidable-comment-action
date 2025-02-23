@@ -1,0 +1,15 @@
+name: 'Example: Sticky Comment Body Path'
+
+on:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: MeilCli/hidable-comment-action@master
+        with:
+          number: ${{ github.event.pull_request.number }}
+          show: true
+          id: 'example-sticky-comment-body'
+          body_path: '.github/workflows/example-sticky-comment-body-path.md'
