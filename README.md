@@ -9,6 +9,8 @@ Features:
   - This action can hide comment by action argument.
 - Multiple comment type support
   - You can set multiple sticky comment by using `id`.
+- Comment body from file
+  - You can set comment body from file.
 - Enterprise server support
   - You can use this action in enterprise server.
 
@@ -98,8 +100,11 @@ jobs:
   - value: `true` or `false`
   - if set the true, add or update comment. if set the false, delete comment
 - `body`
-  - required
+  - required, eigher body or body_path
   - comment body
+- `body_path`
+  - required, eigher body or body_path
+  - comment body path, if set, read body from file
 
 ## Contributes
 [<img src="https://gist.github.com/MeilCli/31fde39d6f48f6d2978d05cad61faf7e/raw/372f88f3f9a7a1cf3315fb146935b3994ba89cf3/metrics_contributors.svg">](https://github.com/MeilCli/hidable-comment-action/graphs/contributors)

@@ -30,7 +30,10 @@ inputs:
     default: 'true'
   body:
     description: 'comment body'
-    required: true
+    required: false
+  body_path:
+    description: 'comment body path, if set, read body from file'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

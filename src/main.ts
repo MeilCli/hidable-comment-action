@@ -1,8 +1,24 @@
 import * as core from "@actions/core";
-import { getOption } from "./option";
+import * as fs from "fs";
+import { getOption, Option } from "./option";
 import { githubClient } from "./client";
 import { getIssueOrPullRequestCommentWithPaging } from "./paging";
 import { isHidableComment, createHidableComment } from "./comment";
+
+function getCommentBody(option: Option): string {
+    if (option.body != null) {
+        return option.body;
+    }
+    if (option.bodyPath == null) {
+        throw Error("body or body_path is required");
+    }
+
+    if (fs.existsSync(option.bodyPath) == false) {
+        throw Error("body_path does not exist");
+    }
+
+    return fs.readFileSync(option.bodyPath).toString();
+}
 
 async function run() {
     try {
@@ -38,7 +54,7 @@ async function run() {
             if (option.show) {
                 await client.addComment({
                     id: issueOrPullRequest.id,
-                    body: createHidableComment(option.body, option.id),
+                    body: createHidableComment(getCommentBody(option), option.id),
                 });
                 core.info(`added comment to ${issueOrPullRequest.id}`);
             } else {
@@ -46,7 +62,7 @@ async function run() {
             }
         } else {
             if (option.show) {
-                const expectBody = createHidableComment(option.body, option.id);
+                const expectBody = createHidableComment(getCommentBody(option), option.id);
                 if (expectBody != targetCommentBody) {
                     await client.updateComment({ id: targetCommentId, body: expectBody });
                     core.info(`updated comment at ${targetCommentId}`);
