@@ -65651,7 +65651,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.12.8";
+var version = "3.13.1";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -66002,10 +66002,7 @@ var ObservableQuery =  (function (_super) {
             pollInterval: 0,
         };
         var fetchPolicy = this.options.fetchPolicy;
-        if (fetchPolicy === "cache-and-network") {
-            reobserveOptions.fetchPolicy = fetchPolicy;
-        }
-        else if (fetchPolicy === "no-cache") {
+        if (fetchPolicy === "no-cache") {
             reobserveOptions.fetchPolicy = "no-cache";
         }
         else {
@@ -66093,7 +66090,7 @@ var ObservableQuery =  (function (_super) {
                     fetchMoreResult: fetchMoreResult.data,
                     variables: combinedOptions.variables,
                 });
-                _this.reportResult(tslib.__assign(tslib.__assign({}, lastResult), { data: data }), _this.variables);
+                _this.reportResult(tslib.__assign(tslib.__assign({}, lastResult), { networkStatus: originalNetworkStatus, loading: isNetworkRequestInFlight(originalNetworkStatus), data: data }), _this.variables);
             }
             return _this.maskResult(fetchMoreResult);
         })
@@ -66115,12 +66112,8 @@ var ObservableQuery =  (function (_super) {
             next: function (subscriptionData) {
                 var updateQuery = options.updateQuery;
                 if (updateQuery) {
-                    _this.updateQuery(function (previous, _a) {
-                        var variables = _a.variables;
-                        return updateQuery(previous, {
-                            subscriptionData: subscriptionData,
-                            variables: variables,
-                        });
+                    _this.updateQuery(function (previous, updateOptions) {
+                        return updateQuery(previous, tslib.__assign({ subscriptionData: subscriptionData }, updateOptions));
                     });
                 }
             },
@@ -66161,14 +66154,16 @@ var ObservableQuery =  (function (_super) {
     };
     ObservableQuery.prototype.updateQuery = function (mapFn) {
         var queryManager = this.queryManager;
-        var result = queryManager.cache.diff({
+        var _a = queryManager.cache.diff({
             query: this.options.query,
             variables: this.variables,
             returnPartialData: true,
             optimistic: false,
-        }).result;
+        }), result = _a.result, complete = _a.complete;
         var newResult = mapFn(result, {
             variables: this.variables,
+            complete: !!complete,
+            previousData: result,
         });
         if (newResult) {
             queryManager.cache.writeQuery({
@@ -67337,12 +67332,17 @@ var QueryManager =  (function () {
                 var entry = inFlightLinkObservables_1.lookup(printedServerQuery_1, varJson_1);
                 observable = entry.observable;
                 if (!observable) {
-                    var concast = new utilities.Concast([
+                    var concast_1 = new utilities.Concast([
                         core.execute(link, operation),
                     ]);
-                    observable = entry.observable = concast;
-                    concast.beforeNext(function () {
-                        inFlightLinkObservables_1.remove(printedServerQuery_1, varJson_1);
+                    observable = entry.observable = concast_1;
+                    concast_1.beforeNext(function cb(method, arg) {
+                        if (method === "next" && "hasNext" in arg && arg.hasNext) {
+                            concast_1.beforeNext(cb);
+                        }
+                        else {
+                            inFlightLinkObservables_1.remove(printedServerQuery_1, varJson_1);
+                        }
                     });
                 }
             }
@@ -69703,6 +69703,7 @@ function _interopNamespace(e) {
 }
 
 var React__namespace = /*#__PURE__*/_interopNamespace(React);
+var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
 function useApolloClient(override) {
@@ -70276,10 +70277,10 @@ function useMutation(mutation, options) {
                 onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response.data, clientOptions);
             }
             return response;
-        })
-            .catch(function (error) {
+        }, function (error) {
             var _a;
-            if (mutationId === ref.current.mutationId && ref.current.isMounted) {
+            if (mutationId === ref.current.mutationId &&
+                ref.current.isMounted) {
                 var result_2 = {
                     loading: false,
                     error: error,
@@ -70623,7 +70624,8 @@ function useSuspenseQuery_(query, options) {
         setPromise([queryRef.key, queryRef.promise]);
         return promise;
     }, [queryRef]);
-    var subscribeToMore = queryRef.observable.subscribeToMore;
+    var subscribeToMore = queryRef.observable
+        .subscribeToMore;
     return React__namespace.useMemo(function () {
         return {
             client: client,
@@ -70735,9 +70737,50 @@ function useBackgroundQuery_(query, options) {
         {
             fetchMore: fetchMore,
             refetch: refetch,
-            subscribeToMore: queryRef.observable.subscribeToMore,
+            subscribeToMore: queryRef.observable
+                .subscribeToMore,
         },
     ];
+}
+
+var NULL_PLACEHOLDER = [];
+function useSuspenseFragment(options) {
+    return wrapHook("useSuspenseFragment",
+    useSuspenseFragment_, useApolloClient(typeof options === "object" ? options.client : undefined))(options);
+}
+function useSuspenseFragment_(options) {
+    var client = useApolloClient(options.client);
+    var from = options.from, variables = options.variables;
+    var cache$1 = client.cache;
+    var id = React.useMemo(function () {
+        return typeof from === "string" ? from
+            : from === null ? null
+                : cache$1.identify(from);
+    }, [cache$1, from]);
+    var fragmentRef = id === null ? null : (internal.getSuspenseCache(client).getFragmentRef([id, options.fragment, cache.canonicalStringify(variables)], client, tslib.__assign(tslib.__assign({}, options), { variables: variables, from: id })));
+    var _a = React__default.useState(fragmentRef === null ? NULL_PLACEHOLDER : ([fragmentRef.key, fragmentRef.promise])), current = _a[0], setPromise = _a[1];
+    React__default.useEffect(function () {
+        if (fragmentRef === null) {
+            return;
+        }
+        var dispose = fragmentRef.retain();
+        var removeListener = fragmentRef.listen(function (promise) {
+            setPromise([fragmentRef.key, promise]);
+        });
+        return function () {
+            dispose();
+            removeListener();
+        };
+    }, [fragmentRef]);
+    if (fragmentRef === null) {
+        return { data: null };
+    }
+    if (current[0] !== fragmentRef.key) {
+        current[0] = fragmentRef.key;
+        current[1] = fragmentRef.promise;
+    }
+    var data = __use(current[1]);
+    return { data: data };
 }
 
 function useLoadableQuery(query, options) {
@@ -70795,7 +70838,8 @@ function useLoadableQuery(query, options) {
     ]);
     var subscribeToMore = React__namespace.useCallback(function (options) {
         globals.invariant(internalQueryRef, 60);
-        return internalQueryRef.observable.subscribeToMore(options);
+        return internalQueryRef.observable.subscribeToMore(
+        options);
     }, [internalQueryRef]);
     var reset = React__namespace.useCallback(function () {
         setQueryRef(null);
@@ -70805,9 +70849,11 @@ function useLoadableQuery(query, options) {
 
 function useQueryRefHandlers(queryRef) {
     var unwrapped = internal.unwrapQueryRef(queryRef);
-    return wrapHook("useQueryRefHandlers", useQueryRefHandlers_, unwrapped ?
+    var clientOrObsQuery = useApolloClient(unwrapped ?
         unwrapped["observable"]
-        : useApolloClient())(queryRef);
+        : undefined);
+    return wrapHook("useQueryRefHandlers",
+    useQueryRefHandlers_, clientOrObsQuery)(queryRef);
 }
 function useQueryRefHandlers_(queryRef) {
     internal.assertWrappedQueryRef(queryRef);
@@ -70834,15 +70880,18 @@ function useQueryRefHandlers_(queryRef) {
     return {
         refetch: refetch,
         fetchMore: fetchMore,
-        subscribeToMore: internalQueryRef.observable.subscribeToMore,
+        subscribeToMore: internalQueryRef.observable
+            .subscribeToMore,
     };
 }
 
 function useReadQuery(queryRef) {
     var unwrapped = internal.unwrapQueryRef(queryRef);
-    return wrapHook("useReadQuery", useReadQuery_, unwrapped ?
+    var clientOrObsQuery = useApolloClient(unwrapped ?
         unwrapped["observable"]
-        : useApolloClient())(queryRef);
+        : undefined);
+    return wrapHook("useReadQuery",
+    useReadQuery_, clientOrObsQuery)(queryRef);
 }
 function useReadQuery_(queryRef) {
     internal.assertWrappedQueryRef(queryRef);
@@ -70881,6 +70930,7 @@ exports.useQueryRefHandlers = useQueryRefHandlers;
 exports.useReactiveVar = useReactiveVar;
 exports.useReadQuery = useReadQuery;
 exports.useSubscription = useSubscription;
+exports.useSuspenseFragment = useSuspenseFragment;
 exports.useSuspenseQuery = useSuspenseQuery;
 //# sourceMappingURL=hooks.cjs.map
 
@@ -70901,7 +70951,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.8";
+var version = "3.13.1";
 
 function maybe(thunk) {
     try {
@@ -71259,16 +71309,139 @@ var InternalQueryReference =  (function () {
     return InternalQueryReference;
 }());
 
+var FragmentReference =  (function () {
+    function FragmentReference(client, watchFragmentOptions, options) {
+        var _this = this;
+        this.key = {};
+        this.listeners = new Set();
+        this.references = 0;
+        this.dispose = this.dispose.bind(this);
+        this.handleNext = this.handleNext.bind(this);
+        this.handleError = this.handleError.bind(this);
+        this.observable = client.watchFragment(watchFragmentOptions);
+        if (options.onDispose) {
+            this.onDispose = options.onDispose;
+        }
+        var diff = this.getDiff(client, watchFragmentOptions);
+        var startDisposeTimer = function () {
+            var _a;
+            if (!_this.references) {
+                _this.autoDisposeTimeoutId = setTimeout(_this.dispose, (_a = options.autoDisposeTimeoutMs) !== null && _a !== void 0 ? _a : 30000);
+            }
+        };
+        this.promise =
+            diff.complete ?
+                utilities.createFulfilledPromise(diff.result)
+                : this.createPendingPromise();
+        this.subscribeToFragment();
+        this.promise.then(startDisposeTimer, startDisposeTimer);
+    }
+    FragmentReference.prototype.listen = function (listener) {
+        var _this = this;
+        this.listeners.add(listener);
+        return function () {
+            _this.listeners.delete(listener);
+        };
+    };
+    FragmentReference.prototype.retain = function () {
+        var _this = this;
+        this.references++;
+        clearTimeout(this.autoDisposeTimeoutId);
+        var disposed = false;
+        return function () {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+            _this.references--;
+            setTimeout(function () {
+                if (!_this.references) {
+                    _this.dispose();
+                }
+            });
+        };
+    };
+    FragmentReference.prototype.dispose = function () {
+        this.subscription.unsubscribe();
+        this.onDispose();
+    };
+    FragmentReference.prototype.onDispose = function () {
+    };
+    FragmentReference.prototype.subscribeToFragment = function () {
+        this.subscription = this.observable.subscribe(this.handleNext.bind(this), this.handleError.bind(this));
+    };
+    FragmentReference.prototype.handleNext = function (result) {
+        var _a;
+        switch (this.promise.status) {
+            case "pending": {
+                if (result.complete) {
+                    return (_a = this.resolve) === null || _a === void 0 ? void 0 : _a.call(this, result.data);
+                }
+                this.deliver(this.promise);
+                break;
+            }
+            case "fulfilled": {
+                if (equality.equal(this.promise.value, result.data)) {
+                    return;
+                }
+                this.promise =
+                    result.complete ?
+                        utilities.createFulfilledPromise(result.data)
+                        : this.createPendingPromise();
+                this.deliver(this.promise);
+            }
+        }
+    };
+    FragmentReference.prototype.handleError = function (error) {
+        var _a;
+        (_a = this.reject) === null || _a === void 0 ? void 0 : _a.call(this, error);
+    };
+    FragmentReference.prototype.deliver = function (promise) {
+        this.listeners.forEach(function (listener) { return listener(promise); });
+    };
+    FragmentReference.prototype.createPendingPromise = function () {
+        var _this = this;
+        return utilities.wrapPromiseWithState(new Promise(function (resolve, reject) {
+            _this.resolve = resolve;
+            _this.reject = reject;
+        }));
+    };
+    FragmentReference.prototype.getDiff = function (client, options) {
+        var cache = client.cache;
+        var from = options.from, fragment = options.fragment, fragmentName = options.fragmentName;
+        var diff = cache.diff(tslib.__assign(tslib.__assign({}, options), { query: cache["getFragmentDoc"](fragment, fragmentName), returnPartialData: true, id: from, optimistic: true }));
+        return tslib.__assign(tslib.__assign({}, diff), { result: client["queryManager"].maskFragment({
+                fragment: fragment,
+                fragmentName: fragmentName,
+                data: diff.result,
+            }) });
+    };
+    return FragmentReference;
+}());
+
 var SuspenseCache =  (function () {
     function SuspenseCache(options) {
         if (options === void 0) { options = Object.create(null); }
         this.queryRefs = new trie.Trie(utilities.canUseWeakMap);
+        this.fragmentRefs = new trie.Trie(utilities.canUseWeakMap);
         this.options = options;
     }
     SuspenseCache.prototype.getQueryRef = function (cacheKey, createObservable) {
         var ref = this.queryRefs.lookupArray(cacheKey);
         if (!ref.current) {
             ref.current = new InternalQueryReference(createObservable(), {
+                autoDisposeTimeoutMs: this.options.autoDisposeTimeoutMs,
+                onDispose: function () {
+                    delete ref.current;
+                },
+            });
+        }
+        return ref.current;
+    };
+    SuspenseCache.prototype.getFragmentRef = function (cacheKey, client, options) {
+        var ref = this.fragmentRefs.lookupArray(cacheKey);
+        if (!ref.current) {
+            ref.current = new FragmentReference(client, options, {
                 autoDisposeTimeoutMs: this.options.autoDisposeTimeoutMs,
                 onDispose: function () {
                     delete ref.current;
@@ -71498,7 +71671,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.12.8";
+var version = "3.13.1";
 
 function maybe(thunk) {
     try {
