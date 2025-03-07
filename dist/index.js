@@ -65037,7 +65037,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.2";
+var version = "3.13.3";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -65330,6 +65330,10 @@ var ObservableQuery =  (function (_super) {
             }
             else {
                 result.partial = true;
+            }
+            if (result.networkStatus === exports.NetworkStatus.ready &&
+                (result.error || result.errors)) {
+                result.networkStatus = exports.NetworkStatus.error;
             }
             if (globalThis.__DEV__ !== false &&
                 !diff.complete &&
@@ -70337,7 +70341,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.2";
+var version = "3.13.3";
 
 function maybe(thunk) {
     try {
@@ -71057,7 +71061,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.2";
+var version = "3.13.3";
 
 function maybe(thunk) {
     try {
