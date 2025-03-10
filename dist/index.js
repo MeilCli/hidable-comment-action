@@ -65037,7 +65037,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.3";
+var version = "3.13.4";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -69093,7 +69093,6 @@ function _interopNamespace(e) {
 }
 
 var React__namespace = /*#__PURE__*/_interopNamespace(React);
-var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
 function useApolloClient(override) {
@@ -70142,14 +70141,14 @@ function useSuspenseFragment_(options) {
     var client = useApolloClient(options.client);
     var from = options.from, variables = options.variables;
     var cache$1 = client.cache;
-    var id = React.useMemo(function () {
+    var id = React__namespace.useMemo(function () {
         return typeof from === "string" ? from
             : from === null ? null
                 : cache$1.identify(from);
     }, [cache$1, from]);
     var fragmentRef = id === null ? null : (internal.getSuspenseCache(client).getFragmentRef([id, options.fragment, cache.canonicalStringify(variables)], client, tslib.__assign(tslib.__assign({}, options), { variables: variables, from: id })));
-    var _a = React__default.useState(fragmentRef === null ? NULL_PLACEHOLDER : ([fragmentRef.key, fragmentRef.promise])), current = _a[0], setPromise = _a[1];
-    React__default.useEffect(function () {
+    var _a = React__namespace.useState(fragmentRef === null ? NULL_PLACEHOLDER : ([fragmentRef.key, fragmentRef.promise])), current = _a[0], setPromise = _a[1];
+    React__namespace.useEffect(function () {
         if (fragmentRef === null) {
             return;
         }
@@ -70341,7 +70340,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.3";
+var version = "3.13.4";
 
 function maybe(thunk) {
     try {
@@ -71061,7 +71060,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.3";
+var version = "3.13.4";
 
 function maybe(thunk) {
     try {
