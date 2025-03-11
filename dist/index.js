@@ -3609,12 +3609,16 @@ async function run() {
         else {
             if (option.show) {
                 const expectBody = (0, comment_1.createHidableComment)(getCommentBody(option), option.id);
-                if (expectBody != targetCommentBody) {
+                if (option.replaceMode == "always") {
                     await client.updateComment({ id: targetCommentId, body: expectBody });
-                    core.info(`updated comment at ${targetCommentId}`);
+                    core.info(`updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
+                }
+                else if (expectBody != targetCommentBody && option.replaceMode == "changed") {
+                    await client.updateComment({ id: targetCommentId, body: expectBody });
+                    core.info(`updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
                 }
                 else {
-                    core.info(`not updated comment at ${targetCommentId}`);
+                    core.info(`not updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
                 }
             }
             else {
@@ -3676,6 +3680,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOption = getOption;
 const core = __importStar(__nccwpck_require__(7484));
 function getOption() {
+    const replaceMode = getInput("replace_mode");
+    if (replaceMode != "always" && replaceMode != "changed" && replaceMode != "ignore") {
+        throw new Error(`Invalid replace_mode: ${replaceMode}`);
+    }
     return {
         githubToken: getInput("github_token"),
         repository: getInput("repository"),
@@ -3685,6 +3693,7 @@ function getOption() {
         show: getInput("show") == "true",
         body: getInputOrNull("body"),
         bodyPath: getInputOrNull("body_path"),
+        replaceMode: replaceMode,
     };
 }
 function getInput(key) {
