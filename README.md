@@ -1,7 +1,7 @@
 # hidable-comment-action
 [![CI-Master](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml/badge.svg)](https://github.com/MeilCli/hidable-comment-action/actions/workflows/ci-master.yml)    
 Create, update or delete comment by action argument
-test
+test2
 Features:
 - Sticky comment
   - This action upsert comment.
