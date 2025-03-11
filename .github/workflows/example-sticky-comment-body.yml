@@ -6,12 +6,13 @@ jobs:
   example:
     runs-on: ubuntu-latest
     steps:
-      - uses: MeilCli/hidable-comment-action@v2
+      - uses: MeilCli/hidable-comment-action@master
         with:
           number: ${{ github.event.pull_request.number }}
           show: true
           id: 'example-sticky-comment-body'
           body: |
+            ## Example comment
             Example sticky comment body
             - This action can upsert comment body
             - This action can set multiple sticky comment by id
