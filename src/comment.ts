@@ -7,5 +7,5 @@ export function isHidableComment(body: string, id: string): boolean {
 }
 
 export function createHidableComment(body: string, id: string): string {
-    return `${hidableCommentIdentifier(id)}  ${body}`;
+    return `${hidableCommentIdentifier(id)}  \n${body}`;
 }
