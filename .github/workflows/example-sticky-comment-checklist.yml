@@ -1,0 +1,15 @@
+name: 'Example: Sticky Checklist comment'
+
+on:
+  pull_request:
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: MeilCli/hidable-comment-action@master
+        with:
+          number: ${{ github.event.pull_request.number }}
+          show: true
+          id: 'example-sticky-comment-checklist'
+          body_path: '.github/workflows/example-sticky-comment-checklist.md'
