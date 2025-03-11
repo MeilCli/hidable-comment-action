@@ -3503,7 +3503,7 @@ function isHidableComment(body, id) {
     return body.startsWith(hidableCommentIdentifier(id));
 }
 function createHidableComment(body, id) {
-    return `${hidableCommentIdentifier(id)}  ${body}`;
+    return `${hidableCommentIdentifier(id)}  \n${body}`;
 }
 
 
