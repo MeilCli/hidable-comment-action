@@ -6,7 +6,7 @@ jobs:
   example:
     runs-on: ubuntu-latest
     steps:
-      - uses: MeilCli/hidable-comment-action@master
+      - uses: MeilCli/hidable-comment-action@v3
         with:
           number: ${{ github.event.pull_request.number }}
           show: true
