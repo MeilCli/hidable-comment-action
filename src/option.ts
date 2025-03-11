@@ -9,9 +9,14 @@ export interface Option {
     show: boolean;
     body: string | null;
     bodyPath: string | null;
+    replaceMode: "always" | "changed" | "ignore";
 }
 
 export function getOption(): Option {
+    const replaceMode = getInput("replace_mode");
+    if (replaceMode != "always" && replaceMode != "changed" && replaceMode != "ignore") {
+        throw new Error(`Invalid replace_mode: ${replaceMode}`);
+    }
     return {
         githubToken: getInput("github_token"),
         repository: getInput("repository"),
@@ -21,6 +26,7 @@ export function getOption(): Option {
         show: getInput("show") == "true",
         body: getInputOrNull("body"),
         bodyPath: getInputOrNull("body_path"),
+        replaceMode: replaceMode as "always" | "changed" | "ignore",
     };
 }
 

@@ -144,6 +144,15 @@ jobs:
 - `body_path`
   - required, eigher body or body_path
   - comment body path, if set, read body from file
+- `replace_mode`
+  - required
+  - value: `always`, `changed` or `ignore`
+  - default: `ignore`
+  - This option is used to determine whether to update the comment when the comment id is the same as the existing comment.
+  - details:
+    - `always`: always update comment
+    - `changed`: update comment only when the body is different from the existing comment
+    - `ignore`: do not update comment. This value is useful for checklist style comment.
 
 ## Contributes
 [<img src="https://gist.githubusercontent.com/MeilCli/31fde39d6f48f6d2978d05cad61faf7e/raw/metrics_contributors.svg">](https://github.com/MeilCli/hidable-comment-action/graphs/contributors)

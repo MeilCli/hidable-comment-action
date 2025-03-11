@@ -34,6 +34,10 @@ inputs:
   body_path:
     description: 'comment body path, if set, read body from file'
     required: false
+  replace_mode:
+    description: 'replace mode, values are always, changed or ignore'
+    required: true
+    default: 'ignore'
 runs:
   using: 'node20'
   main: 'dist/index.js'

@@ -63,11 +63,14 @@ async function run() {
         } else {
             if (option.show) {
                 const expectBody = createHidableComment(getCommentBody(option), option.id);
-                if (expectBody != targetCommentBody) {
+                if (option.replaceMode == "always") {
                     await client.updateComment({ id: targetCommentId, body: expectBody });
-                    core.info(`updated comment at ${targetCommentId}`);
+                    core.info(`updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
+                } else if (expectBody != targetCommentBody && option.replaceMode == "changed") {
+                    await client.updateComment({ id: targetCommentId, body: expectBody });
+                    core.info(`updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
                 } else {
-                    core.info(`not updated comment at ${targetCommentId}`);
+                    core.info(`not updated comment at ${targetCommentId}, replaceMode: ${option.replaceMode}`);
                 }
             } else {
                 await client.deleteComment({ id: targetCommentId });
