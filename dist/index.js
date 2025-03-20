@@ -65046,7 +65046,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.4";
+var version = "3.13.5";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -65864,6 +65864,7 @@ var QueryInfo =  (function () {
         }
         if (!equal.equal(query.variables, this.variables)) {
             this.lastDiff = void 0;
+            this.cancel();
         }
         Object.assign(this, {
             document: query.document,
@@ -65985,13 +65986,16 @@ var QueryInfo =  (function () {
             this.stopped = true;
             this.reset();
             this.cancel();
-            this.cancel = QueryInfo.prototype.cancel;
             var oq = this.observableQuery;
             if (oq)
                 oq.stopPolling();
         }
     };
-    QueryInfo.prototype.cancel = function () { };
+    QueryInfo.prototype.cancel = function () {
+        var _a;
+        (_a = this.cancelWatch) === null || _a === void 0 ? void 0 : _a.call(this);
+        this.cancelWatch = void 0;
+    };
     QueryInfo.prototype.updateWatch = function (variables) {
         var _this = this;
         if (variables === void 0) { variables = this.variables; }
@@ -66002,7 +66006,7 @@ var QueryInfo =  (function () {
         var watchOptions = tslib.__assign(tslib.__assign({}, this.getDiffOptions(variables)), { watcher: this, callback: function (diff) { return _this.setDiff(diff); } });
         if (!this.lastWatch || !equal.equal(watchOptions, this.lastWatch)) {
             this.cancel();
-            this.cancel = this.cache.watch((this.lastWatch = watchOptions));
+            this.cancelWatch = this.cache.watch((this.lastWatch = watchOptions));
         }
     };
     QueryInfo.prototype.resetLastWrite = function () {
@@ -70349,7 +70353,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.4";
+var version = "3.13.5";
 
 function maybe(thunk) {
     try {
@@ -71069,7 +71073,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.4";
+var version = "3.13.5";
 
 function maybe(thunk) {
     try {
