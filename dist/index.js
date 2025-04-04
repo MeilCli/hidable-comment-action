@@ -64764,6 +64764,7 @@ var equal = __nccwpck_require__(2044);
 var utilities = __nccwpck_require__(1103);
 var cache = __nccwpck_require__(503);
 var errors = __nccwpck_require__(2955);
+var optimism = __nccwpck_require__(467);
 var trie = __nccwpck_require__(5704);
 var masking = __nccwpck_require__(6128);
 var graphql = __nccwpck_require__(7645);
@@ -64775,7 +64776,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.5";
+var version = "3.13.6";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -64953,7 +64954,13 @@ var ObservableQuery =  (function (_super) {
     tslib.__extends(ObservableQuery, _super);
     function ObservableQuery(_a) {
         var queryManager = _a.queryManager, queryInfo = _a.queryInfo, options = _a.options;
-        var _this = _super.call(this, function (observer) {
+        var _this = this;
+        var startedInactive = ObservableQuery.inactiveOnCreation.getValue();
+        _this = _super.call(this, function (observer) {
+            if (startedInactive) {
+                queryManager["queries"].set(_this.queryId, queryInfo);
+                startedInactive = false;
+            }
             try {
                 var subObserver = observer._subscription._observer;
                 if (subObserver && !subObserver.error) {
@@ -65333,8 +65340,9 @@ var ObservableQuery =  (function (_super) {
         return options.fetchPolicy;
     };
     ObservableQuery.prototype.fetch = function (options, newNetworkStatus, query) {
-        this.queryManager.setObservableQuery(this);
-        return this.queryManager["fetchConcastWithInfo"](this.queryId, options, newNetworkStatus, query);
+        var queryInfo = this.queryManager.getOrCreateQuery(this.queryId);
+        queryInfo.setObservableQuery(this);
+        return this.queryManager["fetchConcastWithInfo"](queryInfo, options, newNetworkStatus, query);
     };
     ObservableQuery.prototype.updatePolling = function () {
         var _this = this;
@@ -65516,6 +65524,7 @@ var ObservableQuery =  (function (_super) {
                 id: this.queryId,
             }) }) : result;
     };
+    ObservableQuery.inactiveOnCreation = new optimism.Slot();
     return ObservableQuery;
 }(utilities.Observable));
 utilities.fixObservableSubclass(ObservableQuery);
@@ -66138,8 +66147,7 @@ var QueryManager =  (function () {
         return true;
     };
     QueryManager.prototype.fetchQuery = function (queryId, options, networkStatus) {
-        return this.fetchConcastWithInfo(queryId, options, networkStatus).concast
-            .promise;
+        return this.fetchConcastWithInfo(this.getOrCreateQuery(queryId), options, networkStatus).concast.promise;
     };
     QueryManager.prototype.getQueryStore = function () {
         var store = Object.create(null);
@@ -66207,7 +66215,9 @@ var QueryManager =  (function () {
             options: options,
         });
         observable["lastQuery"] = query;
-        this.queries.set(observable.queryId, queryInfo);
+        if (!ObservableQuery["inactiveOnCreation"].getValue()) {
+            this.queries.set(observable.queryId, queryInfo);
+        }
         queryInfo.init({
             document: query,
             observableQuery: observable,
@@ -66319,7 +66329,7 @@ var QueryManager =  (function () {
         if (legacyQueryOptions.size) {
             legacyQueryOptions.forEach(function (options) {
                 var queryId = utilities.makeUniqueId("legacyOneTimeQuery");
-                var queryInfo = _this.getQuery(queryId).init({
+                var queryInfo = _this.getOrCreateQuery(queryId).init({
                     document: options.query,
                     variables: options.variables,
                 });
@@ -66359,13 +66369,10 @@ var QueryManager =  (function () {
                 (fetchPolicy !== "standby" && fetchPolicy !== "cache-only")) {
                 observableQueryPromises.push(observableQuery.refetch());
             }
-            _this.getQuery(queryId).setDiff(null);
+            (_this.queries.get(queryId) || observableQuery["queryInfo"]).setDiff(null);
         });
         this.broadcastQueries();
         return Promise.all(observableQueryPromises);
-    };
-    QueryManager.prototype.setObservableQuery = function (observableQuery) {
-        this.getQuery(observableQuery.queryId).setObservableQuery(observableQuery);
     };
     QueryManager.prototype.startGraphQLSubscription = function (options) {
         var _this = this;
@@ -66427,9 +66434,10 @@ var QueryManager =  (function () {
         this.removeQuery(queryId);
     };
     QueryManager.prototype.removeQuery = function (queryId) {
+        var _a;
         this.fetchCancelFns.delete(queryId);
         if (this.queries.has(queryId)) {
-            this.getQuery(queryId).stop();
+            (_a = this.queries.get(queryId)) === null || _a === void 0 ? void 0 : _a.stop();
             this.queries.delete(queryId);
         }
     };
@@ -66537,13 +66545,12 @@ var QueryManager =  (function () {
             throw error;
         });
     };
-    QueryManager.prototype.fetchConcastWithInfo = function (queryId, options,
+    QueryManager.prototype.fetchConcastWithInfo = function (queryInfo, options,
     networkStatus, query) {
         var _this = this;
         if (networkStatus === void 0) { networkStatus = exports.NetworkStatus.loading; }
         if (query === void 0) { query = options.query; }
         var variables = this.getVariables(query, options.variables);
-        var queryInfo = this.getQuery(queryId);
         var defaults = this.defaultOptions.watchQuery;
         var _a = options.fetchPolicy, fetchPolicy = _a === void 0 ? (defaults && defaults.fetchPolicy) || "cache-first" : _a, _b = options.errorPolicy, errorPolicy = _b === void 0 ? (defaults && defaults.errorPolicy) || "none" : _b, _c = options.returnPartialData, returnPartialData = _c === void 0 ? false : _c, _d = options.notifyOnNetworkStatusChange, notifyOnNetworkStatusChange = _d === void 0 ? false : _d, _e = options.context, context = _e === void 0 ? {} : _e;
         var normalized = Object.assign({}, options, {
@@ -66566,8 +66573,8 @@ var QueryManager =  (function () {
             }
             return sourcesWithInfo;
         };
-        var cleanupCancelFn = function () { return _this.fetchCancelFns.delete(queryId); };
-        this.fetchCancelFns.set(queryId, function (reason) {
+        var cleanupCancelFn = function () { return _this.fetchCancelFns.delete(queryInfo.queryId); };
+        this.fetchCancelFns.set(queryInfo.queryId, function (reason) {
             cleanupCancelFn();
             setTimeout(function () { return concast.cancel(reason); });
         });
@@ -66598,7 +66605,7 @@ var QueryManager =  (function () {
             this.getObservableQueries(include).forEach(function (oq, queryId) {
                 includedQueriesById.set(queryId, {
                     oq: oq,
-                    lastDiff: _this.getQuery(queryId).getDiff(),
+                    lastDiff: (_this.queries.get(queryId) || oq["queryInfo"]).getDiff(),
                 });
             });
         }
@@ -66794,7 +66801,7 @@ var QueryManager =  (function () {
                 return { fromLink: false, sources: [] };
         }
     };
-    QueryManager.prototype.getQuery = function (queryId) {
+    QueryManager.prototype.getOrCreateQuery = function (queryId) {
         if (queryId && !this.queries.has(queryId)) {
             this.queries.set(queryId, new QueryInfo(this, queryId));
         }
@@ -68971,7 +68978,9 @@ function useInternalState(client, query, options, renderPromises, makeWatchQuery
             observable:
             (renderPromises &&
                 renderPromises.getSSRObservable(makeWatchQueryOptions())) ||
-                client.watchQuery(getObsQueryOptions(void 0, client, options, makeWatchQueryOptions())),
+                core.ObservableQuery["inactiveOnCreation"].withValue(!renderPromises, function () {
+                    return client.watchQuery(getObsQueryOptions(void 0, client, options, makeWatchQueryOptions()));
+                }),
             resultData: {
                 previousData: (_a = previous === null || previous === void 0 ? void 0 : previous.resultData.current) === null || _a === void 0 ? void 0 : _a.data,
             },
@@ -70082,7 +70091,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.5";
+var version = "3.13.6";
 
 function maybe(thunk) {
     try {
@@ -70802,7 +70811,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.5";
+var version = "3.13.6";
 
 function maybe(thunk) {
     try {
