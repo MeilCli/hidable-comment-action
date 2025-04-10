@@ -64776,7 +64776,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.6";
+var version = "3.13.7";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -64988,6 +64988,7 @@ var ObservableQuery =  (function (_super) {
         }) || this;
         _this.observers = new Set();
         _this.subscriptions = new Set();
+        _this.dirty = false;
         _this.queryInfo = queryInfo;
         _this.queryManager = queryManager;
         _this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy);
@@ -65231,7 +65232,7 @@ var ObservableQuery =  (function (_super) {
         })
             .finally(function () {
             if (isCached && !updatedQuerySet.has(_this.query)) {
-                reobserveCacheFirst(_this);
+                _this.reobserveCacheFirst();
             }
         });
     };
@@ -65524,26 +65525,62 @@ var ObservableQuery =  (function (_super) {
                 id: this.queryId,
             }) }) : result;
     };
+    ObservableQuery.prototype.resetNotifications = function () {
+        this.cancelNotifyTimeout();
+        this.dirty = false;
+    };
+    ObservableQuery.prototype.cancelNotifyTimeout = function () {
+        if (this.notifyTimeout) {
+            clearTimeout(this.notifyTimeout);
+            this.notifyTimeout = void 0;
+        }
+    };
+    ObservableQuery.prototype.scheduleNotify = function () {
+        var _this = this;
+        if (this.dirty)
+            return;
+        this.dirty = true;
+        if (!this.notifyTimeout) {
+            this.notifyTimeout = setTimeout(function () { return _this.notify(); }, 0);
+        }
+    };
+    ObservableQuery.prototype.notify = function () {
+        this.cancelNotifyTimeout();
+        if (this.dirty) {
+            if (this.options.fetchPolicy == "cache-only" ||
+                this.options.fetchPolicy == "cache-and-network" ||
+                !isNetworkRequestInFlight(this.queryInfo.networkStatus)) {
+                var diff = this.queryInfo.getDiff();
+                if (diff.fromOptimisticTransaction) {
+                    this.observe();
+                }
+                else {
+                    this.reobserveCacheFirst();
+                }
+            }
+        }
+        this.dirty = false;
+    };
+    ObservableQuery.prototype.reobserveCacheFirst = function () {
+        var _a = this.options, fetchPolicy = _a.fetchPolicy, nextFetchPolicy = _a.nextFetchPolicy;
+        if (fetchPolicy === "cache-and-network" || fetchPolicy === "network-only") {
+            return this.reobserve({
+                fetchPolicy: "cache-first",
+                nextFetchPolicy: function (currentFetchPolicy, context) {
+                    this.nextFetchPolicy = nextFetchPolicy;
+                    if (typeof this.nextFetchPolicy === "function") {
+                        return this.nextFetchPolicy(currentFetchPolicy, context);
+                    }
+                    return fetchPolicy;
+                },
+            });
+        }
+        return this.reobserve();
+    };
     ObservableQuery.inactiveOnCreation = new optimism.Slot();
     return ObservableQuery;
 }(utilities.Observable));
 utilities.fixObservableSubclass(ObservableQuery);
-function reobserveCacheFirst(obsQuery) {
-    var _a = obsQuery.options, fetchPolicy = _a.fetchPolicy, nextFetchPolicy = _a.nextFetchPolicy;
-    if (fetchPolicy === "cache-and-network" || fetchPolicy === "network-only") {
-        return obsQuery.reobserve({
-            fetchPolicy: "cache-first",
-            nextFetchPolicy: function (currentFetchPolicy, context) {
-                this.nextFetchPolicy = nextFetchPolicy;
-                if (typeof this.nextFetchPolicy === "function") {
-                    return this.nextFetchPolicy(currentFetchPolicy, context);
-                }
-                return fetchPolicy;
-            },
-        });
-    }
-    return obsQuery.reobserve();
-}
 function defaultSubscriptionObserverErrorCallback(error) {
     globalThis.__DEV__ !== false && globals.invariant.error(25, error.message, error.stack);
 }
@@ -65569,21 +65606,13 @@ function wrapDestructiveCacheMethod(cache, methodName) {
         };
     }
 }
-function cancelNotifyTimeout(info) {
-    if (info["notifyTimeout"]) {
-        clearTimeout(info["notifyTimeout"]);
-        info["notifyTimeout"] = void 0;
-    }
-}
 var QueryInfo =  (function () {
     function QueryInfo(queryManager, queryId) {
         if (queryId === void 0) { queryId = queryManager.generateQueryId(); }
         this.queryId = queryId;
-        this.listeners = new Set();
         this.document = null;
         this.lastRequestId = 1;
         this.stopped = false;
-        this.dirty = false;
         this.observableQuery = null;
         var cache = (this.cache = queryManager.cache);
         if (!destructiveMethodCounts.has(cache)) {
@@ -65618,10 +65647,6 @@ var QueryInfo =  (function () {
             this.lastRequestId = query.lastRequestId;
         }
         return this;
-    };
-    QueryInfo.prototype.reset = function () {
-        cancelNotifyTimeout(this);
-        this.dirty = false;
     };
     QueryInfo.prototype.resetDiff = function () {
         this.lastDiff = void 0;
@@ -65661,68 +65686,29 @@ var QueryInfo =  (function () {
         };
     };
     QueryInfo.prototype.setDiff = function (diff) {
-        var _this = this;
-        var _a;
+        var _a, _b;
         var oldDiff = this.lastDiff && this.lastDiff.diff;
         if (diff && !diff.complete && ((_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a.getLastError())) {
             return;
         }
         this.updateLastDiff(diff);
-        if (!this.dirty && !equal.equal(oldDiff && oldDiff.result, diff && diff.result)) {
-            this.dirty = true;
-            if (!this.notifyTimeout) {
-                this.notifyTimeout = setTimeout(function () { return _this.notify(); }, 0);
-            }
+        if (!equal.equal(oldDiff && oldDiff.result, diff && diff.result)) {
+            (_b = this.observableQuery) === null || _b === void 0 ? void 0 : _b["scheduleNotify"]();
         }
     };
     QueryInfo.prototype.setObservableQuery = function (oq) {
-        var _this = this;
         if (oq === this.observableQuery)
             return;
-        if (this.oqListener) {
-            this.listeners.delete(this.oqListener);
-        }
         this.observableQuery = oq;
         if (oq) {
             oq["queryInfo"] = this;
-            this.listeners.add((this.oqListener = function () {
-                var diff = _this.getDiff();
-                if (diff.fromOptimisticTransaction) {
-                    oq["observe"]();
-                }
-                else {
-                    reobserveCacheFirst(oq);
-                }
-            }));
         }
-        else {
-            delete this.oqListener;
-        }
-    };
-    QueryInfo.prototype.notify = function () {
-        var _this = this;
-        cancelNotifyTimeout(this);
-        if (this.shouldNotify()) {
-            this.listeners.forEach(function (listener) { return listener(_this); });
-        }
-        this.dirty = false;
-    };
-    QueryInfo.prototype.shouldNotify = function () {
-        if (!this.dirty || !this.listeners.size) {
-            return false;
-        }
-        if (isNetworkRequestInFlight(this.networkStatus) && this.observableQuery) {
-            var fetchPolicy = this.observableQuery.options.fetchPolicy;
-            if (fetchPolicy !== "cache-only" && fetchPolicy !== "cache-and-network") {
-                return false;
-            }
-        }
-        return true;
     };
     QueryInfo.prototype.stop = function () {
+        var _a;
         if (!this.stopped) {
             this.stopped = true;
-            this.reset();
+            (_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a["resetNotifications"]();
             this.cancel();
             var oq = this.observableQuery;
             if (oq)
@@ -65759,9 +65745,10 @@ var QueryInfo =  (function () {
     };
     QueryInfo.prototype.markResult = function (result, document, options, cacheWriteBehavior) {
         var _this = this;
+        var _a;
         var merger = new utilities.DeepMerger();
         var graphQLErrors = utilities.isNonEmptyArray(result.errors) ? result.errors.slice(0) : [];
-        this.reset();
+        (_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a["resetNotifications"]();
         if ("incremental" in result && utilities.isNonEmptyArray(result.incremental)) {
             var mergedData = utilities.mergeIncrementalData(this.getDiff().result, result);
             result.data = mergedData;
@@ -65817,9 +65804,10 @@ var QueryInfo =  (function () {
         return (this.networkStatus = exports.NetworkStatus.ready);
     };
     QueryInfo.prototype.markError = function (error) {
+        var _a;
         this.networkStatus = exports.NetworkStatus.error;
         this.lastWrite = void 0;
-        this.reset();
+        (_a = this.observableQuery) === null || _a === void 0 ? void 0 : _a["resetNotifications"]();
         if (error.graphQLErrors) {
             this.graphQLErrors = error.graphQLErrors;
         }
@@ -66444,7 +66432,7 @@ var QueryManager =  (function () {
     QueryManager.prototype.broadcastQueries = function () {
         if (this.onBroadcast)
             this.onBroadcast();
-        this.queries.forEach(function (info) { return info.notify(); });
+        this.queries.forEach(function (info) { var _a; return (_a = info.observableQuery) === null || _a === void 0 ? void 0 : _a["notify"](); });
     };
     QueryManager.prototype.getLocalState = function () {
         return this.localState;
@@ -66642,9 +66630,7 @@ var QueryManager =  (function () {
                 var result;
                 if (onQueryUpdated) {
                     if (!diff) {
-                        var info = oq["queryInfo"];
-                        info.reset();
-                        diff = info.getDiff();
+                        diff = _this.cache.diff(oq["queryInfo"]["getDiffOptions"]());
                     }
                     result = onQueryUpdated(oq, diff, lastDiff);
                 }
@@ -70091,7 +70077,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.6";
+var version = "3.13.7";
 
 function maybe(thunk) {
     try {
@@ -70811,7 +70797,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.6";
+var version = "3.13.7";
 
 function maybe(thunk) {
     try {
