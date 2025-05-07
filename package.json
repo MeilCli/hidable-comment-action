@@ -16,7 +16,7 @@
     "license": "MIT",
     "dependencies": {
         "@actions/core": "^1.11.1",
-        "@actions/github": "^6.0.0",
+        "@actions/github": "^6.0.1",
         "@apollo/client": "^3.13.8",
         "cross-fetch": "^4.1.0",
         "graphql": "^16.11.0"
