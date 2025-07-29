@@ -65032,7 +65032,7 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var equal__default = /*#__PURE__*/_interopDefaultLegacy(equal);
 
-var version = "3.13.8";
+var version = "3.13.9";
 
 function isNonNullObject(obj) {
     return obj !== null && typeof obj === "object";
@@ -65213,10 +65213,7 @@ var ObservableQuery =  (function (_super) {
         var _this = this;
         var startedInactive = ObservableQuery.inactiveOnCreation.getValue();
         _this = _super.call(this, function (observer) {
-            if (startedInactive) {
-                queryManager["queries"].set(_this.queryId, queryInfo);
-                startedInactive = false;
-            }
+            _this._getOrCreateQuery();
             try {
                 var subObserver = observer._subscription._observer;
                 if (subObserver && !subObserver.error) {
@@ -65245,6 +65242,13 @@ var ObservableQuery =  (function (_super) {
         _this.observers = new Set();
         _this.subscriptions = new Set();
         _this.dirty = false;
+        _this._getOrCreateQuery = function () {
+            if (startedInactive) {
+                queryManager["queries"].set(_this.queryId, queryInfo);
+                startedInactive = false;
+            }
+            return _this.queryManager.getOrCreateQuery(_this.queryId);
+        };
         _this.queryInfo = queryInfo;
         _this.queryManager = queryManager;
         _this.waitForOwnResult = skipCacheDataFor(options.fetchPolicy);
@@ -65597,7 +65601,7 @@ var ObservableQuery =  (function (_super) {
         return options.fetchPolicy;
     };
     ObservableQuery.prototype.fetch = function (options, newNetworkStatus, query) {
-        var queryInfo = this.queryManager.getOrCreateQuery(this.queryId);
+        var queryInfo = this._getOrCreateQuery();
         queryInfo.setObservableQuery(this);
         return this.queryManager["fetchConcastWithInfo"](queryInfo, options, newNetworkStatus, query);
     };
@@ -70333,7 +70337,7 @@ var tslib = __nccwpck_require__(9479);
 var equality = __nccwpck_require__(2044);
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.8";
+var version = "3.13.9";
 
 function maybe(thunk) {
     try {
@@ -71053,7 +71057,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var tsInvariant = __nccwpck_require__(3747);
 
-var version = "3.13.8";
+var version = "3.13.9";
 
 function maybe(thunk) {
     try {
