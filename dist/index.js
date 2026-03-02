@@ -7882,6 +7882,55 @@ const collectSubfields = (0, _memoize.memoize3)(
  */
 
 /**
+ * @internal
+ */
+class CollectedErrors {
+  constructor() {
+    this._errorPositions = new Set();
+    this._errors = [];
+  }
+
+  get errors() {
+    return this._errors;
+  }
+
+  add(error, path) {
+    // Do not modify errors list if the execution position for this error or
+    // any of its ancestors has already been nulled via error propagation.
+    // This check should be unnecessary for implementations able to implement
+    // actual cancellation.
+    if (this._hasNulledPosition(path)) {
+      return;
+    }
+
+    this._errorPositions.add(path);
+
+    this._errors.push(error);
+  }
+
+  _hasNulledPosition(startPath) {
+    let path = startPath;
+
+    while (path !== undefined) {
+      if (this._errorPositions.has(path)) {
+        return true;
+      }
+
+      path = path.prev;
+    }
+
+    return this._errorPositions.has(undefined);
+  }
+}
+/**
+ * The result of GraphQL execution.
+ *
+ *   - `errors` is included when any errors occurred as a non-empty array.
+ *   - `data` is the result of a successful execution of the query.
+ *   - `extensions` is reserved for adding non-standard properties.
+ */
+
+/**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
@@ -7927,18 +7976,18 @@ function execute(args) {
 
     if ((0, _isPromise.isPromise)(result)) {
       return result.then(
-        (data) => buildResponse(data, exeContext.errors),
+        (data) => buildResponse(data, exeContext.collectedErrors.errors),
         (error) => {
-          exeContext.errors.push(error);
-          return buildResponse(null, exeContext.errors);
+          exeContext.collectedErrors.add(error, undefined);
+          return buildResponse(null, exeContext.collectedErrors.errors);
         },
       );
     }
 
-    return buildResponse(result, exeContext.errors);
+    return buildResponse(result, exeContext.collectedErrors.errors);
   } catch (error) {
-    exeContext.errors.push(error);
-    return buildResponse(null, exeContext.errors);
+    exeContext.collectedErrors.add(error, undefined);
+    return buildResponse(null, exeContext.collectedErrors.errors);
   }
 }
 /**
@@ -7975,6 +8024,7 @@ function buildResponse(data, errors) {
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  *
+ * @deprecated will be removed in v17 in favor of assertValidSchema() and TS checks
  * @internal
  */
 
@@ -8109,7 +8159,7 @@ function buildExecutionContext(args) {
       subscribeFieldResolver !== null && subscribeFieldResolver !== void 0
         ? subscribeFieldResolver
         : defaultFieldResolver,
-    errors: [],
+    collectedErrors: new CollectedErrors(),
   };
 }
 /**
@@ -8314,7 +8364,7 @@ function executeField(exeContext, parentType, source, fieldNodes, path) {
           fieldNodes,
           (0, _Path.pathToArray)(path),
         );
-        return handleFieldError(error, returnType, exeContext);
+        return handleFieldError(error, returnType, path, exeContext);
       });
     }
 
@@ -8325,7 +8375,7 @@ function executeField(exeContext, parentType, source, fieldNodes, path) {
       fieldNodes,
       (0, _Path.pathToArray)(path),
     );
-    return handleFieldError(error, returnType, exeContext);
+    return handleFieldError(error, returnType, path, exeContext);
   }
 }
 /**
@@ -8349,7 +8399,7 @@ function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
   };
 }
 
-function handleFieldError(error, returnType, exeContext) {
+function handleFieldError(error, returnType, path, exeContext) {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if ((0, _definition.isNonNullType)(returnType)) {
@@ -8357,7 +8407,7 @@ function handleFieldError(error, returnType, exeContext) {
   } // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
 
-  exeContext.errors.push(error);
+  exeContext.collectedErrors.add(error, path);
   return null;
 }
 /**
@@ -8522,7 +8572,7 @@ function completeListValue(
             fieldNodes,
             (0, _Path.pathToArray)(itemPath),
           );
-          return handleFieldError(error, itemType, exeContext);
+          return handleFieldError(error, itemType, itemPath, exeContext);
         });
       }
 
@@ -8533,7 +8583,7 @@ function completeListValue(
         fieldNodes,
         (0, _Path.pathToArray)(itemPath),
       );
-      return handleFieldError(error, itemType, exeContext);
+      return handleFieldError(error, itemType, itemPath, exeContext);
     }
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;
@@ -9134,6 +9184,7 @@ async function createSourceEventStream(...rawArgs) {
   const args = toNormalizedArgs(rawArgs);
   const { schema, document, variableValues } = args; // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
+  // eslint-disable-next-line import/no-deprecated
 
   (0, _execute.assertValidExecutionArguments)(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
@@ -30804,6 +30855,11 @@ function ValuesOfCorrectTypeRule(context) {
     EnumValue: (node) => isValidValueNode(context, node),
     IntValue: (node) => isValidValueNode(context, node),
     FloatValue: (node) => isValidValueNode(context, node),
+    // Descriptions are string values that would not validate according
+    // to the below logic, but since (per the specification) descriptions must
+    // not affect validation, they are ignored entirely when visiting the AST
+    // and do not require special handling.
+    // See https://spec.graphql.org/draft/#sec-Descriptions
     StringValue: (node) => isValidValueNode(context, node),
     BooleanValue: (node) => isValidValueNode(context, node),
   };
@@ -31501,7 +31557,11 @@ exports.validateSDL = validateSDL;
 
 var _devAssert = __nccwpck_require__(5383);
 
+var _mapValue = __nccwpck_require__(5719);
+
 var _GraphQLError = __nccwpck_require__(5939);
+
+var _ast = __nccwpck_require__(2740);
 
 var _visitor = __nccwpck_require__(638);
 
@@ -31513,6 +31573,12 @@ var _specifiedRules = __nccwpck_require__(916);
 
 var _ValidationContext = __nccwpck_require__(8139);
 
+// Per the specification, descriptions must not affect validation.
+// See https://spec.graphql.org/draft/#sec-Descriptions
+const QueryDocumentKeysToValidate = (0, _mapValue.mapValue)(
+  _ast.QueryDocumentKeys,
+  (keys) => keys.filter((key) => key !== 'description'),
+);
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -31533,6 +31599,7 @@ var _ValidationContext = __nccwpck_require__(8139);
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
+
 function validate(
   schema,
   documentAST,
@@ -31582,6 +31649,7 @@ function validate(
     (0, _visitor.visit)(
       documentAST,
       (0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor),
+      QueryDocumentKeysToValidate,
     );
   } catch (e) {
     if (e !== abortObj) {
@@ -31660,7 +31728,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.12.0';
+const version = '16.13.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -31668,7 +31736,7 @@ const version = '16.12.0';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 12,
+  minor: 13,
   patch: 0,
   preReleaseTag: null,
 });
