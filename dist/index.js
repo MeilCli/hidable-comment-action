@@ -9384,7 +9384,7 @@ function getVariableValues(schema, varDefNodes, inputs, options) {
 }
 
 function coerceVariableValues(schema, varDefNodes, inputs, onError) {
-  const coercedValues = {};
+  const coercedValues = Object.create(null);
 
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
@@ -9465,7 +9465,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
     );
   }
 
-  return coercedValues;
+  return { ...coercedValues };
 }
 /**
  * Prepares an object map of argument values given a list of argument
@@ -9479,7 +9479,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
 function getArgumentValues(def, node, variableValues) {
   var _node$arguments;
 
-  const coercedValues = {}; // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  const coercedValues = Object.create(null); // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   /* c8 ignore next */
 
@@ -9578,7 +9578,7 @@ function getArgumentValues(def, node, variableValues) {
     coercedValues[name] = coercedValue;
   }
 
-  return coercedValues;
+  return { ...coercedValues };
 }
 /**
  * Prepares an object map of argument values given a directive definition
@@ -22904,7 +22904,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return;
     }
 
-    const coercedValue = {};
+    const coercedValue = Object.create(null);
     const fieldDefs = type.getFields();
 
     for (const field of Object.values(fieldDefs)) {
@@ -22977,7 +22977,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       }
     }
 
-    return coercedValue;
+    return { ...coercedValue };
   }
 
   if ((0, _definition.isLeafType)(type)) {
@@ -30753,18 +30753,7 @@ var _definition = __nccwpck_require__(4169);
  * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
  */
 function ValuesOfCorrectTypeRule(context) {
-  let variableDefinitions = {};
   return {
-    OperationDefinition: {
-      enter() {
-        variableDefinitions = {};
-      },
-    },
-
-    VariableDefinition(definition) {
-      variableDefinitions[definition.variable.name.value] = definition;
-    },
-
     ListValue(node) {
       // Note: TypeInfo will traverse into a list's item type, so look to the
       // parent input type to check if it is a list.
@@ -31728,7 +31717,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.13.1';
+const version = '16.13.2';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -31737,7 +31726,7 @@ exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
   minor: 13,
-  patch: 1,
+  patch: 2,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
