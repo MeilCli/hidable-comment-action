@@ -1,4 +1,4 @@
-import { GetIssueOrPullRequestCommentQuery } from "../graphql/graphql";
+import { GetIssueOrPullRequestCommentQuery } from "../graphql/graphql.js";
 
 export type GetIssueOrPullRequestCommentQueryRepository = Exclude<
     GetIssueOrPullRequestCommentQuery["repository"],

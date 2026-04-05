@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
-import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from "@apollo/client";
-import { Option } from "./option";
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { Option } from "./option.js";
 import {
     AddComment,
     AddCommentMutation,
@@ -17,7 +17,7 @@ import {
     UpdateComment,
     UpdateCommentMutation,
     UpdateCommentMutationVariables,
-} from "../graphql/graphql";
+} from "../graphql/graphql.js";
 
 export function githubClient(option: Option): GitHubClient {
     return new GitHubClient(
@@ -33,7 +33,7 @@ export function githubClient(option: Option): GitHubClient {
 }
 
 export class GitHubClient {
-    constructor(private readonly client: ApolloClient<NormalizedCacheObject>) {}
+    constructor(private readonly client: ApolloClient) {}
 
     async addComment(variables: AddCommentMutationVariables): Promise<AddCommentMutation | null | undefined> {
         const result = await this.client.mutate<AddCommentMutation>({ mutation: AddComment, variables: variables });
@@ -50,7 +50,7 @@ export class GitHubClient {
 
     async getIssueOrPullRequestComment(
         variables: GetIssueOrPullRequestCommentQueryVariables,
-    ): Promise<GetIssueOrPullRequestCommentQuery> {
+    ): Promise<GetIssueOrPullRequestCommentQuery | undefined> {
         const result = await this.client.query<GetIssueOrPullRequestCommentQuery>({
             query: GetIssueOrPullRequestComment,
             variables: variables,
@@ -58,7 +58,7 @@ export class GitHubClient {
         return result.data;
     }
 
-    async getLoginUser(variables: GetLoginUserQueryVariables): Promise<GetLoginUserQuery> {
+    async getLoginUser(variables: GetLoginUserQueryVariables): Promise<GetLoginUserQuery | undefined> {
         const result = await this.client.query<GetLoginUserQuery>({ query: GetLoginUser, variables: variables });
         return result.data;
     }

@@ -4,6 +4,8 @@ documents:
   - graphql/*.graphql
 generates:
   graphql/graphql.ts:
+    config:
+      documentMode: documentNode
     plugins:
       - 'typescript'
       - 'typescript-resolvers'

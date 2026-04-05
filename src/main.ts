@@ -1,9 +1,9 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import { getOption, Option } from "./option";
-import { githubClient } from "./client";
-import { getIssueOrPullRequestCommentWithPaging } from "./paging";
-import { isHidableComment, createHidableComment } from "./comment";
+import { getOption, Option } from "./option.js";
+import { githubClient } from "./client.js";
+import { getIssueOrPullRequestCommentWithPaging } from "./paging.js";
+import { isHidableComment, createHidableComment } from "./comment.js";
 
 function getCommentBody(option: Option): string {
     if (option.body != null) {
@@ -30,7 +30,11 @@ async function run() {
         const owner = option.repository.split("/")[0];
         const name = option.repository.split("/")[1];
         // if bot account, including '[bot]'. but author.login will not include it
-        const loginUser = (await client.getLoginUser({})).viewer.login.split("[")[0];
+        const loginUserResponse = await client.getLoginUser({});
+        if (loginUserResponse == undefined) {
+            throw Error("cannot find login user");
+        }
+        const loginUser = loginUserResponse.viewer.login.split("[")[0];
         const issueOrPullRequest = await getIssueOrPullRequestCommentWithPaging(client, {
             owner,
             name,

@@ -1,4 +1,5 @@
 import { isHidableComment, createHidableComment } from "../src/comment";
+import { test, expect } from "@jest/globals";
 
 test("isHidableComment", () => {
     const body1 = "test-body1";

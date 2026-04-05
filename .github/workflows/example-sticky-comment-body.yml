@@ -5,8 +5,11 @@ on:
 jobs:
   example:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
-      - uses: MeilCli/hidable-comment-action@v3
+      - uses: MeilCli/hidable-comment-action@master
         with:
           number: ${{ github.event.pull_request.number }}
           show: true

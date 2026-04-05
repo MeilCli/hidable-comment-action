@@ -1,6 +1,6 @@
-import { GetIssueOrPullRequestCommentQueryVariables } from "../graphql/graphql";
-import { GitHubClient } from "./client";
-import { GetIssueOrPullRequestCommentQueryIssueOrPullRequestCommentNode } from "./types";
+import { GetIssueOrPullRequestCommentQueryVariables } from "../graphql/graphql.js";
+import { GitHubClient } from "./client.js";
+import { GetIssueOrPullRequestCommentQueryIssueOrPullRequestCommentNode } from "./types.js";
 
 // guard for infinity loop
 const maxLoop = 100;
@@ -18,14 +18,14 @@ export async function getIssueOrPullRequestCommentWithPaging(
     const comments: GetIssueOrPullRequestCommentQueryIssueOrPullRequestCommentNode[] = [];
 
     let response = await client.getIssueOrPullRequestComment(variables);
-    let pageInfo = response.repository?.issueOrPullRequest?.comments.pageInfo;
+    let pageInfo = response?.repository?.issueOrPullRequest?.comments.pageInfo;
     if (
-        response.repository?.issueOrPullRequest?.comments.nodes == null ||
-        response.repository.issueOrPullRequest.comments.nodes == undefined
+        response?.repository?.issueOrPullRequest?.comments.nodes == null ||
+        response?.repository?.issueOrPullRequest?.comments?.nodes == undefined
     ) {
         if (
-            response.repository?.issueOrPullRequest?.__typename == undefined ||
-            response.repository.issueOrPullRequest.id == undefined
+            response?.repository?.issueOrPullRequest?.__typename == undefined ||
+            response?.repository?.issueOrPullRequest?.id == undefined
         ) {
             throw Error("__typename or id is invalid response");
         }
@@ -52,15 +52,15 @@ export async function getIssueOrPullRequestCommentWithPaging(
     ) {
         loopCount += 1;
         response = await client.getIssueOrPullRequestComment({ ...variables, after: pageInfo.endCursor });
-        pageInfo = response.repository?.issueOrPullRequest?.comments.pageInfo;
+        pageInfo = response?.repository?.issueOrPullRequest?.comments?.pageInfo;
 
         if (
-            response.repository?.issueOrPullRequest?.comments.nodes == null ||
-            response.repository.issueOrPullRequest.comments.nodes == undefined
+            response?.repository?.issueOrPullRequest?.comments?.nodes == null ||
+            response?.repository?.issueOrPullRequest?.comments?.nodes == undefined
         ) {
             if (
-                response.repository?.issueOrPullRequest?.__typename == undefined ||
-                response.repository.issueOrPullRequest.id == undefined
+                response?.repository?.issueOrPullRequest?.__typename == undefined ||
+                response?.repository?.issueOrPullRequest?.id == undefined
             ) {
                 throw Error("__typename or id is invalid response");
             }

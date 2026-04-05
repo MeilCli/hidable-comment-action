@@ -1,5 +1,5 @@
-import { MockedResponse, MockLink } from "@apollo/client/testing";
-import { ApolloClient, InMemoryCache, NormalizedCacheObject } from "@apollo/client";
+import { MockLink } from "@apollo/client/testing";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 import {
     GetIssueOrPullRequestComment,
     GetIssueOrPullRequestCommentQuery,
@@ -7,16 +7,17 @@ import {
 } from "../graphql/graphql";
 import { GitHubClient } from "../src/client";
 import { getIssueOrPullRequestCommentWithPaging } from "../src/paging";
+import { test, expect } from "@jest/globals";
 
-function createMockClient(mocks: ReadonlyArray<MockedResponse>): ApolloClient<NormalizedCacheObject> {
+function createMockClient(mocks: ReadonlyArray<MockLink.MockedResponse>): ApolloClient {
     return new ApolloClient({
-        cache: new InMemoryCache({ addTypename: true }),
-        link: new MockLink(mocks, true),
+        cache: new InMemoryCache(),
+        link: new MockLink(mocks),
     });
 }
 
 test("getIssueOrPullRequestCommentWithPaging", async () => {
-    const mocks: MockedResponse[] = [
+    const mocks: MockLink.MockedResponse[] = [
         {
             request: {
                 query: GetIssueOrPullRequestComment,
@@ -122,7 +123,7 @@ test("getIssueOrPullRequestCommentWithPaging", async () => {
 });
 
 test("getIssueOrPullRequestCommentWithPagingInfinityLoop", async () => {
-    const mocks: MockedResponse[] = [
+    const mocks: MockLink.MockedResponse[] = [
         {
             request: {
                 query: GetIssueOrPullRequestComment,
@@ -205,6 +206,6 @@ test("getIssueOrPullRequestCommentWithPagingInfinityLoop", async () => {
             owner: "MeilCli",
             name: "hidable-comment-action",
             number: 1,
-        })
+        }),
     ).rejects.toThrow();
 });
