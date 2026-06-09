@@ -30,7 +30,7 @@ exports["default"] = fetch
 
 /***/ }),
 
-/***/ 727:
+/***/ 6432:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -42,12 +42,13 @@ exports.GraphQLError = void 0;
 exports.formatError = formatError;
 exports.printError = printError;
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _location = __nccwpck_require__(7577);
+var _location = __nccwpck_require__(36);
 
-var _printLocation = __nccwpck_require__(732);
+var _printLocation = __nccwpck_require__(9623);
 
+/** @category Errors */
 function toNormalizedOptions(args) {
   const firstArg = args[0];
 
@@ -90,9 +91,7 @@ class GraphQLError extends Error {
    * Enumerable, and appears in the result of JSON.stringify().
    */
 
-  /**
-   * An array of GraphQL AST Nodes corresponding to this error.
-   */
+  /** An array of GraphQL AST Nodes corresponding to this error. */
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -106,15 +105,92 @@ class GraphQLError extends Error {
    * which correspond to this error.
    */
 
+  /** Original error that caused this GraphQLError, if one exists. */
+
+  /** Extension fields to add to the formatted error. */
+
   /**
-   * The original error thrown from a field resolver during execution.
+   * Creates a GraphQLError instance.
+   * @param message - Human-readable error message.
+   * @param options - Error metadata such as source locations, response path, original error, and extensions.
+   * This positional-arguments constructor overload is deprecated. Use the
+   * `GraphQLError(message, options)` overload instead.
+   * @example
+   * ```ts
+   * // Create an error from AST nodes and response metadata.
+   * import { parse } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const document = parse('{ greeting }');
+   * const fieldNode = document.definitions[0].selectionSet.selections[0];
+   * const error = new GraphQLError('Cannot query this field.', {
+   *   nodes: fieldNode,
+   *   path: ['greeting'],
+   *   extensions: { code: 'FORBIDDEN' },
+   * });
+   *
+   * error.message; // => 'Cannot query this field.'
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.extensions; // => { code: 'FORBIDDEN' }
+   * ```
+   * @example
+   * ```ts
+   * // This variant derives locations from source positions and preserves the original error.
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const source = new Source('{ greeting }');
+   * const originalError = new Error('Database unavailable.');
+   * const error = new GraphQLError('Resolver failed.', {
+   *   source,
+   *   positions: [2],
+   *   path: ['greeting'],
+   *   originalError,
+   * });
+   *
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.originalError; // => originalError
+   * ```
    */
 
   /**
-   * Extension fields to add to the formatted error.
-   */
-
-  /**
+   * Creates a GraphQLError instance using the legacy positional constructor.
+   * This deprecated overload will be removed in v17. Prefer the
+   * `GraphQLErrorOptions` object overload, which keeps optional error metadata
+   * in a single options bag.
+   * @param message - Human-readable error message.
+   * @param nodes - AST node or nodes associated with this error.
+   * @param source - Source document used to derive error locations.
+   * @param positions - Character offsets in the source document associated with
+   * this error.
+   * @param path - Response path where this error occurred during execution.
+   * @param originalError - Original error that caused this GraphQLError, if one
+   * exists.
+   * @param extensions - Extension fields to include in the formatted error.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const source = new Source('{ greeting }');
+   * const originalError = new Error('Database unavailable.');
+   * const error = new GraphQLError(
+   *   'Resolver failed.',
+   *   undefined,
+   *   source,
+   *   [2],
+   *   ['greeting'],
+   *   originalError,
+   *   { code: 'INTERNAL' },
+   * );
+   *
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.originalError; // => originalError
+   * error.extensions; // => { code: 'INTERNAL' }
+   * ```
    * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
    */
   constructor(message, ...rawArgs) {
@@ -226,10 +302,30 @@ class GraphQLError extends Error {
     }
     /* c8 ignore stop */
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLError';
   }
+  /**
+   * Returns this error as a human-readable message with source locations.
+   * @returns The formatted error string.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Cannot query field "name".', {
+   *   source: new Source('{ name }'),
+   *   positions: [2],
+   * });
+   *
+   * error.toString(); // => 'Cannot query field "name".\n\nGraphQL request:1:3\n1 | { name }\n  |   ^'
+   * ```
+   */
 
   toString() {
     let output = this.message;
@@ -250,6 +346,21 @@ class GraphQLError extends Error {
 
     return output;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Resolver failed.', {
+   *   path: ['viewer', 'name'],
+   *   extensions: { code: 'INTERNAL' },
+   * });
+   *
+   * error.toJSON(); // => { message: 'Resolver failed.', path: ['viewer', 'name'], extensions: { code: 'INTERNAL' } }
+   * ```
+   */
 
   toJSON() {
     const formattedError = {
@@ -277,14 +388,23 @@ exports.GraphQLError = GraphQLError;
 function undefinedIfEmpty(array) {
   return array === undefined || array.length === 0 ? undefined : array;
 }
-/**
- * See: https://spec.graphql.org/draft/#sec-Errors
- */
+/** See: https://spec.graphql.org/draft/#sec-Errors */
 
 /**
  * Prints a GraphQLError to a string, representing useful location information
- * about the error's position in the source.
+ * about the error's position in the source. This deprecated helper is retained
+ * for backwards compatibility; call `error.toString()` instead because
+ * printError will be removed in v17.
+ * @param error - The error to format.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { GraphQLError, printError } from 'graphql/error';
  *
+ * const message = printError(new GraphQLError('Example error'));
+ *
+ * message; // => 'Example error'
+ * ```
  * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
 function printError(error) {
@@ -292,8 +412,19 @@ function printError(error) {
 }
 /**
  * Given a GraphQLError, format it according to the rules described by the
- * Response Format, Errors section of the GraphQL Specification.
+ * Response Format, Errors section of the GraphQL Specification. This deprecated
+ * helper is retained for backwards compatibility; call `error.toJSON()`
+ * instead because formatError will be removed in v17.
+ * @param error - The error to format.
+ * @returns The JSON-serializable formatted error.
+ * @example
+ * ```ts
+ * import { GraphQLError, formatError } from 'graphql/error';
  *
+ * const formatted = formatError(new GraphQLError('Example error'));
+ *
+ * formatted; // => { message: 'Example error' }
+ * ```
  * @deprecated Please use `error.toJSON` instead. Will be removed in v17
  */
 
@@ -304,7 +435,7 @@ function formatError(error) {
 
 /***/ }),
 
-/***/ 8839:
+/***/ 7581:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -343,16 +474,16 @@ Object.defineProperty(exports, "syntaxError", ({
   },
 }));
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _syntaxError = __nccwpck_require__(9599);
+var _syntaxError = __nccwpck_require__(4974);
 
-var _locatedError = __nccwpck_require__(8362);
+var _locatedError = __nccwpck_require__(8530);
 
 
 /***/ }),
 
-/***/ 8362:
+/***/ 8530:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -362,14 +493,35 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.locatedError = locatedError;
 
-var _toError = __nccwpck_require__(9427);
+var _toError = __nccwpck_require__(4730);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Errors */
 
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a
  * GraphQL operation, produce a new GraphQLError aware of the location in the
  * document responsible for the original Error.
+ * @param rawOriginalError - The original error value to wrap.
+ * @param nodes - The AST nodes associated with the error.
+ * @param path - The response path associated with the error.
+ * @returns The GraphQL error.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { locatedError } from 'graphql/error';
+ *
+ * const document = parse('{ viewer { name } }');
+ * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, [
+ *   'viewer',
+ * ]);
+ *
+ * error.message; // => 'Resolver failed'
+ * error.locations; // => [{ line: 1, column: 3 }]
+ * error.path; // => ['viewer']
+ * ```
  */
 function locatedError(rawOriginalError, nodes, path) {
   var _nodes;
@@ -399,7 +551,7 @@ function isLocatedGraphQLError(error) {
 
 /***/ }),
 
-/***/ 9599:
+/***/ 4974:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -409,11 +561,27 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.syntaxError = syntaxError;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Errors */
 
 /**
  * Produces a GraphQLError representing a syntax error, containing useful
  * descriptive information about the syntax error's position in the source.
+ * @param source - The GraphQL source containing the syntax error.
+ * @param position - Character offset where the syntax error was encountered.
+ * @param description - Human-readable description of the syntax error.
+ * @returns A GraphQLError located at the syntax error position.
+ * @example
+ * ```ts
+ * import { Source } from 'graphql/language';
+ * import { syntaxError } from 'graphql/error';
+ *
+ * const error = syntaxError(new Source('query {'), 7, 'Expected Name');
+ *
+ * error.message; // => 'Syntax Error: Expected Name'
+ * error.locations; // => [{ line: 1, column: 8 }]
+ * ```
  */
 function syntaxError(source, position, description) {
   return new _GraphQLError.GraphQLError(`Syntax Error: ${description}`, {
@@ -425,7 +593,7 @@ function syntaxError(source, position, description) {
 
 /***/ }),
 
-/***/ 6463:
+/***/ 3938:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -436,15 +604,15 @@ Object.defineProperty(exports, "__esModule", ({
 exports.collectFields = collectFields;
 exports.collectSubfields = collectSubfields;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
 
-var _values = __nccwpck_require__(1224);
+var _values = __nccwpck_require__(5455);
 
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -597,6 +765,8 @@ function collectFieldsImpl(
 /**
  * Determines if a field should be included based on the `@include` and `@skip`
  * directives, where `@skip` has higher precedence than `@include`.
+ *
+ * @internal
  */
 
 function shouldIncludeNode(variableValues, node) {
@@ -626,6 +796,8 @@ function shouldIncludeNode(variableValues, node) {
 }
 /**
  * Determines if a fragment is applicable to the given type.
+ *
+ * @internal
  */
 
 function doesFragmentConditionMatch(schema, fragment, type) {
@@ -652,6 +824,8 @@ function doesFragmentConditionMatch(schema, fragment, type) {
 }
 /**
  * Implements the logic to compute the key of a given field's entry
+ *
+ * @internal
  */
 
 function getFieldEntryKey(node) {
@@ -661,7 +835,7 @@ function getFieldEntryKey(node) {
 
 /***/ }),
 
-/***/ 7455:
+/***/ 9170:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -677,48 +851,52 @@ exports.execute = execute;
 exports.executeSync = executeSync;
 exports.getFieldDef = getFieldDef;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _isIterableObject = __nccwpck_require__(4433);
+var _isIterableObject = __nccwpck_require__(7670);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _isPromise = __nccwpck_require__(6247);
+var _isPromise = __nccwpck_require__(1638);
 
-var _memoize = __nccwpck_require__(6929);
+var _memoize = __nccwpck_require__(4034);
 
-var _Path = __nccwpck_require__(8983);
+var _Path = __nccwpck_require__(9888);
 
-var _promiseForObject = __nccwpck_require__(911);
+var _promiseForObject = __nccwpck_require__(316);
 
-var _promiseReduce = __nccwpck_require__(4117);
+var _promiseReduce = __nccwpck_require__(7340);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _locatedError = __nccwpck_require__(8362);
+var _locatedError = __nccwpck_require__(8530);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _validate = __nccwpck_require__(5042);
+var _validate = __nccwpck_require__(6763);
 
-var _collectFields = __nccwpck_require__(6463);
+var _collectFields = __nccwpck_require__(3938);
 
-var _values = __nccwpck_require__(1224);
+var _values = __nccwpck_require__(5455);
+
+/** @category Execution */
 
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
+ *
+ * @internal
  */
 const collectSubfields = (0, _memoize.memoize3)(
   (exeContext, returnType, fieldNodes) =>
@@ -755,11 +933,10 @@ const collectSubfields = (0, _memoize.memoize3)(
  *
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
- */
-
-/**
+ *
  * @internal
  */
+
 class CollectedErrors {
   constructor() {
     this._errorPositions = new Set();
@@ -799,11 +976,9 @@ class CollectedErrors {
   }
 }
 /**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `extensions` is reserved for adding non-standard properties.
+ * Represents the response produced by executing a GraphQL operation.
+ * @typeParam TData - Shape of the execution data payload.
+ * @typeParam TExtensions - Shape of the extensions payload.
  */
 
 /**
@@ -815,6 +990,139 @@ class CollectedErrors {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * Field errors are collected into the response instead of rejecting the
+ * returned promise. Only the field that produced the error and its descendants
+ * are omitted; sibling fields continue to execute. Errors from fields of
+ * non-null type may propagate to the nearest nullable parent, which can be the
+ * entire response data.
+ * @param args - The arguments used to perform the operation.
+ * @returns A completed execution result, or a promise resolving to one when execution is asynchronous.
+ * @example
+ * ```ts
+ * // Execute an asynchronous operation with variables.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String!): String
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document: parse('query ($name: String!) { greeting(name: $name) }'),
+ *   rootValue: {
+ *     greeting: ({ name }) => `Hello, ${name}!`,
+ *   },
+ *   variableValues: { name: 'Ada' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies context plus custom field and type resolvers.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   interface Named {
+ *     name: String!
+ *   }
+ *
+ *   type User implements Named {
+ *     name: String!
+ *   }
+ *
+ *   type Query {
+ *     viewer: Named
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document: parse('query Viewer { viewer { __typename name } }'),
+ *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+ *   contextValue: { locale: 'en' },
+ *   operationName: 'Viewer',
+ *   fieldResolver: (source, _args, contextValue, info) => {
+ *     contextValue.locale; // => 'en'
+ *     return source[info.fieldName];
+ *   },
+ *   typeResolver: (value) => {
+ *     return value.kind === 'user' ? 'User' : undefined;
+ *   },
+ * });
+ *
+ * result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows how resolver errors become field errors in the result.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     broken: String
+ *   }
+ * `);
+ * const document = parse('{ broken }');
+ *
+ * const result = await execute({
+ *   schema,
+ *   document,
+ *   rootValue: {
+ *     broken: () => {
+ *       throw new Error('Resolver failed.');
+ *     },
+ *   },
+ * });
+ *
+ * result.data.broken; // => null
+ * result.errors[0].message; // => 'Resolver failed.'
+ * ```
+ * @example
+ * ```ts
+ * // This variant limits how many variable coercion errors are reported.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput!): String
+ *   }
+ * `);
+ * const document = parse(`
+ *   query ($first: ReviewInput!, $second: ReviewInput!) {
+ *     first: review(input: $first)
+ *     second: review(input: $second)
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document,
+ *   variableValues: {
+ *     first: { stars: 'bad' },
+ *     second: { stars: 'also bad' },
+ *   },
+ *   options: { maxCoercionErrors: 1 },
+ * });
+ *
+ * result.errors.length; // => 2
+ * result.errors[1].message; // matches /error limit reached/
+ * ```
  */
 function execute(args) {
   // Temporary for v15 to v16 migration. Remove in v17
@@ -834,17 +1142,7 @@ function execute(args) {
     return {
       errors: exeContext,
     };
-  } // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  //
-  // Errors from sub-fields of a NonNull type may propagate to the top level,
-  // at which point we still log the error and null the parent field, which
-  // in this case is the entire response.
+  }
 
   try {
     const { operation } = exeContext;
@@ -870,6 +1168,53 @@ function execute(args) {
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
+ * @param args - The arguments used to perform the operation.
+ * @returns Completed execution output for a synchronous operation.
+ * @example
+ * ```ts
+ * // Execute an operation synchronously when all resolvers are synchronous.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSync } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const document = parse('{ greeting }');
+ *
+ * const result = executeSync({
+ *   schema,
+ *   document,
+ *   rootValue: {
+ *     greeting: 'Hello',
+ *   },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows executeSync throwing when a resolver returns a promise.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSync } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * executeSync({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: {
+ *     greeting: async () => 'Hello',
+ *   },
+ * }); // throws an error
+ * ```
  */
 
 function executeSync(args) {
@@ -884,6 +1229,8 @@ function executeSync(args) {
 /**
  * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
+ *
+ * @internal
  */
 
 function buildResponse(data, errors) {
@@ -898,7 +1245,9 @@ function buildResponse(data, errors) {
 }
 /**
  * Essential assertions before executing to provide developer feedback for
- * improper use of the GraphQL library.
+ * improper use of the GraphQL library. This deprecated internal helper will be
+ * removed in v17; call `assertValidSchema()` and rely on TypeScript checks
+ * instead.
  *
  * @deprecated will be removed in v17 in favor of assertValidSchema() and TS checks
  * @internal
@@ -1040,6 +1389,8 @@ function buildExecutionContext(args) {
 }
 /**
  * Implements the "Executing operations" section of the spec.
+ *
+ * @internal
  */
 
 function executeOperation(exeContext, operation, rootValue) {
@@ -1085,6 +1436,8 @@ function executeOperation(exeContext, operation, rootValue) {
 /**
  * Implements the "Executing selection sets" section of the spec
  * for fields that must be executed serially.
+ *
+ * @internal
  */
 
 function executeFieldsSerially(
@@ -1126,6 +1479,8 @@ function executeFieldsSerially(
 /**
  * Implements the "Executing selection sets" section of the spec
  * for fields that may be executed in parallel.
+ *
+ * @internal
  */
 
 function executeFields(exeContext, parentType, sourceValue, path, fields) {
@@ -1175,6 +1530,8 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
  * serialize scalars, or execute the sub-selection-set for objects.
+ *
+ * @internal
  */
 
 function executeField(exeContext, parentType, source, fieldNodes, path) {
@@ -1254,9 +1611,7 @@ function executeField(exeContext, parentType, source, fieldNodes, path) {
     return handleFieldError(error, returnType, path, exeContext);
   }
 }
-/**
- * @internal
- */
+/** @internal */
 
 function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
   // The resolve function's optional fourth argument is a collection of
@@ -1306,6 +1661,8 @@ function handleFieldError(error, returnType, path, exeContext) {
  *
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by executing all sub-selections.
+ *
+ * @internal
  */
 
 function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
@@ -1389,6 +1746,8 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 /**
  * Complete a list value by completing each item in the list with the
  * inner type
+ *
+ * @internal
  */
 
 function completeListValue(
@@ -1467,6 +1826,8 @@ function completeListValue(
 /**
  * Complete a Scalar or Enum by serializing to a valid value, returning
  * null if serialization is not possible.
+ *
+ * @internal
  */
 
 function completeLeafValue(returnType, result) {
@@ -1487,6 +1848,8 @@ function completeLeafValue(returnType, result) {
 /**
  * Complete a value of an abstract type by determining the runtime object type
  * of that value, then complete the value for that type.
+ *
+ * @internal
  */
 
 function completeAbstractValue(
@@ -1607,6 +1970,8 @@ function ensureValidRuntimeType(
 }
 /**
  * Complete an Object value by executing all sub-selections.
+ *
+ * @internal
  */
 
 function completeObjectValue(
@@ -1772,7 +2137,7 @@ function getFieldDef(schema, parentType, fieldNode) {
 
 /***/ }),
 
-/***/ 5912:
+/***/ 3705:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -1841,18 +2206,18 @@ Object.defineProperty(exports, "subscribe", ({
   },
 }));
 
-var _Path = __nccwpck_require__(8983);
+var _Path = __nccwpck_require__(9888);
 
-var _execute = __nccwpck_require__(7455);
+var _execute = __nccwpck_require__(9170);
 
-var _subscribe = __nccwpck_require__(8312);
+var _subscribe = __nccwpck_require__(9465);
 
-var _values = __nccwpck_require__(1224);
+var _values = __nccwpck_require__(5455);
 
 
 /***/ }),
 
-/***/ 4482:
+/***/ 6005:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1865,6 +2230,8 @@ exports.mapAsyncIterator = mapAsyncIterator;
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
+ *
+ * @internal
  */
 function mapAsyncIterator(iterable, callback) {
   const iterator = iterable[Symbol.asyncIterator]();
@@ -1927,7 +2294,7 @@ function mapAsyncIterator(iterable, callback) {
 
 /***/ }),
 
-/***/ 8312:
+/***/ 9465:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -1938,30 +2305,32 @@ Object.defineProperty(exports, "__esModule", ({
 exports.createSourceEventStream = createSourceEventStream;
 exports.subscribe = subscribe;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _isAsyncIterable = __nccwpck_require__(9328);
+var _isAsyncIterable = __nccwpck_require__(5205);
 
-var _Path = __nccwpck_require__(8983);
+var _Path = __nccwpck_require__(9888);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _locatedError = __nccwpck_require__(8362);
+var _locatedError = __nccwpck_require__(8530);
 
-var _collectFields = __nccwpck_require__(6463);
+var _collectFields = __nccwpck_require__(3938);
 
-var _execute = __nccwpck_require__(7455);
+var _execute = __nccwpck_require__(9170);
 
-var _mapAsyncIterator = __nccwpck_require__(4482);
+var _mapAsyncIterator = __nccwpck_require__(6005);
 
-var _values = __nccwpck_require__(1224);
+var _values = __nccwpck_require__(5455);
+
+/** @category Subscriptions */
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
+ * Returns a Promise that resolves to either an AsyncIterator (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the schema or
  * other arguments to this function are invalid, or if the resolved event stream
  * is not an async iterable.
@@ -1977,7 +2346,122 @@ var _values = __nccwpck_require__(1224);
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * Accepts either an object with named arguments, or individual arguments.
+ * Each payload yielded by the source event stream is executed with the payload
+ * as the root value. This maps the subscription source stream into the response
+ * stream described by the GraphQL specification.
+ *
+ * Accepts an object with named arguments.
+ * @param args - The arguments used to perform the operation.
+ * @returns A source stream mapped to execution results, or an execution result
+ * containing subscription errors.
+ * @example
+ * ```ts
+ * // Use a same-named rootValue function to provide the source event stream.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies events through a custom subscribeFieldResolver.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* defaultGreetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * async function* frenchGreetings() {
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting(locale: String): String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse(
+ *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+ *   ),
+ *   rootValue: {
+ *     greeting: (args, contextValue) => {
+ *       const locale = args.locale ?? contextValue.defaultLocale;
+ *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+ *     },
+ *   },
+ *   contextValue: { defaultLocale: 'fr' },
+ *   variableValues: { locale: 'fr' },
+ *   operationName: 'Greeting',
+ *   subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+ *     args.locale; // => 'fr'
+ *     return rootValue[info.fieldName](args, contextValue);
+ *   },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows the error result when the schema has no subscription root.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ * });
+ *
+ * assert('errors' in result);
+ *
+ * result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+ * ```
  */
 async function subscribe(args) {
   // Temporary for v15 to v16 migration. Remove in v17
@@ -1990,15 +2474,10 @@ async function subscribe(args) {
 
   if (!(0, _isAsyncIterable.isAsyncIterable)(resultOrStream)) {
     return resultOrStream;
-  } // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
+  }
 
   const mapSourceToResponse = (payload) =>
-    (0, _execute.execute)({ ...args, rootValue: payload }); // Map every source value to a ExecutionResult value as described above.
+    (0, _execute.execute)({ ...args, rootValue: payload });
 
   return (0, _mapAsyncIterator.mapAsyncIterator)(
     resultOrStream,
@@ -2028,7 +2507,7 @@ function toNormalizedArgs(args) {
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
  *
- * Returns a Promise which resolves to either an AsyncIterable (if successful)
+ * Returns a Promise that resolves to either an AsyncIterable (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the schema or
  * other arguments to this function are invalid, or if the resolved event stream
  * is not an async iterable.
@@ -2037,7 +2516,7 @@ function toNormalizedArgs(args) {
  * compliant subscription, a GraphQL Response (ExecutionResult) with
  * descriptive errors and no data will be returned.
  *
- * If the the source stream could not be created due to faulty subscription
+ * If the source stream could not be created due to faulty subscription
  * resolver logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
@@ -2051,8 +2530,39 @@ function toNormalizedArgs(args) {
  * different process or machine than the stateless GraphQL execution engine,
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ * @param args - The arguments used to perform the operation.
+ * @returns The source event stream, or an execution result containing subscription errors.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { createSourceEventStream } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const stream = await createSourceEventStream({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * Symbol.asyncIterator in stream; // => true
+ * ```
  */
 
+/** @internal */
 async function createSourceEventStream(...rawArgs) {
   const args = toNormalizedArgs(rawArgs);
   const { schema, document, variableValues } = args; // If arguments are missing or incorrectly typed, this is an internal
@@ -2179,7 +2689,7 @@ async function executeSubscription(exeContext) {
 
 /***/ }),
 
-/***/ 1224:
+/***/ 5455:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -2191,34 +2701,102 @@ exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
 exports.getVariableValues = getVariableValues;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _printPathArray = __nccwpck_require__(217);
+var _printPathArray = __nccwpck_require__(1210);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _coerceInputValue = __nccwpck_require__(3568);
+var _coerceInputValue = __nccwpck_require__(3187);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
 
-var _valueFromAST = __nccwpck_require__(4971);
+var _valueFromAST = __nccwpck_require__(2808);
+
+/** @category Values */
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
  * provided variable definitions and arbitrary input. If the input cannot be
- * parsed to match the variable definitions, a GraphQLError will be thrown.
+ * parsed to match the variable definitions, GraphQLError values are returned.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
+ * Note: Returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ * @param schema - GraphQL schema to use.
+ * @param varDefNodes - The variable definition AST nodes to coerce.
+ * @param inputs - The runtime variable values keyed by variable name.
+ * @param options - Optional variable coercion options, including error limits.
+ * @returns Coerced variable values, or request errors.
+ * @example
+ * ```ts
+ * // Coerce provided variables and apply operation defaults.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { getVariableValues } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     reviews(stars: Int!, limit: Int = 10): [String]
+ *   }
+ * `);
+ * const document = parse(`
+ *   query ($stars: Int!, $limit: Int = 10) {
+ *     reviews(stars: $stars, limit: $limit)
+ *   }
+ * `);
+ * const operation = document.definitions[0];
+ *
+ * const result = getVariableValues(
+ *   schema,
+ *   operation.variableDefinitions,
+ *   { stars: '5' },
+ * );
+ *
+ * result; // => { coerced: { stars: 5, limit: 10 } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant uses maxErrors to cap reported coercion errors.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { getVariableValues } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput!): String
+ *   }
+ * `);
+ * const document = parse(`
+ *   query ($first: ReviewInput!, $second: ReviewInput!) {
+ *     first: review(input: $first)
+ *     second: review(input: $second)
+ *   }
+ * `);
+ * const operation = document.definitions[0];
+ *
+ * const result = getVariableValues(
+ *   schema,
+ *   operation.variableDefinitions,
+ *   { first: { stars: 'bad' }, second: { stars: 'also bad' } },
+ *   { maxErrors: 1 },
+ * );
+ *
+ * result.errors.length; // => 2
+ * result.errors[1].message; // matches /error limit reached/
+ * ```
  */
 function getVariableValues(schema, varDefNodes, inputs, options) {
   const errors = [];
@@ -2343,9 +2921,50 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
+ * Note: Returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ * @param def - The field or directive definition whose arguments should be coerced.
+ * @param node - The AST node to inspect.
+ * @param variableValues - The runtime variable values keyed by variable name.
+ * @returns Coerced argument values keyed by argument name.
+ * @example
+ * ```ts
+ * // Read literal argument values and defaults.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { getArgumentValues } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     reviews(stars: Int!, limit: Int = 10): [String]
+ *   }
+ * `);
+ * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const document = parse('{ reviews(stars: 5) }');
+ * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ *
+ * getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
+ * ```
+ * @example
+ * ```ts
+ * // This variant resolves argument values from operation variables.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { getArgumentValues } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     reviews(stars: Int!): [String]
+ *   }
+ * `);
+ * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
+ * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ *
+ * getArgumentValues(fieldDef, fieldNode, { stars: 5 }); // => { stars: 5 }
+ * getArgumentValues(fieldDef, fieldNode, {}); // throws an error
+ * ```
  */
 
 function getArgumentValues(def, node, variableValues) {
@@ -2453,17 +3072,52 @@ function getArgumentValues(def, node, variableValues) {
   return { ...coercedValues };
 }
 /**
+ * AST node shape accepted by getDirectiveValues.
+ * @internal
+ */
+
+/**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map
  * of variable values.
  *
  * If the directive does not exist on the node, returns undefined.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
+ * Note: Returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ * @param directiveDef - The directive definition whose arguments should be coerced.
+ * @param node - The AST node to inspect.
+ * @param variableValues - The runtime variable values keyed by variable name.
+ * @returns Coerced directive argument values keyed by argument name.
+ * @example
+ * ```ts
+ * // Read literal directive arguments from a node.
+ * import { parse } from 'graphql/language';
+ * import { GraphQLSkipDirective } from 'graphql/type';
+ * import { getDirectiveValues } from 'graphql/execution';
+ *
+ * const document = parse('{ name @skip(if: true) }');
+ * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ *
+ * getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
+ * ```
+ * @example
+ * ```ts
+ * // This variant resolves directive arguments from variables and handles absent directives.
+ * import { parse } from 'graphql/language';
+ * import { GraphQLIncludeDirective } from 'graphql/type';
+ * import { getDirectiveValues } from 'graphql/execution';
+ *
+ * const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+ * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ *
+ * getDirectiveValues(GraphQLIncludeDirective, fieldNode, {
+ *   includeName: false,
+ * }); // => { if: false }
+ * getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
+ * ```
  */
-
 function getDirectiveValues(directiveDef, node, variableValues) {
   var _node$directives;
 
@@ -2486,7 +3140,7 @@ function hasOwnProperty(obj, prop) {
 
 /***/ }),
 
-/***/ 3620:
+/***/ 1233:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -2497,27 +3151,149 @@ Object.defineProperty(exports, "__esModule", ({
 exports.graphql = graphql;
 exports.graphqlSync = graphqlSync;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _isPromise = __nccwpck_require__(6247);
+var _isPromise = __nccwpck_require__(1638);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _validate = __nccwpck_require__(5042);
+var _validate = __nccwpck_require__(6763);
 
-var _validate2 = __nccwpck_require__(6891);
+var _validate2 = __nccwpck_require__(4702);
 
-var _execute = __nccwpck_require__(7455);
+var _execute = __nccwpck_require__(9170);
 
+/**
+ * Parses, validates, and executes a GraphQL document against a schema.
+ *
+ * This is the primary entry point for fulfilling GraphQL operations. Use this
+ * when you want a single-call request lifecycle that returns a promise in all
+ * cases.
+ *
+ * More sophisticated GraphQL servers, such as those which persist queries, may
+ * wish to separate the validation and execution phases to a static-time tooling
+ * step and a server runtime step.
+ * @param args - Request execution arguments, including schema and source.
+ * @returns A promise that resolves to an execution result or validation errors.
+ * @example
+ * ```ts
+ * // Execute a complete asynchronous request with variables.
+ * import { graphql, buildSchema } from 'graphql';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String!): String
+ *   }
+ * `);
+ *
+ * const result = await graphql({
+ *   schema,
+ *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
+ *   rootValue: {
+ *     greeting: ({ name }) => `Hello, ${name}!`,
+ *   },
+ *   variableValues: { name: 'Ada' },
+ *   operationName: 'SayHello',
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies context plus custom field and type resolvers.
+ * import { graphql, buildSchema } from 'graphql';
+ *
+ * const schema = buildSchema(`
+ *   interface Named {
+ *     name: String!
+ *   }
+ *
+ *   type User implements Named {
+ *     name: String!
+ *   }
+ *
+ *   type Query {
+ *     viewer: Named
+ *   }
+ * `);
+ *
+ * const result = await graphql({
+ *   schema,
+ *   source: '{ viewer { __typename name } }',
+ *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+ *   contextValue: { locale: 'en' },
+ *   fieldResolver: (source, _args, context, info) => {
+ *     context.locale; // => 'en'
+ *     return source[info.fieldName];
+ *   },
+ *   typeResolver: (value) => {
+ *     return value.kind === 'user' ? 'User' : undefined;
+ *   },
+ * });
+ *
+ * result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+ * ```
+ * @category Request Pipeline
+ */
 function graphql(args) {
   // Always return a Promise for a consistent API.
   return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
 /**
- * The graphqlSync function also fulfills GraphQL operations by parsing,
- * validating, and executing a GraphQL document along side a GraphQL schema.
- * However, it guarantees to complete synchronously (or throw an error) assuming
- * that all field resolvers are also synchronous.
+ * Parses, validates, and executes a GraphQL document synchronously.
+ *
+ * This function guarantees that execution completes synchronously, or throws an
+ * error, assuming that all field resolvers are also synchronous. It throws when
+ * any resolver returns a promise.
+ * @param args - Request execution arguments, including schema and source.
+ * @returns Completed execution output, or request errors if parsing or
+ * validation fails.
+ * @example
+ * ```ts
+ * // Execute a complete synchronous request with variables.
+ * import { graphqlSync, buildSchema } from 'graphql';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String!): String
+ *   }
+ * `);
+ *
+ * const result = graphqlSync({
+ *   schema,
+ *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
+ *   rootValue: {
+ *     greeting: ({ name }) => `Hello, ${name}!`,
+ *   },
+ *   variableValues: { name: 'Ada' },
+ *   operationName: 'SayHello',
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant uses a synchronous custom field resolver and context.
+ * import { graphqlSync, buildSchema } from 'graphql';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const result = graphqlSync({
+ *   schema,
+ *   source: '{ greeting }',
+ *   fieldResolver: (_source, _args, contextValue) => {
+ *     return contextValue.defaultGreeting;
+ *   },
+ *   contextValue: { defaultGreeting: 'Hello' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @category Request Pipeline
  */
 
 function graphqlSync(args) {
@@ -2589,7 +3365,7 @@ function graphqlImpl(args) {
 
 /***/ }),
 
-/***/ 7049:
+/***/ 8532:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 var __webpack_unused_export__;
@@ -3889,26 +4665,26 @@ __webpack_unused_export__ = ({
   },
 });
 
-var _version = __nccwpck_require__(2985);
+var _version = __nccwpck_require__(552);
 
-var _graphql = __nccwpck_require__(3620);
+var _graphql = __nccwpck_require__(1233);
 
-var _index = __nccwpck_require__(9222);
+var _index = __nccwpck_require__(2497);
 
-var _index2 = __nccwpck_require__(4000);
+var _index2 = __nccwpck_require__(8427);
 
-var _index3 = __nccwpck_require__(5912);
+var _index3 = __nccwpck_require__(3705);
 
-var _index4 = __nccwpck_require__(2513);
+var _index4 = __nccwpck_require__(8938);
 
-var _index5 = __nccwpck_require__(8839);
+var _index5 = __nccwpck_require__(7581);
 
-var _index6 = __nccwpck_require__(7578);
+var _index6 = __nccwpck_require__(5215);
 
 
 /***/ }),
 
-/***/ 8983:
+/***/ 9888:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -3919,8 +4695,14 @@ Object.defineProperty(exports, "__esModule", ({
 exports.addPath = addPath;
 exports.pathToArray = pathToArray;
 
+/** @category Paths */
+
+/** Represents a linked response path from a field back to the root response. */
+
 /**
  * Given a Path and a key, return a new Path containing the new key.
+ *
+ * @internal
  */
 function addPath(prev, key, typename) {
   return {
@@ -3931,6 +4713,29 @@ function addPath(prev, key, typename) {
 }
 /**
  * Given a Path, return an Array of the path keys.
+ * @param path - The linked response path to flatten.
+ * @returns An array of response path keys from root to leaf.
+ * @example
+ * ```ts
+ * import { pathToArray } from 'graphql/jsutils/Path';
+ *
+ * const path = {
+ *   prev: {
+ *     prev: {
+ *       prev: undefined,
+ *       key: 'viewer',
+ *       typename: 'Query',
+ *     },
+ *     key: 'friends',
+ *     typename: 'User',
+ *   },
+ *   key: 0,
+ *   typename: undefined,
+ * };
+ *
+ * pathToArray(path); // => ['viewer', 'friends', 0]
+ * pathToArray(undefined); // => []
+ * ```
  */
 
 function pathToArray(path) {
@@ -3948,7 +4753,7 @@ function pathToArray(path) {
 
 /***/ }),
 
-/***/ 2163:
+/***/ 7774:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -3958,6 +4763,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.devAssert = devAssert;
 
+/** @internal */
 function devAssert(condition, message) {
   const booleanCondition = Boolean(condition);
 
@@ -3969,7 +4775,7 @@ function devAssert(condition, message) {
 
 /***/ }),
 
-/***/ 3293:
+/***/ 4150:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -3980,9 +4786,12 @@ Object.defineProperty(exports, "__esModule", ({
 exports.didYouMean = didYouMean;
 const MAX_SUGGESTIONS = 5;
 /**
- * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
+ * Given [A, B, C] return ' Did you mean A, B, or C?'.
+ *
+ * @internal
  */
 
+/** @internal */
 function didYouMean(firstArg, secondArg) {
   const [subMessage, suggestionsArg] = secondArg
     ? [firstArg, secondArg]
@@ -4014,7 +4823,7 @@ function didYouMean(firstArg, secondArg) {
 
 /***/ }),
 
-/***/ 5156:
+/***/ 3637:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4026,6 +4835,8 @@ exports.groupBy = groupBy;
 
 /**
  * Groups array items into a Map, given a function to produce grouping key.
+ *
+ * @internal
  */
 function groupBy(list, keyFn) {
   const result = new Map();
@@ -4047,7 +4858,7 @@ function groupBy(list, keyFn) {
 
 /***/ }),
 
-/***/ 1656:
+/***/ 5687:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4059,6 +4870,8 @@ exports.identityFunc = identityFunc;
 
 /**
  * Returns the first argument it receives.
+ *
+ * @internal
  */
 function identityFunc(x) {
   return x;
@@ -4067,7 +4880,7 @@ function identityFunc(x) {
 
 /***/ }),
 
-/***/ 3994:
+/***/ 2039:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4080,6 +4893,8 @@ const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
 /**
  * Used to print values in error messages.
+ *
+ * @internal
  */
 
 function inspect(value) {
@@ -4195,7 +5010,7 @@ function getObjectTag(object) {
 
 /***/ }),
 
-/***/ 9494:
+/***/ 6149:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -4205,7 +5020,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.instanceOf = void 0;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
 /* c8 ignore next 3 */
 const isProduction =
@@ -4216,6 +5031,8 @@ const isProduction =
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
+ *
+ * @internal
  */
 
 const instanceOf =
@@ -4267,7 +5084,7 @@ exports.instanceOf = instanceOf;
 
 /***/ }),
 
-/***/ 2950:
+/***/ 2843:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4277,6 +5094,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.invariant = invariant;
 
+/** @internal */
 function invariant(condition, message) {
   const booleanCondition = Boolean(condition);
 
@@ -4290,7 +5108,7 @@ function invariant(condition, message) {
 
 /***/ }),
 
-/***/ 9328:
+/***/ 5205:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4303,6 +5121,8 @@ exports.isAsyncIterable = isAsyncIterable;
 /**
  * Returns true if the provided object implements the AsyncIterator protocol via
  * implementing a `Symbol.asyncIterator` method.
+ *
+ * @internal
  */
 function isAsyncIterable(maybeAsyncIterable) {
   return (
@@ -4315,7 +5135,7 @@ function isAsyncIterable(maybeAsyncIterable) {
 
 /***/ }),
 
-/***/ 4433:
+/***/ 7670:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4333,13 +5153,14 @@ exports.isIterableObject = isIterableObject;
  * an object should be iterated-over e.g. Array, Map, Set, Int8Array,
  * TypedArray, etc. but excludes string literals.
  *
+ * @internal
  * @example
  * ```ts
- * isIterableObject([ 1, 2, 3 ]) // true
- * isIterableObject(new Map()) // true
- * isIterableObject('ABC') // false
- * isIterableObject({ key: 'value' }) // false
- * isIterableObject({ length: 1, 0: 'Alpha' }) // false
+ * isIterableObject([1, 2, 3]); // => true
+ * isIterableObject(new Map()); // => true
+ * isIterableObject('ABC'); // => false
+ * isIterableObject({ key: 'value' }); // => false
+ * isIterableObject({ length: 1, 0: 'Alpha' }); // => false
  * ```
  */
 function isIterableObject(maybeIterable) {
@@ -4354,7 +5175,7 @@ function isIterableObject(maybeIterable) {
 
 /***/ }),
 
-/***/ 3008:
+/***/ 4863:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4367,6 +5188,8 @@ exports.isObjectLike = isObjectLike;
 /**
  * Return true if `value` is object-like. A value is object-like if it's not
  * `null` and has a `typeof` result of "object".
+ *
+ * @internal
  */
 function isObjectLike(value) {
   return typeof value == 'object' && value !== null;
@@ -4375,7 +5198,7 @@ function isObjectLike(value) {
 
 /***/ }),
 
-/***/ 6247:
+/***/ 1638:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4388,6 +5211,8 @@ exports.isPromise = isPromise;
 /**
  * Returns true if the value acts like a Promise, i.e. has a "then" function,
  * otherwise returns false.
+ *
+ * @internal
  */
 function isPromise(value) {
   return (
@@ -4399,7 +5224,7 @@ function isPromise(value) {
 
 /***/ }),
 
-/***/ 6711:
+/***/ 6520:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4415,25 +5240,18 @@ exports.keyMap = keyMap;
  *
  * This provides a convenient lookup for the array items if the key function
  * produces unique results.
+ * @internal
+ * @example
  * ```ts
  * const phoneBook = [
  *   { name: 'Jon', num: '555-1234' },
- *   { name: 'Jenny', num: '867-5309' }
- * ]
+ *   { name: 'Jenny', num: '867-5309' },
+ * ];
  *
- * const entriesByName = keyMap(
- *   phoneBook,
- *   entry => entry.name
- * )
+ * const entriesByName = keyMap(phoneBook, (entry) => entry.name);
  *
- * // {
- * //   Jon: { name: 'Jon', num: '555-1234' },
- * //   Jenny: { name: 'Jenny', num: '867-5309' }
- * // }
- *
- * const jennyEntry = entriesByName['Jenny']
- *
- * // { name: 'Jenny', num: '857-6309' }
+ * Object.keys(entriesByName); // => ['Jon', 'Jenny']
+ * entriesByName['Jenny']; // => { name: 'Jenny', num: '867-5309' }
  * ```
  */
 function keyMap(list, keyFn) {
@@ -4449,7 +5267,7 @@ function keyMap(list, keyFn) {
 
 /***/ }),
 
-/***/ 3218:
+/***/ 8875:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4462,18 +5280,21 @@ exports.keyValMap = keyValMap;
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
  * and a function to produce the values from each item in the array.
+ * @internal
+ * @example
  * ```ts
  * const phoneBook = [
  *   { name: 'Jon', num: '555-1234' },
- *   { name: 'Jenny', num: '867-5309' }
- * ]
+ *   { name: 'Jenny', num: '867-5309' },
+ * ];
  *
- * // { Jon: '555-1234', Jenny: '867-5309' }
  * const phonesByName = keyValMap(
  *   phoneBook,
- *   entry => entry.name,
- *   entry => entry.num
- * )
+ *   (entry) => entry.name,
+ *   (entry) => entry.num,
+ * );
+ *
+ * phonesByName; // => { Jon: '555-1234', Jenny: '867-5309' }
  * ```
  */
 function keyValMap(list, keyFn, valFn) {
@@ -4489,7 +5310,7 @@ function keyValMap(list, keyFn, valFn) {
 
 /***/ }),
 
-/***/ 2475:
+/***/ 2912:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4502,6 +5323,8 @@ exports.mapValue = mapValue;
 /**
  * Creates an object map with the same keys as `map` and values generated by
  * running each value of `map` thru `fn`.
+ *
+ * @internal
  */
 function mapValue(map, fn) {
   const result = Object.create(null);
@@ -4516,7 +5339,7 @@ function mapValue(map, fn) {
 
 /***/ }),
 
-/***/ 6929:
+/***/ 4034:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4528,6 +5351,8 @@ exports.memoize3 = memoize3;
 
 /**
  * Memoizes the provided three-argument function.
+ *
+ * @internal
  */
 function memoize3(fn) {
   let cache0;
@@ -4564,7 +5389,7 @@ function memoize3(fn) {
 
 /***/ }),
 
-/***/ 9240:
+/***/ 3315:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4580,6 +5405,8 @@ exports.naturalCompare = naturalCompare;
  *
  * See: https://en.wikipedia.org/wiki/Natural_sort_order
  *
+ *
+ * @internal
  */
 function naturalCompare(aStr, bStr) {
   let aIndex = 0;
@@ -4640,7 +5467,7 @@ function isDigit(code) {
 
 /***/ }),
 
-/***/ 217:
+/***/ 1210:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4652,6 +5479,8 @@ exports.printPathArray = printPathArray;
 
 /**
  * Build a string describing the path.
+ *
+ * @internal
  */
 function printPathArray(path) {
   return path
@@ -4664,7 +5493,7 @@ function printPathArray(path) {
 
 /***/ }),
 
-/***/ 911:
+/***/ 316:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4680,6 +5509,8 @@ exports.promiseForObject = promiseForObject;
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
+ *
+ * @internal
  */
 function promiseForObject(object) {
   return Promise.all(Object.values(object)).then((resolvedValues) => {
@@ -4696,7 +5527,7 @@ function promiseForObject(object) {
 
 /***/ }),
 
-/***/ 4117:
+/***/ 7340:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -4706,7 +5537,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.promiseReduce = promiseReduce;
 
-var _isPromise = __nccwpck_require__(6247);
+var _isPromise = __nccwpck_require__(1638);
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -4714,6 +5545,8 @@ var _isPromise = __nccwpck_require__(6247);
  *
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
+ *
+ * @internal
  */
 function promiseReduce(values, callbackFn, initialValue) {
   let accumulator = initialValue;
@@ -4730,7 +5563,7 @@ function promiseReduce(values, callbackFn, initialValue) {
 
 /***/ }),
 
-/***/ 2868:
+/***/ 2927:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -4740,11 +5573,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.suggestionList = suggestionList;
 
-var _naturalCompare = __nccwpck_require__(9240);
+var _naturalCompare = __nccwpck_require__(3315);
 
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
+ *
+ * @internal
  */
 function suggestionList(input, options) {
   const optionsByDistance = Object.create(null);
@@ -4779,6 +5614,8 @@ function suggestionList(input, options) {
  * of 1.
  *
  * This distance can be useful for detecting typos in input or sorting
+ *
+ * @internal
  */
 
 class LexicalDistance {
@@ -4876,7 +5713,7 @@ function stringToArray(str) {
 
 /***/ }),
 
-/***/ 9427:
+/***/ 4730:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -4886,10 +5723,12 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.toError = toError;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
 /**
  * Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
+ *
+ * @internal
  */
 function toError(thrownValue) {
   return thrownValue instanceof Error
@@ -4908,7 +5747,7 @@ class NonErrorThrown extends Error {
 
 /***/ }),
 
-/***/ 8764:
+/***/ 4928:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4918,6 +5757,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.toObjMap = toObjMap;
 
+/** @internal */
 function toObjMap(obj) {
   if (obj == null) {
     return Object.create(null);
@@ -4939,7 +5779,7 @@ function toObjMap(obj) {
 
 /***/ }),
 
-/***/ 3952:
+/***/ 2955:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -4954,29 +5794,41 @@ exports.Token =
     void 0;
 exports.isNode = isNode;
 
+/** @category AST */
+
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
 class Location {
-  /**
-   * The character offset at which this Node begins.
-   */
+  /** The character offset at which this Node begins. */
+
+  /** The character offset at which this Node ends. */
+
+  /** The Token at which this Node begins. */
+
+  /** The Token at which this Node ends. */
+
+  /** The Source document the AST represents. */
 
   /**
-   * The character offset at which this Node ends.
-   */
-
-  /**
-   * The Token at which this Node begins.
-   */
-
-  /**
-   * The Token at which this Node ends.
-   */
-
-  /**
-   * The Source document the AST represents.
+   * Creates a Location instance.
+   * @param startToken - The start token.
+   * @param endToken - The end token.
+   * @param source - Source document used to derive error locations.
+   * @example
+   * ```ts
+   * import { Location, Source, Token, TokenKind } from 'graphql/language';
+   *
+   * const source = new Source('{ hello }');
+   * const startToken = new Token(TokenKind.BRACE_L, 0, 1, 1, 1);
+   * const endToken = new Token(TokenKind.BRACE_R, 8, 9, 1, 9);
+   * const location = new Location(startToken, endToken, source);
+   *
+   * location.start; // => 0
+   * location.end; // => 9
+   * location.source.body; // => '{ hello }'
+   * ```
    */
   constructor(startToken, endToken, source) {
     this.start = startToken.start;
@@ -4985,10 +5837,27 @@ class Location {
     this.endToken = endToken;
     this.source = source;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'Location';
   }
+  /**
+   * Returns a JSON representation of this location.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   *
+   * const document = parse('{ hello }');
+   * const location = document.loc?.toJSON();
+   *
+   * location; // => { start: 0, end: 9 }
+   * ```
+   */
 
   toJSON() {
     return {
@@ -5005,25 +5874,15 @@ class Location {
 exports.Location = Location;
 
 class Token {
-  /**
-   * The kind of Token.
-   */
+  /** The kind of Token. */
 
-  /**
-   * The character offset at which this Node begins.
-   */
+  /** The character offset at which this Node begins. */
 
-  /**
-   * The character offset at which this Node ends.
-   */
+  /** The character offset at which this Node ends. */
 
-  /**
-   * The 1-indexed line number on which this Token appears.
-   */
+  /** The 1-indexed line number on which this Token appears. */
 
-  /**
-   * The 1-indexed column number at which this Token begins.
-   */
+  /** The 1-indexed column number at which this Token begins. */
 
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
@@ -5037,6 +5896,28 @@ class Token {
    * including ignored tokens. <SOF> is always the first node and <EOF>
    * the last.
    */
+
+  /** Next token in the token stream, including ignored tokens. */
+
+  /**
+   * Creates a Token instance.
+   * @param kind - Token kind produced by lexical analysis.
+   * @param start - Character offset where this token begins.
+   * @param end - Character offset where this token ends.
+   * @param line - One-indexed line number where this token begins.
+   * @param column - One-indexed column number where this token begins.
+   * @param value - Interpreted value for non-punctuation tokens.
+   * @example
+   * ```ts
+   * import { Token, TokenKind } from 'graphql/language';
+   *
+   * const token = new Token(TokenKind.NAME, 2, 7, 1, 3, 'hello');
+   *
+   * token.kind; // => TokenKind.NAME
+   * token.value; // => 'hello'
+   * token.toJSON(); // => { kind: 'Name', value: 'hello', line: 1, column: 3 }
+   * ```
+   */
   constructor(kind, start, end, line, column, value) {
     this.kind = kind;
     this.start = start;
@@ -5048,10 +5929,27 @@ class Token {
     this.prev = null;
     this.next = null;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'Token';
   }
+  /**
+   * Returns a JSON representation of this token.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { Lexer, Source } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   * const token = lexer.advance().toJSON();
+   *
+   * token; // => { kind: '{', value: undefined, line: 1, column: 1 }
+   * ```
+   */
 
   toJSON() {
     return {
@@ -5062,15 +5960,11 @@ class Token {
     };
   }
 }
-/**
- * The list of all possible AST node types.
- */
+/** The list of all possible AST node types. */
 
 exports.Token = Token;
 
-/**
- * @internal
- */
+/** @internal */
 const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
@@ -5167,17 +6061,19 @@ const QueryDocumentKeys = {
 };
 exports.QueryDocumentKeys = QueryDocumentKeys;
 const kindValues = new Set(Object.keys(QueryDocumentKeys));
-/**
- * @internal
- */
+/** @internal */
 
 function isNode(maybeNode) {
   const maybeKind =
     maybeNode === null || maybeNode === void 0 ? void 0 : maybeNode.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
-/** Name */
+/** An identifier in a GraphQL document. */
 
+/**
+ * The operation types supported by GraphQL executable definitions.
+ * @category Kinds
+ */
 var OperationTypeNode;
 exports.OperationTypeNode = OperationTypeNode;
 
@@ -5186,11 +6082,12 @@ exports.OperationTypeNode = OperationTypeNode;
   OperationTypeNode['MUTATION'] = 'mutation';
   OperationTypeNode['SUBSCRIPTION'] = 'subscription';
 })(OperationTypeNode || (exports.OperationTypeNode = OperationTypeNode = {}));
+/** A variable declaration in an operation or legacy fragment definition. */
 
 
 /***/ }),
 
-/***/ 1408:
+/***/ 3931:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -5202,7 +6099,7 @@ exports.dedentBlockStringLines = dedentBlockStringLines;
 exports.isPrintableAsBlockString = isPrintableAsBlockString;
 exports.printBlockString = printBlockString;
 
-var _characterClasses = __nccwpck_require__(7731);
+var _characterClasses = __nccwpck_require__(8246);
 
 /**
  * Produces the value of a block string from its parsed raw value, similar to
@@ -5264,9 +6161,7 @@ function leadingWhitespace(str) {
 
   return i;
 }
-/**
- * @internal
- */
+/** @internal */
 
 function isPrintableAsBlockString(value) {
   if (value === '') {
@@ -5392,7 +6287,7 @@ function printBlockString(value, options) {
 
 /***/ }),
 
-/***/ 7731:
+/***/ 8246:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -5474,7 +6369,7 @@ function isNameContinue(code) {
 
 /***/ }),
 
-/***/ 3642:
+/***/ 3177:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -5484,9 +6379,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.DirectiveLocation = void 0;
 
-/**
- * The set of allowed directive location values.
- */
+/** @category Kinds */
+
+/** The set of allowed directive location values. */
 var DirectiveLocation;
 exports.DirectiveLocation = DirectiveLocation;
 
@@ -5513,15 +6408,18 @@ exports.DirectiveLocation = DirectiveLocation;
   DirectiveLocation['DIRECTIVE_DEFINITION'] = 'DIRECTIVE_DEFINITION';
 })(DirectiveLocation || (exports.DirectiveLocation = DirectiveLocation = {}));
 /**
- * The enum type representing the directive location values.
- *
- * @deprecated Please use `DirectiveLocation`. Will be remove in v17.
+ * Deprecated legacy alias for the enum type representing directive location
+ * values. This alias will be removed in v17. In v17, `DirectiveLocation` is
+ * exported as the single public symbol for both the runtime object and the
+ * corresponding TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `DirectiveLocation` as both
+ * the runtime value and the type.
  */
 
 
 /***/ }),
 
-/***/ 4000:
+/***/ 8427:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -5728,34 +6626,34 @@ Object.defineProperty(exports, "visitInParallel", ({
   },
 }));
 
-var _source = __nccwpck_require__(1807);
+var _source = __nccwpck_require__(4214);
 
-var _location = __nccwpck_require__(7577);
+var _location = __nccwpck_require__(36);
 
-var _printLocation = __nccwpck_require__(732);
+var _printLocation = __nccwpck_require__(9623);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _tokenKind = __nccwpck_require__(3779);
+var _tokenKind = __nccwpck_require__(9352);
 
-var _lexer = __nccwpck_require__(8762);
+var _lexer = __nccwpck_require__(6085);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
 
-var _directiveLocation = __nccwpck_require__(3642);
+var _directiveLocation = __nccwpck_require__(3177);
 
 
 /***/ }),
 
-/***/ 3111:
+/***/ 4280:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -5765,9 +6663,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.Kind = void 0;
 
-/**
- * The set of allowed kind values for AST nodes.
- */
+/** @category Kinds */
+
+/** The set of allowed kind values for AST nodes. */
 var Kind;
 exports.Kind = Kind;
 
@@ -5823,15 +6721,18 @@ exports.Kind = Kind;
   Kind['DIRECTIVE_ARGUMENT_COORDINATE'] = 'DirectiveArgumentCoordinate';
 })(Kind || (exports.Kind = Kind = {}));
 /**
- * The enum type representing the possible kind values of AST nodes.
- *
- * @deprecated Please use `Kind`. Will be remove in v17.
+ * Deprecated legacy alias for the enum type representing the possible kind
+ * values of AST nodes. This alias will be removed in v17. In v17, `Kind` is
+ * exported as the single public symbol for both the runtime object and the
+ * corresponding TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `Kind` as both the runtime
+ * value and the type.
  */
 
 
 /***/ }),
 
-/***/ 8762:
+/***/ 6085:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -5845,15 +6746,17 @@ exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 exports.printCodePointAt = printCodePointAt;
 exports.readName = readName;
 
-var _syntaxError = __nccwpck_require__(9599);
+var _syntaxError = __nccwpck_require__(4974);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _blockString = __nccwpck_require__(1408);
+var _blockString = __nccwpck_require__(3931);
 
-var _characterClasses = __nccwpck_require__(7731);
+var _characterClasses = __nccwpck_require__(8246);
 
-var _tokenKind = __nccwpck_require__(3779);
+var _tokenKind = __nccwpck_require__(9352);
+
+/** @category Lexing */
 
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -5864,20 +6767,30 @@ var _tokenKind = __nccwpck_require__(3779);
  * whenever called.
  */
 class Lexer {
-  /**
-   * The previously focused non-ignored token.
-   */
+  /** Source document used to derive error locations. */
+
+  /** Most recent non-ignored token returned by the lexer. */
+
+  /** Current non-ignored token at the lexer cursor. */
+
+  /** The (1-indexed) line containing the current token. */
+
+  /** Character offset where the current line starts. */
 
   /**
-   * The currently focused non-ignored token.
-   */
-
-  /**
-   * The (1-indexed) line containing the current token.
-   */
-
-  /**
-   * The character offset at which the current line begins.
+   * Creates a Lexer instance.
+   * @param source - Source document used to derive error locations.
+   * @example
+   * ```ts
+   * import { Lexer, Source, TokenKind } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   *
+   * lexer.token.kind; // => TokenKind.SOF
+   * lexer.advance().kind; // => TokenKind.BRACE_L
+   * lexer.advance().value; // => 'hello'
+   * lexer.advance().kind; // => TokenKind.BRACE_R
+   * ```
    */
   constructor(source) {
     const startOfFileToken = new _ast.Token(
@@ -5893,12 +6806,27 @@ class Lexer {
     this.line = 1;
     this.lineStart = 0;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'Lexer';
   }
   /**
    * Advances the token stream to the next non-ignored token.
+   * @returns The next non-ignored token.
+   * @example
+   * ```ts
+   * import { Lexer, Source } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   * const token = lexer.advance();
+   *
+   * token.kind; // => '{'
+   * lexer.token; // => token
+   * ```
    */
 
   advance() {
@@ -5909,6 +6837,17 @@ class Lexer {
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
    * the state of Lexer.
+   * @returns The next non-ignored token without advancing the lexer.
+   * @example
+   * ```ts
+   * import { Lexer, Source } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   * const token = lexer.lookahead();
+   *
+   * token.kind; // => '{'
+   * lexer.token.kind; // => '<SOF>'
+   * ```
    */
 
   lookahead() {
@@ -5933,9 +6872,7 @@ class Lexer {
     return token;
   }
 }
-/**
- * @internal
- */
+/** @internal */
 
 exports.Lexer = Lexer;
 
@@ -5965,6 +6902,8 @@ function isPunctuatorTokenKind(kind) {
  *
  * SourceCharacter ::
  *   - "Any Unicode scalar value"
+ *
+ * @internal
  */
 
 function isUnicodeScalarValue(code) {
@@ -5979,6 +6918,8 @@ function isUnicodeScalarValue(code) {
  * include surrogates. A surrogate pair is a valid source character as it
  * encodes a supplementary code point (above U+FFFF), but unpaired surrogate
  * code points are not valid source characters.
+ *
+ * @internal
  */
 
 function isSupplementaryCodePoint(body, location) {
@@ -6035,6 +6976,8 @@ function createToken(lexer, kind, start, end, value) {
  * This skips over whitespace until it finds the next lexable token, then lexes
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
+ *
+ * @internal
  */
 
 function readNextToken(lexer, start) {
@@ -6282,6 +7225,8 @@ function readNextToken(lexer, start) {
  *
  * CommentChar :: SourceCharacter but not LineTerminator
  * ```
+ *
+ * @internal
  */
 
 function readComment(lexer, start) {
@@ -6341,6 +7286,8 @@ function readComment(lexer, start) {
  *
  * Sign :: one of + -
  * ```
+ *
+ * @internal
  */
 
 function readNumber(lexer, start, firstCode) {
@@ -6411,6 +7358,8 @@ function readNumber(lexer, start, firstCode) {
 }
 /**
  * Returns the new position in the source after reading one or more digits.
+ *
+ * @internal
  */
 
 function readDigits(lexer, start, firstCode) {
@@ -6453,6 +7402,8 @@ function readDigits(lexer, start, firstCode) {
  *
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
  * ```
+ *
+ * @internal
  */
 
 function readString(lexer, start) {
@@ -6601,6 +7552,8 @@ function readEscapedUnicodeFixedWidth(lexer, position) {
  * will return 57005.
  *
  * Returns a negative number if any char was not a valid hexadecimal digit.
+ *
+ * @internal
  */
 
 function read16BitHexCode(body, position) {
@@ -6626,6 +7579,8 @@ function read16BitHexCode(body, position) {
  *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
  *   - `A` `B` `C` `D` `E` `F`
  *   - `a` `b` `c` `d` `e` `f`
+ *
+ * @internal
  */
 
 function readHexDigit(code) {
@@ -6648,6 +7603,8 @@ function readHexDigit(code) {
  * | `n`               | U+000A     | line feed (new line)         |
  * | `r`               | U+000D     | carriage return              |
  * | `t`               | U+0009     | horizontal tab               |
+ *
+ * @internal
  */
 
 function readEscapedCharacter(lexer, position) {
@@ -6732,6 +7689,8 @@ function readEscapedCharacter(lexer, position) {
  *   - SourceCharacter but not `"""` or `\"""`
  *   - `\"""`
  * ```
+ *
+ * @internal
  */
 
 function readBlockString(lexer, start) {
@@ -6854,7 +7813,7 @@ function readName(lexer, start) {
 
 /***/ }),
 
-/***/ 7577:
+/***/ 36:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -6864,16 +7823,27 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.getLocation = getLocation;
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
+/** @category Source */
 const LineRegExp = /\r\n|[\n\r]/g;
-/**
- * Represents a location in a Source.
- */
+/** Represents a location in a Source. */
 
 /**
  * Takes a Source and a UTF-8 character offset, and returns the corresponding
  * line and column as a SourceLocation.
+ * @param source - The source document that contains the position.
+ * @param position - The UTF-8 character offset in the source body.
+ * @returns The 1-indexed line and column for the given source position.
+ * @example
+ * ```ts
+ * import { Source, getLocation } from 'graphql/language';
+ *
+ * const source = new Source('type Query { hello: String }');
+ * const location = getLocation(source, 13);
+ *
+ * location; // => { line: 1, column: 14 }
+ * ```
  */
 function getLocation(source, position) {
   let lastLineStart = 0;
@@ -6899,7 +7869,7 @@ function getLocation(source, position) {
 
 /***/ }),
 
-/***/ 165:
+/***/ 2868:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -6914,25 +7884,60 @@ exports.parseSchemaCoordinate = parseSchemaCoordinate;
 exports.parseType = parseType;
 exports.parseValue = parseValue;
 
-var _syntaxError = __nccwpck_require__(9599);
+var _syntaxError = __nccwpck_require__(4974);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _directiveLocation = __nccwpck_require__(3642);
+var _directiveLocation = __nccwpck_require__(3177);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _lexer = __nccwpck_require__(8762);
+var _lexer = __nccwpck_require__(6085);
 
-var _schemaCoordinateLexer = __nccwpck_require__(4229);
+var _schemaCoordinateLexer = __nccwpck_require__(154);
 
-var _source = __nccwpck_require__(1807);
+var _source = __nccwpck_require__(4214);
 
-var _tokenKind = __nccwpck_require__(3779);
+var _tokenKind = __nccwpck_require__(9352);
+
+/** @category Parsing */
 
 /**
  * Given a GraphQL source, parses it into a Document.
  * Throws GraphQLError if a syntax error is encountered.
+ * @param source - A GraphQL source string or source object.
+ * @param options - Optional parser configuration.
+ * @returns The parsed GraphQL document AST.
+ * @example
+ * ```ts
+ * // Parse a GraphQL document with the default parser options.
+ * import { parse } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ *
+ * document.kind; // => 'Document'
+ * ```
+ * @example
+ * ```ts
+ * // This variant enables parser options and provides an explicit lexer.
+ * import { Lexer, Source, parse } from 'graphql/language';
+ *
+ * const document = parse('fragment A($var: Boolean) on Query { field }', {
+ *   allowLegacyFragmentVariables: true,
+ *   maxTokens: 20,
+ *   noLocation: true,
+ * });
+ * const directiveDocument = parse('directive @foo @bar on FIELD', {
+ *   experimentalDirectivesOnDirectiveDefinitions: true,
+ * });
+ * const source = new Source('{ hero }');
+ * const lexerDocument = parse(source, { lexer: new Lexer(source) });
+ *
+ * document.definitions[0].kind; // => 'FragmentDefinition'
+ * document.loc; // => undefined
+ * directiveDocument.definitions[0].kind; // => 'DirectiveDefinition'
+ * lexerDocument.definitions[0].kind; // => 'OperationDefinition'
+ * ```
  */
 function parse(source, options) {
   const parser = new Parser(source, options);
@@ -6952,6 +7957,17 @@ function parse(source, options) {
  * in isolation of complete GraphQL documents.
  *
  * Consider providing the results to the utility function: valueFromAST().
+ * @param source - A GraphQL source string or source object containing a value.
+ * @param options - Optional parser configuration.
+ * @returns The parsed GraphQL value AST.
+ * @example
+ * ```ts
+ * import { parseValue } from 'graphql/language';
+ *
+ * const value = parseValue('[42]');
+ *
+ * value.kind; // => 'ListValue'
+ * ```
  */
 
 function parseValue(source, options) {
@@ -6964,6 +7980,18 @@ function parseValue(source, options) {
 /**
  * Similar to parseValue(), but raises a parse error if it encounters a
  * variable. The return type will be a constant value.
+ * @param source - A GraphQL source string or source object containing a constant value.
+ * @param options - Optional parser configuration.
+ * @returns The parsed GraphQL constant value AST.
+ * @example
+ * ```ts
+ * import { parseConstValue } from 'graphql/language';
+ *
+ * const value = parseConstValue('{ enabled: true }');
+ *
+ * value.kind; // => 'ObjectValue'
+ * parseConstValue('$variable'); // throws an error
+ * ```
  */
 
 function parseConstValue(source, options) {
@@ -6982,6 +8010,17 @@ function parseConstValue(source, options) {
  * in isolation of complete GraphQL documents.
  *
  * Consider providing the results to the utility function: typeFromAST().
+ * @param source - A GraphQL source string or source object containing a type reference.
+ * @param options - Optional parser configuration.
+ * @returns The parsed GraphQL type AST.
+ * @example
+ * ```ts
+ * import { parseType } from 'graphql/language';
+ *
+ * const type = parseType('[String!]');
+ *
+ * type.kind; // => 'ListType'
+ * ```
  */
 
 function parseType(source, options) {
@@ -6999,6 +8038,16 @@ function parseType(source, options) {
  * Consider providing the results to the utility function:
  * resolveASTSchemaCoordinate(). Or calling resolveSchemaCoordinate() directly
  * with an unparsed source.
+ * @param source - A GraphQL source string or source object containing a schema coordinate.
+ * @returns The parsed GraphQL schema coordinate AST.
+ * @example
+ * ```ts
+ * import { parseSchemaCoordinate } from 'graphql/language';
+ *
+ * const coordinate = parseSchemaCoordinate('Query.hero');
+ *
+ * coordinate.kind; // => 'MemberCoordinate'
+ * ```
  */
 
 function parseSchemaCoordinate(source) {
@@ -7048,6 +8097,8 @@ class Parser {
   }
   /**
    * Converts a name lex token into a name parse node.
+   *
+   * @internal
    */
 
   parseName() {
@@ -7060,6 +8111,8 @@ class Parser {
 
   /**
    * Document : Definition+
+   *
+   * @internal
    */
 
   parseDocument() {
@@ -7094,6 +8147,8 @@ class Parser {
    *   - UnionTypeDefinition
    *   - EnumTypeDefinition
    *   - InputObjectTypeDefinition
+   *
+   * @internal
    */
 
   parseDefinition() {
@@ -7172,6 +8227,8 @@ class Parser {
    * OperationDefinition :
    *  - SelectionSet
    *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
+   *
+   * @internal
    */
 
   parseOperationDefinition() {
@@ -7209,6 +8266,8 @@ class Parser {
   }
   /**
    * OperationType : one of query mutation subscription
+   *
+   * @internal
    */
 
   parseOperationType() {
@@ -7229,6 +8288,8 @@ class Parser {
   }
   /**
    * VariableDefinitions : ( VariableDefinition+ )
+   *
+   * @internal
    */
 
   parseVariableDefinitions() {
@@ -7240,6 +8301,8 @@ class Parser {
   }
   /**
    * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
+   *
+   * @internal
    */
 
   parseVariableDefinition() {
@@ -7258,6 +8321,8 @@ class Parser {
   }
   /**
    * Variable : $ Name
+   *
+   * @internal
    */
 
   parseVariable() {
@@ -7272,6 +8337,8 @@ class Parser {
    * ```
    * SelectionSet : { Selection+ }
    * ```
+   *
+   * @internal
    */
 
   parseSelectionSet() {
@@ -7289,6 +8356,8 @@ class Parser {
    *   - Field
    *   - FragmentSpread
    *   - InlineFragment
+   *
+   * @internal
    */
 
   parseSelection() {
@@ -7300,6 +8369,8 @@ class Parser {
    * Field : Alias? Name Arguments? Directives? SelectionSet?
    *
    * Alias : Name :
+   *
+   * @internal
    */
 
   parseField() {
@@ -7328,6 +8399,8 @@ class Parser {
   }
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
+   *
+   * @internal
    */
 
   parseArguments(isConst) {
@@ -7340,6 +8413,8 @@ class Parser {
   }
   /**
    * Argument[Const] : Name : Value[?Const]
+   *
+   * @internal
    */
 
   parseArgument(isConst = false) {
@@ -7363,6 +8438,8 @@ class Parser {
    * FragmentSpread : ... FragmentName Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
+   *
+   * @internal
    */
 
   parseFragment() {
@@ -7390,6 +8467,8 @@ class Parser {
    *   - fragment FragmentName on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
+   *
+   * @internal
    */
 
   parseFragmentDefinition() {
@@ -7422,6 +8501,8 @@ class Parser {
   }
   /**
    * FragmentName : Name but not `on`
+   *
+   * @internal
    */
 
   parseFragmentName() {
@@ -7449,6 +8530,8 @@ class Parser {
    * NullValue : `null`
    *
    * EnumValue : Name but not `true`, `false` or `null`
+   *
+   * @internal
    */
 
   parseValueLiteral(isConst) {
@@ -7547,6 +8630,8 @@ class Parser {
    * ListValue[Const] :
    *   - [ ]
    *   - [ Value[?Const]+ ]
+   *
+   * @internal
    */
 
   parseList(isConst) {
@@ -7567,6 +8652,8 @@ class Parser {
    *   - { }
    *   - { ObjectField[?Const]+ }
    * ```
+   *
+   * @internal
    */
 
   parseObject(isConst) {
@@ -7583,6 +8670,8 @@ class Parser {
   }
   /**
    * ObjectField[Const] : Name : Value[?Const]
+   *
+   * @internal
    */
 
   parseObjectField(isConst) {
@@ -7598,6 +8687,8 @@ class Parser {
 
   /**
    * Directives[Const] : Directive[?Const]+
+   *
+   * @internal
    */
 
   parseDirectives(isConst) {
@@ -7617,6 +8708,8 @@ class Parser {
    * ```
    * Directive[Const] : @ Name Arguments[?Const]?
    * ```
+   *
+   * @internal
    */
 
   parseDirective(isConst) {
@@ -7634,6 +8727,8 @@ class Parser {
    *   - NamedType
    *   - ListType
    *   - NonNullType
+   *
+   * @internal
    */
 
   parseTypeReference() {
@@ -7662,6 +8757,8 @@ class Parser {
   }
   /**
    * NamedType : Name
+   *
+   * @internal
    */
 
   parseNamedType() {
@@ -7679,6 +8776,8 @@ class Parser {
   }
   /**
    * Description : StringValue
+   *
+   * @internal
    */
 
   parseDescription() {
@@ -7690,6 +8789,8 @@ class Parser {
    * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
    * ```
+   *
+   * @internal
    */
 
   parseSchemaDefinition() {
@@ -7711,6 +8812,8 @@ class Parser {
   }
   /**
    * OperationTypeDefinition : OperationType : NamedType
+   *
+   * @internal
    */
 
   parseOperationTypeDefinition() {
@@ -7726,6 +8829,8 @@ class Parser {
   }
   /**
    * ScalarTypeDefinition : Description? scalar Name Directives[Const]?
+   *
+   * @internal
    */
 
   parseScalarTypeDefinition() {
@@ -7745,6 +8850,8 @@ class Parser {
    * ObjectTypeDefinition :
    *   Description?
    *   type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
+   *
+   * @internal
    */
 
   parseObjectTypeDefinition() {
@@ -7768,6 +8875,8 @@ class Parser {
    * ImplementsInterfaces :
    *   - implements `&`? NamedType
    *   - ImplementsInterfaces & NamedType
+   *
+   * @internal
    */
 
   parseImplementsInterfaces() {
@@ -7779,6 +8888,8 @@ class Parser {
    * ```
    * FieldsDefinition : { FieldDefinition+ }
    * ```
+   *
+   * @internal
    */
 
   parseFieldsDefinition() {
@@ -7791,6 +8902,8 @@ class Parser {
   /**
    * FieldDefinition :
    *   - Description? Name ArgumentsDefinition? : Type Directives[Const]?
+   *
+   * @internal
    */
 
   parseFieldDefinition() {
@@ -7812,6 +8925,8 @@ class Parser {
   }
   /**
    * ArgumentsDefinition : ( InputValueDefinition+ )
+   *
+   * @internal
    */
 
   parseArgumentDefs() {
@@ -7824,6 +8939,8 @@ class Parser {
   /**
    * InputValueDefinition :
    *   - Description? Name : Type DefaultValue? Directives[Const]?
+   *
+   * @internal
    */
 
   parseInputValueDef() {
@@ -7851,6 +8968,8 @@ class Parser {
   /**
    * InterfaceTypeDefinition :
    *   - Description? interface Name Directives[Const]? FieldsDefinition?
+   *
+   * @internal
    */
 
   parseInterfaceTypeDefinition() {
@@ -7873,6 +8992,8 @@ class Parser {
   /**
    * UnionTypeDefinition :
    *   - Description? union Name Directives[Const]? UnionMemberTypes?
+   *
+   * @internal
    */
 
   parseUnionTypeDefinition() {
@@ -7894,6 +9015,8 @@ class Parser {
    * UnionMemberTypes :
    *   - = `|`? NamedType
    *   - UnionMemberTypes | NamedType
+   *
+   * @internal
    */
 
   parseUnionMemberTypes() {
@@ -7904,6 +9027,8 @@ class Parser {
   /**
    * EnumTypeDefinition :
    *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
+   *
+   * @internal
    */
 
   parseEnumTypeDefinition() {
@@ -7925,6 +9050,8 @@ class Parser {
    * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
    * ```
+   *
+   * @internal
    */
 
   parseEnumValuesDefinition() {
@@ -7936,6 +9063,8 @@ class Parser {
   }
   /**
    * EnumValueDefinition : Description? EnumValue Directives[Const]?
+   *
+   * @internal
    */
 
   parseEnumValueDefinition() {
@@ -7952,6 +9081,8 @@ class Parser {
   }
   /**
    * EnumValue : Name but not `true`, `false` or `null`
+   *
+   * @internal
    */
 
   parseEnumValueName() {
@@ -7974,6 +9105,8 @@ class Parser {
   /**
    * InputObjectTypeDefinition :
    *   - Description? input Name Directives[Const]? InputFieldsDefinition?
+   *
+   * @internal
    */
 
   parseInputObjectTypeDefinition() {
@@ -7995,6 +9128,8 @@ class Parser {
    * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
    * ```
+   *
+   * @internal
    */
 
   parseInputFieldsDefinition() {
@@ -8017,6 +9152,8 @@ class Parser {
    *   - EnumTypeExtension
    *   - InputObjectTypeDefinition
    *   - DirectiveDefinitionExtension
+   *
+   * @internal
    */
 
   parseTypeSystemExtension() {
@@ -8062,6 +9199,8 @@ class Parser {
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
    * ```
+   *
+   * @internal
    */
 
   parseSchemaExtension() {
@@ -8088,6 +9227,8 @@ class Parser {
   /**
    * ScalarTypeExtension :
    *   - extend scalar Name Directives[Const]
+   *
+   * @internal
    */
 
   parseScalarTypeExtension() {
@@ -8112,6 +9253,8 @@ class Parser {
    *  - extend type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
    *  - extend type Name ImplementsInterfaces? Directives[Const]
    *  - extend type Name ImplementsInterfaces
+   *
+   * @internal
    */
 
   parseObjectTypeExtension() {
@@ -8144,6 +9287,8 @@ class Parser {
    *  - extend interface Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
    *  - extend interface Name ImplementsInterfaces? Directives[Const]
    *  - extend interface Name ImplementsInterfaces
+   *
+   * @internal
    */
 
   parseInterfaceTypeExtension() {
@@ -8175,6 +9320,8 @@ class Parser {
    * UnionTypeExtension :
    *   - extend union Name Directives[Const]? UnionMemberTypes
    *   - extend union Name Directives[Const]
+   *
+   * @internal
    */
 
   parseUnionTypeExtension() {
@@ -8200,6 +9347,8 @@ class Parser {
    * EnumTypeExtension :
    *   - extend enum Name Directives[Const]? EnumValuesDefinition
    *   - extend enum Name Directives[Const]
+   *
+   * @internal
    */
 
   parseEnumTypeExtension() {
@@ -8225,6 +9374,8 @@ class Parser {
    * InputObjectTypeExtension :
    *   - extend input Name Directives[Const]? InputFieldsDefinition
    *   - extend input Name Directives[Const]
+   *
+   * @internal
    */
 
   parseInputObjectTypeExtension() {
@@ -8270,6 +9421,8 @@ class Parser {
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
    * ```
+   *
+   * @internal
    */
 
   parseDirectiveDefinition() {
@@ -8300,6 +9453,8 @@ class Parser {
    * DirectiveLocations :
    *   - `|`? DirectiveLocation
    *   - DirectiveLocations | DirectiveLocation
+   *
+   * @internal
    */
 
   parseDirectiveLocations() {
@@ -8360,6 +9515,19 @@ class Parser {
    *   - Name . Name ( Name : )
    *   - \@ Name
    *   - \@ Name ( Name : )
+   * @returns Parsed schema coordinate AST.
+   * @example
+   * ```ts
+   * import { Parser, Source } from 'graphql/language';
+   *
+   * const typeCoordinate = new Parser(new Source('User.name')).parseSchemaCoordinate();
+   * const directiveCoordinate = new Parser(new Source('@include(if:)')).parseSchemaCoordinate();
+   *
+   * typeCoordinate.name.value; // => 'User'
+   * typeCoordinate.memberName?.value; // => 'name'
+   * directiveCoordinate.name.value; // => 'deprecated'
+   * directiveCoordinate.argumentName?.value; // => 'reason'
+   * ```
    */
 
   parseSchemaCoordinate() {
@@ -8423,6 +9591,8 @@ class Parser {
    * Returns a node that, if configured to do so, sets a "loc" field as a
    * location object, used to identify the place in the source that created a
    * given parsed object.
+   *
+   * @internal
    */
 
   node(startToken, node) {
@@ -8438,6 +9608,8 @@ class Parser {
   }
   /**
    * Determines if the next token is of a given kind
+   *
+   * @internal
    */
 
   peek(kind) {
@@ -8446,6 +9618,8 @@ class Parser {
   /**
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and throw an error.
+   *
+   * @internal
    */
 
   expectToken(kind) {
@@ -8465,6 +9639,8 @@ class Parser {
   /**
    * If the next token is of the given kind, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
+   *
+   * @internal
    */
 
   expectOptionalToken(kind) {
@@ -8480,6 +9656,8 @@ class Parser {
   /**
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
+   *
+   * @internal
    */
 
   expectKeyword(value) {
@@ -8498,6 +9676,8 @@ class Parser {
   /**
    * If the next token is a given keyword, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
+   *
+   * @internal
    */
 
   expectOptionalKeyword(value) {
@@ -8512,6 +9692,8 @@ class Parser {
   }
   /**
    * Helper function for creating an error when an unexpected lexed token is encountered.
+   *
+   * @internal
    */
 
   unexpected(atToken) {
@@ -8527,6 +9709,8 @@ class Parser {
    * Returns a possibly empty list of parse nodes, determined by the parseFn.
    * This list begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
+   *
+   * @internal
    */
 
   any(openKind, parseFn, closeKind) {
@@ -8544,6 +9728,8 @@ class Parser {
    * It can be empty only if open token is missing otherwise it will always return non-empty list
    * that begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
+   *
+   * @internal
    */
 
   optionalMany(openKind, parseFn, closeKind) {
@@ -8563,6 +9749,8 @@ class Parser {
    * Returns a non-empty list of parse nodes, determined by the parseFn.
    * This list begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
+   *
+   * @internal
    */
 
   many(openKind, parseFn, closeKind) {
@@ -8579,6 +9767,8 @@ class Parser {
    * Returns a non-empty list of parse nodes, determined by the parseFn.
    * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
    * Advances the parser to the next lex token after last item in the list.
+   *
+   * @internal
    */
 
   delimitedMany(delimiterKind, parseFn) {
@@ -8612,6 +9802,8 @@ class Parser {
 }
 /**
  * A helper function to describe a token as a string for debugging.
+ *
+ * @internal
  */
 
 exports.Parser = Parser;
@@ -8622,6 +9814,8 @@ function getTokenDesc(token) {
 }
 /**
  * A helper function to describe a token kind as a string for debugging.
+ *
+ * @internal
  */
 
 function getTokenKindDesc(kind) {
@@ -8631,7 +9825,7 @@ function getTokenKindDesc(kind) {
 
 /***/ }),
 
-/***/ 420:
+/***/ 2937:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -8651,8 +9845,24 @@ exports.isTypeSystemDefinitionNode = isTypeSystemDefinitionNode;
 exports.isTypeSystemExtensionNode = isTypeSystemExtensionNode;
 exports.isValueNode = isValueNode;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
+/** @category AST Predicates */
+
+/**
+ * Returns true when the AST node is a definition node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a definition node.
+ * @example
+ * ```ts
+ * import { parse, isDefinitionNode } from 'graphql/language';
+ *
+ * const document = parse('{ hello }');
+ *
+ * isDefinitionNode(document.definitions[0]); // => true
+ * isDefinitionNode(document); // => false
+ * ```
+ */
 function isDefinitionNode(node) {
   return (
     isExecutableDefinitionNode(node) ||
@@ -8660,6 +9870,21 @@ function isDefinitionNode(node) {
     isTypeSystemExtensionNode(node)
   );
 }
+/**
+ * Returns true when the AST node is an executable definition node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is an executable definition node.
+ * @example
+ * ```ts
+ * import { parse, isExecutableDefinitionNode } from 'graphql/language';
+ *
+ * const query = parse('{ hello }');
+ * const schema = parse('type Query { hello: String }');
+ *
+ * isExecutableDefinitionNode(query.definitions[0]); // => true
+ * isExecutableDefinitionNode(schema.definitions[0]); // => false
+ * ```
+ */
 
 function isExecutableDefinitionNode(node) {
   return (
@@ -8667,6 +9892,21 @@ function isExecutableDefinitionNode(node) {
     node.kind === _kinds.Kind.FRAGMENT_DEFINITION
   );
 }
+/**
+ * Returns true when the AST node is a selection node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a selection node.
+ * @example
+ * ```ts
+ * import { Kind, isSelectionNode } from 'graphql/language';
+ *
+ * const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
+ * const document = { kind: Kind.DOCUMENT, definitions: [] };
+ *
+ * isSelectionNode(field); // => true
+ * isSelectionNode(document); // => false
+ * ```
+ */
 
 function isSelectionNode(node) {
   return (
@@ -8675,6 +9915,21 @@ function isSelectionNode(node) {
     node.kind === _kinds.Kind.INLINE_FRAGMENT
   );
 }
+/**
+ * Returns true when the AST node is a value node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a value node.
+ * @example
+ * ```ts
+ * import { parseType, parseValue, isValueNode } from 'graphql/language';
+ *
+ * const value = parseValue('[42]');
+ * const type = parseType('[String!]');
+ *
+ * isValueNode(value); // => true
+ * isValueNode(type); // => false
+ * ```
+ */
 
 function isValueNode(node) {
   return (
@@ -8689,6 +9944,21 @@ function isValueNode(node) {
     node.kind === _kinds.Kind.OBJECT
   );
 }
+/**
+ * Returns true when the AST node is a constant value node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a constant value node.
+ * @example
+ * ```ts
+ * import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+ *
+ * const value = parseConstValue('[42]');
+ * const variable = parseValue('$id');
+ *
+ * isConstValueNode(value); // => true
+ * isConstValueNode(variable); // => false
+ * ```
+ */
 
 function isConstValueNode(node) {
   return (
@@ -8700,6 +9970,21 @@ function isConstValueNode(node) {
       : node.kind !== _kinds.Kind.VARIABLE)
   );
 }
+/**
+ * Returns true when the AST node is a type node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a type node.
+ * @example
+ * ```ts
+ * import { parseType, parseValue, isTypeNode } from 'graphql/language';
+ *
+ * const type = parseType('[String!]');
+ * const value = parseValue('[42]');
+ *
+ * isTypeNode(type); // => true
+ * isTypeNode(value); // => false
+ * ```
+ */
 
 function isTypeNode(node) {
   return (
@@ -8708,6 +9993,21 @@ function isTypeNode(node) {
     node.kind === _kinds.Kind.NON_NULL_TYPE
   );
 }
+/**
+ * Returns true when the AST node is a type system definition node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a type system definition node.
+ * @example
+ * ```ts
+ * import { parse, isTypeSystemDefinitionNode } from 'graphql/language';
+ *
+ * const schema = parse('type Query { hello: String }');
+ * const query = parse('{ hello }');
+ *
+ * isTypeSystemDefinitionNode(schema.definitions[0]); // => true
+ * isTypeSystemDefinitionNode(query.definitions[0]); // => false
+ * ```
+ */
 
 function isTypeSystemDefinitionNode(node) {
   return (
@@ -8716,6 +10016,21 @@ function isTypeSystemDefinitionNode(node) {
     node.kind === _kinds.Kind.DIRECTIVE_DEFINITION
   );
 }
+/**
+ * Returns true when the AST node is a type definition node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a type definition node.
+ * @example
+ * ```ts
+ * import { parse, isTypeDefinitionNode } from 'graphql/language';
+ *
+ * const typeDefinition = parse('type Query { hello: String }');
+ * const directiveDefinition = parse('directive @cache on FIELD');
+ *
+ * isTypeDefinitionNode(typeDefinition.definitions[0]); // => true
+ * isTypeDefinitionNode(directiveDefinition.definitions[0]); // => false
+ * ```
+ */
 
 function isTypeDefinitionNode(node) {
   return (
@@ -8727,6 +10042,21 @@ function isTypeDefinitionNode(node) {
     node.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION
   );
 }
+/**
+ * Returns true when the AST node is a type system extension node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a type system extension node.
+ * @example
+ * ```ts
+ * import { parse, isTypeSystemExtensionNode } from 'graphql/language';
+ *
+ * const extension = parse('extend type Query { hello: String }');
+ * const definition = parse('type Query { hello: String }');
+ *
+ * isTypeSystemExtensionNode(extension.definitions[0]); // => true
+ * isTypeSystemExtensionNode(definition.definitions[0]); // => false
+ * ```
+ */
 
 function isTypeSystemExtensionNode(node) {
   return (
@@ -8735,6 +10065,21 @@ function isTypeSystemExtensionNode(node) {
     isTypeExtensionNode(node)
   );
 }
+/**
+ * Returns true when the AST node is a type extension node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a type extension node.
+ * @example
+ * ```ts
+ * import { parse, isTypeExtensionNode } from 'graphql/language';
+ *
+ * const extension = parse('extend type Query { hello: String }');
+ * const schemaExtension = parse('extend schema { query: Query }');
+ *
+ * isTypeExtensionNode(extension.definitions[0]); // => true
+ * isTypeExtensionNode(schemaExtension.definitions[0]); // => false
+ * ```
+ */
 
 function isTypeExtensionNode(node) {
   return (
@@ -8746,6 +10091,25 @@ function isTypeExtensionNode(node) {
     node.kind === _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION
   );
 }
+/**
+ * Returns true when the AST node is a schema coordinate node.
+ * @param node - The AST node to test.
+ * @returns True when the AST node is a schema coordinate node.
+ * @example
+ * ```ts
+ * import {
+ *   parse,
+ *   parseSchemaCoordinate,
+ *   isSchemaCoordinateNode,
+ * } from 'graphql/language';
+ *
+ * const coordinate = parseSchemaCoordinate('Query.hero');
+ * const document = parse('{ hero }');
+ *
+ * isSchemaCoordinateNode(coordinate); // => true
+ * isSchemaCoordinateNode(document); // => false
+ * ```
+ */
 
 function isSchemaCoordinateNode(node) {
   return (
@@ -8760,7 +10124,7 @@ function isSchemaCoordinateNode(node) {
 
 /***/ }),
 
-/***/ 732:
+/***/ 9623:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -8771,10 +10135,27 @@ Object.defineProperty(exports, "__esModule", ({
 exports.printLocation = printLocation;
 exports.printSourceLocation = printSourceLocation;
 
-var _location = __nccwpck_require__(7577);
+var _location = __nccwpck_require__(36);
+
+/** @category Source */
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.
+ * @param location - The AST location to print.
+ * @returns A formatted source excerpt with line and column information.
+ * @example
+ * ```ts
+ * import { parse, printLocation } from 'graphql/language';
+ *
+ * const document = parse('type Query { hello: String }');
+ * const location = document.definitions[0].loc;
+ *
+ * if (location) {
+ *   const printed = printLocation(location);
+ *
+ *   printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+ * }
+ * ```
  */
 function printLocation(location) {
   return printSourceLocation(
@@ -8784,6 +10165,18 @@ function printLocation(location) {
 }
 /**
  * Render a helpful description of the location in the GraphQL Source document.
+ * @param source - The source document that contains the location.
+ * @param sourceLocation - The 1-indexed line and column to print.
+ * @returns A formatted source excerpt with line and column information.
+ * @example
+ * ```ts
+ * import { Source, printSourceLocation } from 'graphql/language';
+ *
+ * const source = new Source('type Query { hello: String }');
+ * const printed = printSourceLocation(source, { line: 1, column: 14 });
+ *
+ * printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+ * ```
  */
 
 function printSourceLocation(source, sourceLocation) {
@@ -8841,7 +10234,7 @@ function printPrefixedLines(lines) {
 
 /***/ }),
 
-/***/ 6234:
+/***/ 2045:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -8854,10 +10247,14 @@ exports.printString = printString;
 /**
  * Prints a string as a GraphQL StringValue literal. Replaces control characters
  * and excluded characters (" U+0022 and \\ U+005C) with escape sequences.
+ *
+ * @internal
  */
 function printString(str) {
   return `"${str.replace(escapedRegExp, escapedReplacer)}"`;
-} // eslint-disable-next-line no-control-regex
+}
+/** @internal */
+// eslint-disable-next-line no-control-regex
 
 const escapedRegExp = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
 
@@ -9031,7 +10428,7 @@ const escapeSequences = [
 
 /***/ }),
 
-/***/ 6892:
+/***/ 507:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -9041,15 +10438,28 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.print = print;
 
-var _blockString = __nccwpck_require__(1408);
+var _blockString = __nccwpck_require__(3931);
 
-var _printString = __nccwpck_require__(6234);
+var _printString = __nccwpck_require__(2045);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
+
+/** @category Printing */
 
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
+ * @param ast - The GraphQL AST node to print.
+ * @returns A stable string representation of the AST.
+ * @example
+ * ```ts
+ * import { parse, print } from 'graphql';
+ *
+ * const ast = parse('{ hero { name } }');
+ * const text = print(ast);
+ *
+ * text; // => '{\n  hero {\n    name\n  }\n}'
+ * ```
  */
 function print(ast) {
   return (0, _visitor.visit)(ast, printDocASTReducer);
@@ -9378,6 +10788,8 @@ const printDocASTReducer = {
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
+ *
+ * @internal
  */
 
 function join(maybeArray, separator = '') {
@@ -9393,6 +10805,8 @@ function join(maybeArray, separator = '') {
 }
 /**
  * Given array, print each item on its own line, wrapped in an indented `{ }` block.
+ *
+ * @internal
  */
 
 function block(array) {
@@ -9400,6 +10814,8 @@ function block(array) {
 }
 /**
  * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
+ *
+ * @internal
  */
 
 function wrap(start, maybeString, end = '') {
@@ -9430,7 +10846,7 @@ function hasMultilineItems(maybeArray) {
 
 /***/ }),
 
-/***/ 4229:
+/***/ 154:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -9440,15 +10856,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.SchemaCoordinateLexer = void 0;
 
-var _syntaxError = __nccwpck_require__(9599);
+var _syntaxError = __nccwpck_require__(4974);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _characterClasses = __nccwpck_require__(7731);
+var _characterClasses = __nccwpck_require__(8246);
 
-var _lexer = __nccwpck_require__(8762);
+var _lexer = __nccwpck_require__(6085);
 
-var _tokenKind = __nccwpck_require__(3779);
+var _tokenKind = __nccwpck_require__(9352);
 
 /**
  * Given a Source schema coordinate, creates a Lexer for that source.
@@ -9457,15 +10873,13 @@ var _tokenKind = __nccwpck_require__(3779);
  * source lexes, the final Token emitted by the lexer will be of kind
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
+ *
+ * @internal
  */
 class SchemaCoordinateLexer {
-  /**
-   * The previously focused non-ignored token.
-   */
+  /** The previously focused non-ignored token. */
 
-  /**
-   * The currently focused non-ignored token.
-   */
+  /** The currently focused non-ignored token. */
 
   /**
    * The (1-indexed) line containing the current token.
@@ -9497,6 +10911,8 @@ class SchemaCoordinateLexer {
   }
   /**
    * Advances the token stream to the next non-ignored token.
+   *
+   * @internal
    */
 
   advance() {
@@ -9507,6 +10923,8 @@ class SchemaCoordinateLexer {
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
    * the current Lexer token.
+   *
+   * @internal
    */
 
   lookahead() {
@@ -9527,6 +10945,8 @@ class SchemaCoordinateLexer {
 }
 /**
  * Gets the next token from the source starting at the given position.
+ *
+ * @internal
  */
 
 exports.SchemaCoordinateLexer = SchemaCoordinateLexer;
@@ -9608,7 +11028,7 @@ function readNextToken(lexer, start) {
 
 /***/ }),
 
-/***/ 1807:
+/***/ 4214:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -9619,11 +11039,13 @@ Object.defineProperty(exports, "__esModule", ({
 exports.Source = void 0;
 exports.isSource = isSource;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _instanceOf = __nccwpck_require__(9494);
+var _instanceOf = __nccwpck_require__(6149);
+
+/** @category Source */
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -9633,6 +11055,32 @@ var _instanceOf = __nccwpck_require__(9494);
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 class Source {
+  /** The GraphQL source text. */
+
+  /** Name used in diagnostics for this source, such as a file path or request name. */
+
+  /** One-indexed line and column where this source begins. */
+
+  /**
+   * Creates a Source instance.
+   * @param body - The GraphQL source text.
+   * @param name - Name used in diagnostics for this source.
+   * @param locationOffset - One-indexed line and column where this source begins.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   *
+   * const source = new Source(
+   *   'type Query { greeting: String }',
+   *   'schema.graphql',
+   *   { line: 10, column: 1 },
+   * );
+   *
+   * source.body; // => 'type Query { greeting: String }'
+   * source.name; // => 'schema.graphql'
+   * source.locationOffset; // => { line: 10, column: 1 }
+   * ```
+   */
   constructor(
     body,
     name = 'GraphQL request',
@@ -9660,6 +11108,10 @@ class Source {
         'column in locationOffset is 1-indexed and must be positive.',
       );
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'Source';
@@ -9680,7 +11132,7 @@ function isSource(source) {
 
 /***/ }),
 
-/***/ 3779:
+/***/ 9352:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -9689,6 +11141,8 @@ Object.defineProperty(exports, "__esModule", ({
   value: true,
 }));
 exports.TokenKind = void 0;
+
+/** @category Lexing */
 
 /**
  * An exported enum describing the different kinds of tokens that the
@@ -9723,15 +11177,18 @@ exports.TokenKind = TokenKind;
   TokenKind['COMMENT'] = 'Comment';
 })(TokenKind || (exports.TokenKind = TokenKind = {}));
 /**
- * The enum type representing the token kinds values.
- *
- * @deprecated Please use `TokenKind`. Will be remove in v17.
+ * Deprecated legacy alias for the enum type representing token kind values.
+ * This alias will be removed in v17. In v17, `TokenKind` is exported as the
+ * single public symbol for both the runtime object and the corresponding
+ * TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `TokenKind` as both the
+ * runtime value and the type.
  */
 
 
 /***/ }),
 
-/***/ 8730:
+/***/ 1909:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -9745,14 +11202,17 @@ exports.getVisitFn = getVisitFn;
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
+/** @category Visiting */
+
+/** A value that can be returned from a visitor function to stop traversal. */
 const BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -9767,74 +11227,96 @@ const BREAK = Object.freeze({});
  * When using visit() to edit an AST, the original AST will not be modified, and
  * a new version of the AST with the changes applied will be returned from the
  * visit function.
- *
+ * @param root - The AST node at which to start traversal.
+ * @param visitor - The visitor or reducer functions to call while traversing.
+ * @param visitorKeys - Optional map of child keys to visit for each AST node kind.
+ * @returns The original AST, an edited AST, or a reduced value depending on the visitor.
+ * @typeParam N - The root AST node type returned when visiting without reducing.
+ * @example
  * ```ts
- * const editedAST = visit(ast, {
- *   enter(node, key, parent, path, ancestors) {
- *     // @return
- *     //   undefined: no action
- *     //   false: skip visiting this node
- *     //   visitor.BREAK: stop visiting altogether
- *     //   null: delete this node
- *     //   any value: replace this node with the returned value
+ * // Return values control traversal: undefined makes no change, false skips
+ * // a subtree, BREAK stops traversal, null removes a node, and any other
+ * // value replaces the current node.
+ * import { Kind, parse, print, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const editedAST = visit(document, {
+ *   Field: (node) => {
+ *     if (node.name.value === 'hero') {
+ *       return {
+ *         ...node,
+ *         name: { kind: Kind.NAME, value: 'human' },
+ *       };
+ *     }
  *   },
- *   leave(node, key, parent, path, ancestors) {
- *     // @return
- *     //   undefined: no action
- *     //   false: no action
- *     //   visitor.BREAK: stop visiting altogether
- *     //   null: delete this node
- *     //   any value: replace this node with the returned value
- *   }
  * });
+ *
+ * print(editedAST); // => '{\n  human {\n    name\n  }\n}'
  * ```
- *
- * Alternatively to providing enter() and leave() functions, a visitor can
- * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to three permutations of the
- * visitor API:
- *
- * 1) Named visitors triggered when entering a node of a specific kind.
- *
+ * @example
  * ```ts
- * visit(ast, {
- *   Kind(node) {
- *     // enter the "Kind" node
- *   }
- * })
- * ```
+ * // A named visitor function runs when entering nodes of that kind.
+ * import { parse, visit } from 'graphql/language';
  *
- * 2) Named visitors that trigger upon entering and leaving a node of a specific kind.
+ * const document = parse('{ hero { name } }');
+ * const fieldNames = [];
  *
- * ```ts
- * visit(ast, {
- *   Kind: {
- *     enter(node) {
- *       // enter the "Kind" node
- *     }
- *     leave(node) {
- *       // leave the "Kind" node
- *     }
- *   }
- * })
- * ```
- *
- * 3) Generic visitors that trigger upon entering and leaving any node.
- *
- * ```ts
- * visit(ast, {
- *   enter(node) {
- *     // enter any node
+ * visit(document, {
+ *   Field: (node) => {
+ *     fieldNames.push(node.name.value);
  *   },
- *   leave(node) {
- *     // leave any node
- *   }
- * })
+ * });
+ *
+ * fieldNames; // => ['hero', 'name']
+ * ```
+ * @example
+ * ```ts
+ * // A named visitor object can provide separate enter and leave handlers for
+ * // nodes of that kind.
+ * import { parse, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const events = [];
+ *
+ * visit(document, {
+ *   Field: {
+ *     enter: (node) => {
+ *       events.push(`enter:${node.name.value}`);
+ *     },
+ *     leave: (node) => {
+ *       events.push(`leave:${node.name.value}`);
+ *     },
+ *   },
+ * });
+ *
+ * events; // => ['enter:hero', 'enter:name', 'leave:name', 'leave:hero']
+ * ```
+ * @example
+ * ```ts
+ * // Generic enter and leave handlers run for every node.
+ * import { parse, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * let enterCount = 0;
+ * let leaveCount = 0;
+ *
+ * visit(document, {
+ *   enter: (node) => {
+ *     enterCount += 1;
+ *   },
+ *   leave: (node) => {
+ *     leaveCount += 1;
+ *   },
+ * });
+ *
+ * enterCount; // => leaveCount
+ * enterCount > 0; // => true
  * ```
  */
 
 exports.BREAK = BREAK;
 
+/** @internal */
 function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
   const enterLeaveMap = new Map();
 
@@ -9998,6 +11480,25 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * If a prior visitor edits a node, no following visitors will see that node.
+ * @param visitors - The visitors to merge into one parallel visitor.
+ * @returns A visitor that delegates traversal to each provided visitor.
+ * @example
+ * ```ts
+ * import { parse, visit, visitInParallel } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const events = [];
+ *
+ * visit(
+ *   document,
+ *   visitInParallel([
+ *     { Field: (node) => { events.push(`field:${node.name.value}`); } },
+ *     { Name: (node) => { events.push(`name:${node.value}`); } },
+ *   ]),
+ * );
+ *
+ * events; // => ['field:hero', 'name:hero', 'field:name', 'name:name']
+ * ```
  */
 
 function visitInParallel(visitors) {
@@ -10074,6 +11575,18 @@ function visitInParallel(visitors) {
 }
 /**
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+ * @param visitor - The visitor object to inspect.
+ * @param kind - The AST node kind to resolve handlers for.
+ * @returns The enter and leave handlers that apply for the given node kind.
+ * @example
+ * ```ts
+ * import { Kind, getEnterLeaveForKind } from 'graphql/language';
+ *
+ * const handlers = getEnterLeaveForKind({ Field: () => {} }, Kind.FIELD);
+ *
+ * typeof handlers.enter; // => 'function'
+ * handlers.leave; // => undefined
+ * ```
  */
 
 function getEnterLeaveForKind(visitor, kind) {
@@ -10097,8 +11610,24 @@ function getEnterLeaveForKind(visitor, kind) {
 }
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
- * the function the visitor runtime should call.
+ * the function the visitor runtime should call. This deprecated compatibility
+ * helper delegates to `getEnterLeaveForKind`; call `getEnterLeaveForKind`
+ * directly because getVisitFn will be removed in v17.
+ * @param visitor - The visitor object to inspect.
+ * @param kind - The AST node kind to resolve a handler for.
+ * @param isLeaving - Whether to resolve the leave handler instead of the enter handler.
+ * @returns The visit function that applies for the given node kind and traversal phase, if one exists.
+ * @example
+ * ```ts
+ * import { Kind, getVisitFn } from 'graphql/language';
  *
+ * const enter = getVisitFn({ Field: () => {} }, Kind.FIELD, false);
+ * const leave = getVisitFn({ Field: () => {} }, Kind.FIELD, true);
+ *
+ * typeof enter; // => 'function'
+ * leave; // => undefined
+ * ```
+ * @category Visiting
  * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
 
@@ -10112,7 +11641,7 @@ function getVisitFn(visitor, kind, isLeaving) {
 
 /***/ }),
 
-/***/ 8261:
+/***/ 4376:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -10123,14 +11652,25 @@ Object.defineProperty(exports, "__esModule", ({
 exports.assertEnumValueName = assertEnumValueName;
 exports.assertName = assertName;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _characterClasses = __nccwpck_require__(7731);
+var _characterClasses = __nccwpck_require__(8246);
+
+/** @category Names */
 
 /**
  * Upholds the spec rules about naming.
+ * @param name - The GraphQL name to validate.
+ * @returns The validated GraphQL name.
+ * @example
+ * ```ts
+ * import { assertName } from 'graphql/type';
+ *
+ * assertName('User'); // => 'User'
+ * assertName('123User'); // throws an error
+ * ```
  */
 function assertName(name) {
   name != null || (0, _devAssert.devAssert)(false, 'Must provide name.');
@@ -10161,8 +11701,15 @@ function assertName(name) {
 }
 /**
  * Upholds the spec rules about naming enum values.
+ * @param name - The GraphQL name to validate.
+ * @returns The validated GraphQL name.
+ * @example
+ * ```ts
+ * import { assertEnumValueName } from 'graphql/type';
  *
- * @internal
+ * assertEnumValueName('ACTIVE'); // => 'ACTIVE'
+ * assertEnumValueName('true'); // throws an error
+ * ```
  */
 
 function assertEnumValueName(name) {
@@ -10178,7 +11725,7 @@ function assertEnumValueName(name) {
 
 /***/ }),
 
-/***/ 5421:
+/***/ 2000:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -10238,38 +11785,61 @@ exports.isWrappingType = isWrappingType;
 exports.resolveObjMapThunk = resolveObjMapThunk;
 exports.resolveReadonlyArrayThunk = resolveReadonlyArrayThunk;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _identityFunc = __nccwpck_require__(1656);
+var _identityFunc = __nccwpck_require__(5687);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _instanceOf = __nccwpck_require__(9494);
+var _instanceOf = __nccwpck_require__(6149);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _keyValMap = __nccwpck_require__(3218);
+var _keyValMap = __nccwpck_require__(8875);
 
-var _mapValue = __nccwpck_require__(2475);
+var _mapValue = __nccwpck_require__(2912);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _toObjMap = __nccwpck_require__(8764);
+var _toObjMap = __nccwpck_require__(4928);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _valueFromASTUntyped = __nccwpck_require__(3386);
+var _valueFromASTUntyped = __nccwpck_require__(2247);
 
-var _assertName = __nccwpck_require__(8261);
+var _assertName = __nccwpck_require__(4376);
 
+/** @category Types */
+
+/**
+ * Returns true when the value is any GraphQL type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is any GraphQL type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { GraphQLList, GraphQLString, isType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * isType(GraphQLString); // => true
+ * isType(new GraphQLList(GraphQLString)); // => true
+ * isType(schema.getType('Query')); // => true
+ * isType('String'); // => false
+ * ```
+ */
 function isType(type) {
   return (
     isScalarType(type) ||
@@ -10282,6 +11852,27 @@ function isType(type) {
     isNonNullType(type)
   );
 }
+/**
+ * Returns the value as a GraphQL type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const queryType = assertType(schema.getType('Query'));
+ *
+ * queryType.toString(); // => 'Query'
+ * assertType('Query'); // throws an error
+ * ```
+ */
 
 function assertType(type) {
   if (!isType(type)) {
@@ -10294,11 +11885,52 @@ function assertType(type) {
 }
 /**
  * There are predicates for each kind of GraphQL type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLScalarType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isScalarType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   scalar DateTime
+ *
+ *   type Query {
+ *     createdAt: DateTime
+ *   }
+ * `);
+ *
+ * isScalarType(schema.getType('DateTime')); // => true
+ * isScalarType(schema.getType('Query')); // => false
+ * ```
  */
 
 function isScalarType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLScalarType);
 }
+/**
+ * Returns the value as a GraphQLScalarType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLScalarType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertScalarType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   scalar DateTime
+ *
+ *   type Query {
+ *     createdAt: DateTime
+ *   }
+ * `);
+ *
+ * const dateTimeType = assertScalarType(schema.getType('DateTime'));
+ *
+ * dateTimeType.name; // => 'DateTime'
+ * assertScalarType(schema.getType('Query')); // throws an error
+ * ```
+ */
 
 function assertScalarType(type) {
   if (!isScalarType(type)) {
@@ -10309,10 +11941,66 @@ function assertScalarType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLObjectType.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLObjectType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isObjectType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type User {
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     user: User
+ *   }
+ * `);
+ *
+ * isObjectType(schema.getType('User')); // => true
+ * isObjectType(schema.getType('ReviewInput')); // => false
+ * ```
+ */
 
 function isObjectType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLObjectType);
 }
+/**
+ * Returns the value as a GraphQLObjectType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLObjectType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertObjectType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type User {
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     user: User
+ *   }
+ * `);
+ *
+ * const userType = assertObjectType(schema.getType('User'));
+ *
+ * Object.keys(userType.getFields()); // => ['name']
+ * assertObjectType(schema.getType('ReviewInput')); // throws an error
+ * ```
+ */
 
 function assertObjectType(type) {
   if (!isObjectType(type)) {
@@ -10323,10 +12011,66 @@ function assertObjectType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLInterfaceType.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLInterfaceType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isInterfaceType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     node: Node
+ *   }
+ * `);
+ *
+ * isInterfaceType(schema.getType('Node')); // => true
+ * isInterfaceType(schema.getType('User')); // => false
+ * ```
+ */
 
 function isInterfaceType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLInterfaceType);
 }
+/**
+ * Returns the value as a GraphQLInterfaceType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLInterfaceType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertInterfaceType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     node: Node
+ *   }
+ * `);
+ *
+ * const nodeType = assertInterfaceType(schema.getType('Node'));
+ *
+ * nodeType.name; // => 'Node'
+ * assertInterfaceType(schema.getType('User')); // throws an error
+ * ```
+ */
 
 function assertInterfaceType(type) {
   if (!isInterfaceType(type)) {
@@ -10337,10 +12081,70 @@ function assertInterfaceType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLUnionType.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLUnionType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isUnionType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Photo {
+ *     url: String!
+ *   }
+ *
+ *   type Video {
+ *     url: String!
+ *   }
+ *
+ *   union Media = Photo | Video
+ *
+ *   type Query {
+ *     media: [Media]
+ *   }
+ * `);
+ *
+ * isUnionType(schema.getType('Media')); // => true
+ * isUnionType(schema.getType('Photo')); // => false
+ * ```
+ */
 
 function isUnionType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLUnionType);
 }
+/**
+ * Returns the value as a GraphQLUnionType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLUnionType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertUnionType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Photo {
+ *     url: String!
+ *   }
+ *
+ *   type Video {
+ *     url: String!
+ *   }
+ *
+ *   union Media = Photo | Video
+ *
+ *   type Query {
+ *     media: [Media]
+ *   }
+ * `);
+ *
+ * const mediaType = assertUnionType(schema.getType('Media'));
+ *
+ * mediaType.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+ * assertUnionType(schema.getType('Photo')); // throws an error
+ * ```
+ */
 
 function assertUnionType(type) {
   if (!isUnionType(type)) {
@@ -10351,10 +12155,60 @@ function assertUnionType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLEnumType.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLEnumType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isEnumType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *     EMPIRE
+ *   }
+ *
+ *   type Query {
+ *     favoriteEpisode: Episode
+ *   }
+ * `);
+ *
+ * isEnumType(schema.getType('Episode')); // => true
+ * isEnumType(schema.getType('Query')); // => false
+ * ```
+ */
 
 function isEnumType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLEnumType);
 }
+/**
+ * Returns the value as a GraphQLEnumType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLEnumType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertEnumType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *     EMPIRE
+ *   }
+ *
+ *   type Query {
+ *     favoriteEpisode: Episode
+ *   }
+ * `);
+ *
+ * const episodeType = assertEnumType(schema.getType('Episode'));
+ *
+ * episodeType.getValues().map((value) => value.name); // => ['NEW_HOPE', 'EMPIRE']
+ * assertEnumType(schema.getType('Query')); // throws an error
+ * ```
+ */
 
 function assertEnumType(type) {
   if (!isEnumType(type)) {
@@ -10365,10 +12219,66 @@ function assertEnumType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLInputObjectType.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLInputObjectType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isInputObjectType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * isInputObjectType(schema.getType('ReviewInput')); // => true
+ * isInputObjectType(schema.getType('Review')); // => false
+ * ```
+ */
 
 function isInputObjectType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLInputObjectType);
 }
+/**
+ * Returns the value as a GraphQLInputObjectType, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLInputObjectType.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * const inputType = assertInputObjectType(schema.getType('ReviewInput'));
+ *
+ * Object.keys(inputType.getFields()); // => ['stars']
+ * assertInputObjectType(schema.getType('Review')); // throws an error
+ * ```
+ */
 
 function assertInputObjectType(type) {
   if (!isInputObjectType(type)) {
@@ -10381,10 +12291,47 @@ function assertInputObjectType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLList.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLList.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { GraphQLList, GraphQLString, isListType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     tags: [String!]!
+ *   }
+ * `);
+ *
+ * const tagsField = schema.getQueryType()?.getFields().tags;
+ *
+ * isListType(new GraphQLList(GraphQLString)); // => true
+ * isListType(GraphQLString); // => false
+ * isListType(tagsField?.type); // => false
+ * ```
+ */
 
+/** @internal */
 function isListType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLList);
 }
+/**
+ * Returns the value as a GraphQLList, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLList.
+ * @example
+ * ```ts
+ * import { GraphQLList, GraphQLString, assertListType } from 'graphql/type';
+ *
+ * const listType = assertListType(new GraphQLList(GraphQLString));
+ *
+ * listType.ofType; // => GraphQLString
+ * assertListType(GraphQLString); // throws an error
+ * ```
+ */
 
 function assertListType(type) {
   if (!isListType(type)) {
@@ -10395,10 +12342,48 @@ function assertListType(type) {
 
   return type;
 }
+/**
+ * Returns true when the value is a GraphQLNonNull.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQLNonNull.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { GraphQLNonNull, GraphQLString, isNonNullType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String!
+ *     nickname: String
+ *   }
+ * `);
+ *
+ * const fields = schema.getQueryType()?.getFields();
+ *
+ * isNonNullType(new GraphQLNonNull(GraphQLString)); // => true
+ * isNonNullType(fields?.name.type); // => true
+ * isNonNullType(fields?.nickname.type); // => false
+ * ```
+ */
 
+/** @internal */
 function isNonNullType(type) {
   return (0, _instanceOf.instanceOf)(type, GraphQLNonNull);
 }
+/**
+ * Returns the value as a GraphQLNonNull, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQLNonNull.
+ * @example
+ * ```ts
+ * import { GraphQLNonNull, GraphQLString, assertNonNullType } from 'graphql/type';
+ *
+ * const nonNullType = assertNonNullType(new GraphQLNonNull(GraphQLString));
+ *
+ * nonNullType.ofType; // => GraphQLString
+ * assertNonNullType(GraphQLString); // throws an error
+ * ```
+ */
 
 function assertNonNullType(type) {
   if (!isNonNullType(type)) {
@@ -10409,10 +12394,35 @@ function assertNonNullType(type) {
 
   return type;
 }
-/**
- * These types may be used as input types for arguments and directives.
- */
+/** These types may be used as input types for arguments and directives. */
 
+/**
+ * Returns true when the value can be used as a GraphQL input type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value can be used as a GraphQL input type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isInputType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * isInputType(schema.getType('ReviewInput')); // => true
+ * isInputType(schema.getType('Review')); // => false
+ * ```
+ */
 function isInputType(type) {
   return (
     isScalarType(type) ||
@@ -10421,6 +12431,35 @@ function isInputType(type) {
     (isWrappingType(type) && isInputType(type.ofType))
   );
 }
+/**
+ * Returns the value as a GraphQL input type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL input type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertInputType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * const inputType = assertInputType(schema.getType('ReviewInput'));
+ *
+ * inputType.toString(); // => 'ReviewInput'
+ * assertInputType(schema.getType('Review')); // throws an error
+ * ```
+ */
 
 function assertInputType(type) {
   if (!isInputType(type)) {
@@ -10431,10 +12470,35 @@ function assertInputType(type) {
 
   return type;
 }
-/**
- * These types may be used as output types as the result of fields.
- */
+/** These types may be used as output types as the result of fields. */
 
+/**
+ * Returns true when the value can be used as a GraphQL output type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value can be used as a GraphQL output type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isOutputType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * isOutputType(schema.getType('Review')); // => true
+ * isOutputType(schema.getType('ReviewInput')); // => false
+ * ```
+ */
 function isOutputType(type) {
   return (
     isScalarType(type) ||
@@ -10445,6 +12509,35 @@ function isOutputType(type) {
     (isWrappingType(type) && isOutputType(type.ofType))
   );
 }
+/**
+ * Returns the value as a GraphQL output type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL output type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertOutputType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput): Review
+ *   }
+ * `);
+ *
+ * const outputType = assertOutputType(schema.getType('Review'));
+ *
+ * outputType.toString(); // => 'Review'
+ * assertOutputType(schema.getType('ReviewInput')); // throws an error
+ * ```
+ */
 
 function assertOutputType(type) {
   if (!isOutputType(type)) {
@@ -10455,13 +12548,70 @@ function assertOutputType(type) {
 
   return type;
 }
-/**
- * These types may describe types which may be leaf values.
- */
+/** These types may describe types which may be leaf values. */
 
+/**
+ * Returns true when the value is a GraphQL scalar or enum type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL scalar or enum type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isLeafType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     episode: Episode
+ *     review: Review
+ *   }
+ * `);
+ *
+ * isLeafType(schema.getType('Episode')); // => true
+ * isLeafType(schema.getType('String')); // => true
+ * isLeafType(schema.getType('Review')); // => false
+ * ```
+ */
 function isLeafType(type) {
   return isScalarType(type) || isEnumType(type);
 }
+/**
+ * Returns the value as a GraphQL leaf type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL leaf type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertLeafType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *   }
+ *
+ *   type Review {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     episode: Episode
+ *     review: Review
+ *   }
+ * `);
+ *
+ * const episodeType = assertLeafType(schema.getType('Episode'));
+ *
+ * episodeType.toString(); // => 'Episode'
+ * assertLeafType(schema.getType('Review')); // throws an error
+ * ```
+ */
 
 function assertLeafType(type) {
   if (!isLeafType(type)) {
@@ -10472,13 +12622,72 @@ function assertLeafType(type) {
 
   return type;
 }
-/**
- * These types may describe the parent context of a selection set.
- */
+/** These types may describe the parent context of a selection set. */
 
+/**
+ * Returns true when the value is a GraphQL object, interface, or union type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL object, interface, or union type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isCompositeType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   union SearchResult = User
+ *
+ *   type Query {
+ *     node: Node
+ *     search: [SearchResult]
+ *   }
+ * `);
+ *
+ * isCompositeType(schema.getType('User')); // => true
+ * isCompositeType(schema.getType('Node')); // => true
+ * isCompositeType(schema.getType('SearchResult')); // => true
+ * isCompositeType(schema.getType('String')); // => false
+ * ```
+ */
 function isCompositeType(type) {
   return isObjectType(type) || isInterfaceType(type) || isUnionType(type);
 }
+/**
+ * Returns the value as a GraphQL composite type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL composite type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertCompositeType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     node: Node
+ *   }
+ * `);
+ *
+ * const userType = assertCompositeType(schema.getType('User'));
+ *
+ * userType.toString(); // => 'User'
+ * assertCompositeType(schema.getType('String')); // throws an error
+ * ```
+ */
 
 function assertCompositeType(type) {
   if (!isCompositeType(type)) {
@@ -10489,13 +12698,71 @@ function assertCompositeType(type) {
 
   return type;
 }
-/**
- * These types may describe the parent context of a selection set.
- */
+/** These types may describe the parent context of a selection set. */
 
+/**
+ * Returns true when the value is a GraphQL interface or union type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL interface or union type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { isAbstractType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   union SearchResult = User
+ *
+ *   type Query {
+ *     node: Node
+ *     search: [SearchResult]
+ *   }
+ * `);
+ *
+ * isAbstractType(schema.getType('Node')); // => true
+ * isAbstractType(schema.getType('SearchResult')); // => true
+ * isAbstractType(schema.getType('User')); // => false
+ * ```
+ */
 function isAbstractType(type) {
   return isInterfaceType(type) || isUnionType(type);
 }
+/**
+ * Returns the value as a GraphQL abstract type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL abstract type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertAbstractType } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     node: Node
+ *   }
+ * `);
+ *
+ * const nodeType = assertAbstractType(schema.getType('Node'));
+ *
+ * nodeType.toString(); // => 'Node'
+ * assertAbstractType(schema.getType('User')); // throws an error
+ * ```
+ */
 
 function assertAbstractType(type) {
   if (!isAbstractType(type)) {
@@ -10512,9 +12779,8 @@ function assertAbstractType(type) {
  * A list is a wrapping type which points to another type.
  * Lists are often created within the context of defining the fields of
  * an object type.
- *
- * Example:
- *
+ * @typeParam T - The GraphQL type wrapped by this list type.
+ * @example
  * ```ts
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
@@ -10527,6 +12793,21 @@ function assertAbstractType(type) {
  */
 
 class GraphQLList {
+  /** The type wrapped by this list or non-null type. */
+
+  /**
+   * Creates a GraphQLList instance.
+   * @param ofType - The type to wrap.
+   * @example
+   * ```ts
+   * import { GraphQLList, GraphQLString } from 'graphql/type';
+   *
+   * const stringList = new GraphQLList(GraphQLString);
+   *
+   * stringList.ofType; // => GraphQLString
+   * String(stringList); // => '[String]'
+   * ```
+   */
   constructor(ofType) {
     isType(ofType) ||
       (0, _devAssert.devAssert)(
@@ -10535,14 +12816,45 @@ class GraphQLList {
       );
     this.ofType = ofType;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLList';
   }
+  /**
+   * Returns this wrapping type as a GraphQL type-reference string.
+   * @returns The GraphQL type-reference string.
+   * @example
+   * ```ts
+   * import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
+   *
+   * const stringList = new GraphQLList(GraphQLString);
+   * const requiredStringList = new GraphQLList(new GraphQLNonNull(GraphQLString));
+   *
+   * stringList.toString(); // => '[String]'
+   * requiredStringList.toString(); // => '[String!]'
+   * ```
+   */
 
   toString() {
     return '[' + String(this.ofType) + ']';
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLList, GraphQLString } from 'graphql/type';
+   *
+   * const stringList = new GraphQLList(GraphQLString);
+   *
+   * stringList.toJSON(); // => '[String]'
+   * JSON.stringify({ type: stringList }); // => '{"type":"[String]"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
@@ -10556,9 +12868,8 @@ class GraphQLList {
  * an error is raised if this ever occurs during a request. It is useful for
  * fields which you can make a strong guarantee on non-nullability, for example
  * usually the id field of a database row will never be null.
- *
- * Example:
- *
+ * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
+ * @example
  * ```ts
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
@@ -10567,12 +12878,28 @@ class GraphQLList {
  *   })
  * })
  * ```
+ *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 
 exports.GraphQLList = GraphQLList;
 
 class GraphQLNonNull {
+  /** The type wrapped by this list or non-null type. */
+
+  /**
+   * Creates a GraphQLNonNull instance.
+   * @param ofType - The type to wrap.
+   * @example
+   * ```ts
+   * import { GraphQLNonNull, GraphQLString } from 'graphql/type';
+   *
+   * const requiredString = new GraphQLNonNull(GraphQLString);
+   *
+   * requiredString.ofType; // => GraphQLString
+   * String(requiredString); // => 'String!'
+   * ```
+   */
   constructor(ofType) {
     isNullableType(ofType) ||
       (0, _devAssert.devAssert)(
@@ -10583,28 +12910,91 @@ class GraphQLNonNull {
       );
     this.ofType = ofType;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLNonNull';
   }
+  /**
+   * Returns this wrapping type as a GraphQL type-reference string.
+   * @returns The GraphQL type-reference string.
+   * @example
+   * ```ts
+   * import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
+   *
+   * const requiredString = new GraphQLNonNull(GraphQLString);
+   * const requiredStringList = new GraphQLNonNull(
+   *   new GraphQLList(GraphQLString),
+   * );
+   *
+   * requiredString.toString(); // => 'String!'
+   * requiredStringList.toString(); // => '[String]!'
+   * ```
+   */
 
   toString() {
     return String(this.ofType) + '!';
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLNonNull, GraphQLString } from 'graphql/type';
+   *
+   * const requiredString = new GraphQLNonNull(GraphQLString);
+   *
+   * requiredString.toJSON(); // => 'String!'
+   * JSON.stringify({ type: requiredString }); // => '{"type":"String!"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
   }
 }
-/**
- * These types wrap and modify other types
- */
+/** These types wrap and modify other types */
 
 exports.GraphQLNonNull = GraphQLNonNull;
 
+/**
+ * Returns true when the value is a GraphQL list or non-null wrapper type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL list or non-null wrapper type.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ *   isWrappingType,
+ * } from 'graphql/type';
+ *
+ * isWrappingType(new GraphQLList(GraphQLString)); // => true
+ * isWrappingType(new GraphQLNonNull(GraphQLString)); // => true
+ * isWrappingType(GraphQLString); // => false
+ * ```
+ */
 function isWrappingType(type) {
   return isListType(type) || isNonNullType(type);
 }
+/**
+ * Returns the value as a GraphQL wrapping type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL wrapping type.
+ * @example
+ * ```ts
+ * import { GraphQLList, GraphQLString, assertWrappingType } from 'graphql/type';
+ *
+ * const wrappingType = assertWrappingType(new GraphQLList(GraphQLString));
+ *
+ * wrappingType.toString(); // => '[String]'
+ * assertWrappingType(GraphQLString); // throws an error
+ * ```
+ */
 
 function assertWrappingType(type) {
   if (!isWrappingType(type)) {
@@ -10615,13 +13005,42 @@ function assertWrappingType(type) {
 
   return type;
 }
-/**
- * These types can all accept null as a value.
- */
+/** These types can all accept null as a value. */
 
+/**
+ * Returns true when the value is a GraphQL type that can accept null.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL type that can accept null.
+ * @example
+ * ```ts
+ * import { GraphQLNonNull, GraphQLString, isNullableType } from 'graphql/type';
+ *
+ * isNullableType(GraphQLString); // => true
+ * isNullableType(new GraphQLNonNull(GraphQLString)); // => false
+ * isNullableType(null); // => false
+ * ```
+ */
 function isNullableType(type) {
   return isType(type) && !isNonNullType(type);
 }
+/**
+ * Returns the value as a nullable GraphQL type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a nullable GraphQL type.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ *   assertNullableType,
+ * } from 'graphql/type';
+ *
+ * const nullableType = assertNullableType(GraphQLString);
+ *
+ * nullableType; // => GraphQLString
+ * assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
+ * ```
+ */
 
 function assertNullableType(type) {
   if (!isNullableType(type)) {
@@ -10632,16 +13051,40 @@ function assertNullableType(type) {
 
   return type;
 }
+/**
+ * Returns the nullable type.
+ * @param type - The GraphQL type to inspect.
+ * @returns The nullable type after removing one non-null wrapper, if present.
+ * @example
+ * ```ts
+ * import { getNullableType } from 'graphql/type';
+ *
+ * getNullableType(null); // => undefined
+ * getNullableType(undefined); // => undefined
+ * ```
+ */
 
+/** @internal */
 function getNullableType(type) {
   if (type) {
     return isNonNullType(type) ? type.ofType : type;
   }
 }
-/**
- * These named types do not include modifiers like List or NonNull.
- */
+/** These named types do not include modifiers like List or NonNull. */
 
+/**
+ * Returns true when the value is a GraphQL named type.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the value is a GraphQL named type.
+ * @example
+ * ```ts
+ * import { GraphQLList, GraphQLString, isNamedType } from 'graphql/type';
+ *
+ * isNamedType(GraphQLString); // => true
+ * isNamedType(new GraphQLList(GraphQLString)); // => false
+ * isNamedType(null); // => false
+ * ```
+ */
 function isNamedType(type) {
   return (
     isScalarType(type) ||
@@ -10652,6 +13095,20 @@ function isNamedType(type) {
     isInputObjectType(type)
   );
 }
+/**
+ * Returns the value as a GraphQL named type, or throws if it is not one.
+ * @param type - The GraphQL type to inspect.
+ * @returns The value typed as a GraphQL named type.
+ * @example
+ * ```ts
+ * import { GraphQLList, GraphQLString, assertNamedType } from 'graphql/type';
+ *
+ * const namedType = assertNamedType(GraphQLString);
+ *
+ * namedType.name; // => 'String'
+ * assertNamedType(new GraphQLList(GraphQLString)); // throws an error
+ * ```
+ */
 
 function assertNamedType(type) {
   if (!isNamedType(type)) {
@@ -10662,7 +13119,20 @@ function assertNamedType(type) {
 
   return type;
 }
+/**
+ * Returns the named type.
+ * @param type - The GraphQL type to inspect.
+ * @returns The named type after unwrapping all list and non-null wrappers.
+ * @example
+ * ```ts
+ * import { getNamedType } from 'graphql/type';
+ *
+ * getNamedType(null); // => undefined
+ * getNamedType(undefined); // => undefined
+ * ```
+ */
 
+/** @internal */
 function getNamedType(type) {
   if (type) {
     let unwrappedType = type;
@@ -10677,18 +13147,50 @@ function getNamedType(type) {
 /**
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
+ * @typeParam T - The element type returned by the thunk or array.
  */
 
+/**
+ * Resolves a thunked readonly array.
+ * @param thunk - The thunk or value to resolve.
+ * @returns The resolved readonly array.
+ * @typeParam T - The element type resolved from the thunk or array.
+ * @example
+ * ```ts
+ * import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
+ *
+ * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
+ * const fields = resolveReadonlyArrayThunk([GraphQLString]);
+ *
+ * lazyFields; // => [GraphQLString]
+ * fields; // => [GraphQLString]
+ * ```
+ */
 function resolveReadonlyArrayThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
+/**
+ * Resolves a thunked object map.
+ * @param thunk - The thunk or value to resolve.
+ * @returns The resolved object map.
+ * @typeParam T - The object-map value type resolved from the thunk or map.
+ * @example
+ * ```ts
+ * import { GraphQLString, resolveObjMapThunk } from 'graphql/type';
+ *
+ * const lazyFields = resolveObjMapThunk(() => ({ name: GraphQLString }));
+ * const fields = resolveObjMapThunk({ name: GraphQLString });
+ *
+ * lazyFields.name; // => GraphQLString
+ * fields.name; // => GraphQLString
+ * ```
+ */
 
 function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 /**
  * Custom extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -10699,20 +13201,22 @@ function resolveObjMapThunk(thunk) {
 /**
  * Scalar Type Definition
  *
- * The leaf values of any request and input values to arguments are
- * Scalars (or Enums) and are defined with a name and a series of functions
- * used to parse input from ast or variables and to ensure validity.
+ * Scalar types define the leaf values of a GraphQL response and the input
+ * values accepted by arguments and input object fields. A scalar type has a
+ * name and coercion functions that validate and convert runtime values and
+ * GraphQL literals.
  *
  * If a type's serialize function returns `null` or does not return a value
  * (i.e. it returns `undefined`) then an error will be raised and a `null`
- * value will be returned in the response. It is always better to validate
- *
- * Example:
- *
+ * value will be returned in the response. Prefer validating inputs before
+ * execution so clients receive input diagnostics before result coercion fails.
+ * @typeParam TInternal - The internal runtime representation accepted by this scalar.
+ * @typeParam TExternal - The serialized representation exposed in GraphQL results.
+ * @example
  * ```ts
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
- *   serialize(value) {
+ *   serialize: (value) => {
  *     if (!Number.isFinite(value)) {
  *       throw new Error(
  *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
@@ -10728,6 +13232,77 @@ function resolveObjMapThunk(thunk) {
  * ```
  */
 class GraphQLScalarType {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** URL identifying the behavior specified for this custom scalar. */
+
+  /** Function that converts internal values to externally visible scalar values. */
+
+  /** Function that converts variable input into this scalar's internal value. */
+
+  /** Function that converts AST input literals into this scalar's internal value. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLScalarType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { Kind, parse } from 'graphql/language';
+   * import { GraphQLScalarType } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   "Odd integer values."
+   *   scalar Odd @specifiedBy(url: "https://example.com/odd")
+   *
+   *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
+   * `);
+   *
+   * const Odd = new GraphQLScalarType({
+   *   name: 'Odd',
+   *   description: 'Odd integer values.',
+   *   specifiedByURL: 'https://example.com/odd',
+   *   serialize: (value) => {
+   *     if (typeof value !== 'number' || value % 2 === 0) {
+   *       throw new TypeError('Odd can only serialize odd numbers.');
+   *     }
+   *     return value;
+   *   },
+   *   parseValue: (value) => {
+   *     if (typeof value !== 'number' || value % 2 === 0) {
+   *       throw new TypeError('Odd can only parse odd numbers.');
+   *     }
+   *     return value;
+   *   },
+   *   parseLiteral: (ast) => {
+   *     if (ast.kind !== Kind.INT) {
+   *       throw new TypeError('Odd can only parse integer literals.');
+   *     }
+   *     const value = Number(ast.value);
+   *     if (value % 2 === 0) {
+   *       throw new TypeError('Odd can only parse odd integer literals.');
+   *     }
+   *     return value;
+   *   },
+   *   extensions: { numeric: true },
+   *   astNode: document.definitions[0],
+   *   extensionASTNodes: [ document.definitions[1] ],
+   * });
+   *
+   * Odd.description; // => 'Odd integer values.'
+   * Odd.specifiedByURL; // => 'https://example.com/odd'
+   * Odd.serialize(3); // => 3
+   * Odd.parseValue(5); // => 5
+   * Odd.extensions; // => { numeric: true }
+   * ```
+   */
   constructor(config) {
     var _config$parseValue,
       _config$serialize,
@@ -10786,10 +13361,35 @@ class GraphQLScalarType {
         );
     }
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLScalarType';
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { GraphQLScalarType } from 'graphql/type';
+   *
+   * const Url = new GraphQLScalarType({
+   *   name: 'Url',
+   *   description: 'An absolute URL string.',
+   *   specifiedByURL: 'https://url.spec.whatwg.org/',
+   * });
+   *
+   * const config = Url.toConfig();
+   * const UrlCopy = new GraphQLScalarType(config);
+   *
+   * config.name; // => 'Url'
+   * config.specifiedByURL; // => 'https://url.spec.whatwg.org/'
+   * UrlCopy.name; // => Url.name
+   * ```
+   */
 
   toConfig() {
     return {
@@ -10804,15 +13404,45 @@ class GraphQLScalarType {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this scalar type.
+   * @returns The schema coordinate for this scalar type.
+   * @example
+   * ```ts
+   * import { GraphQLScalarType } from 'graphql/type';
+   *
+   * const DateTime = new GraphQLScalarType({ name: 'DateTime' });
+   *
+   * DateTime.toString(); // => 'DateTime'
+   * String(DateTime); // => 'DateTime'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLScalarType } from 'graphql/type';
+   *
+   * const DateTime = new GraphQLScalarType({ name: 'DateTime' });
+   *
+   * DateTime.toJSON(); // => 'DateTime'
+   * JSON.stringify({ type: DateTime }); // => '{"type":"DateTime"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
   }
 }
+/**
+ * Serializes a runtime value as a scalar output value.
+ * @typeParam TExternal - The serialized representation returned for GraphQL results.
+ */
 
 exports.GraphQLScalarType = GraphQLScalarType;
 
@@ -10821,9 +13451,9 @@ exports.GraphQLScalarType = GraphQLScalarType;
  *
  * Almost all of the GraphQL types you define will be object types. Object types
  * have a name, but most importantly describe their fields.
- *
- * Example:
- *
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ * @example
  * ```ts
  * const AddressType = new GraphQLObjectType({
  *   name: 'Address',
@@ -10832,19 +13462,17 @@ exports.GraphQLScalarType = GraphQLScalarType;
  *     number: { type: GraphQLInt },
  *     formatted: {
  *       type: GraphQLString,
- *       resolve(obj) {
+ *       resolve: (obj) => {
  *         return obj.number + ' ' + obj.street
  *       }
  *     }
  *   }
  * });
  * ```
- *
+ * @example
  * When two types need to refer to each other, or a type needs to refer to
  * itself in a field, you can use a function expression (aka a closure or a
  * thunk) to supply the fields lazily.
- *
- * Example:
  *
  * ```ts
  * const PersonType = new GraphQLObjectType({
@@ -10857,6 +13485,118 @@ exports.GraphQLScalarType = GraphQLScalarType;
  * ```
  */
 class GraphQLObjectType {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Predicate used to determine whether a runtime value belongs to this object type. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLObjectType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * // Configure an object type with interfaces, fields, arguments, and metadata.
+   * import { parse } from 'graphql/language';
+   * import {
+   *   GraphQLID,
+   *   GraphQLInterfaceType,
+   *   GraphQLNonNull,
+   *   GraphQLObjectType,
+   *   GraphQLString,
+   * } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   type User implements Node {
+   *     id: ID!
+   *     name(format: String = "short"): String
+   *   }
+   *
+   *   extend type User {
+   *     displayName: String
+   *   }
+   * `);
+   * const definition = document.definitions[0];
+   * const nameField = definition.fields[1];
+   * const formatArg = nameField.arguments[0];
+   *
+   * const Node = new GraphQLInterfaceType({
+   *   name: 'Node',
+   *   fields: {
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *   },
+   * });
+   *
+   * const User = new GraphQLObjectType({
+   *   name: 'User',
+   *   description: 'A registered user.',
+   *   interfaces: [Node],
+   *   fields: {
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *     name: {
+   *       description: 'The formatted user name.',
+   *       type: GraphQLString,
+   *       args: {
+   *         format: {
+   *           description: 'Controls the name format.',
+   *           type: GraphQLString,
+   *           defaultValue: 'short',
+   *           deprecationReason: 'Use locale instead.',
+   *           extensions: { public: true },
+   *           astNode: formatArg,
+   *         },
+   *       },
+   *       resolve: (user, { format }) => {
+   *         return format === 'long' ? user.fullName : user.name;
+   *       },
+   *       deprecationReason: 'Use displayName.',
+   *       extensions: { cacheSeconds: 60 },
+   *       astNode: nameField,
+   *     },
+   *   },
+   *   isTypeOf: (value) => {
+   *     return typeof value === 'object' && value != null && 'id' in value;
+   *   },
+   *   extensions: { entity: 'User' },
+   *   astNode: definition,
+   *   extensionASTNodes: [ document.definitions[1] ],
+   * });
+   *
+   * User.name; // => 'User'
+   * User.getInterfaces(); // => [Node]
+   * Object.keys(User.getFields()); // => ['id', 'name']
+   * User.getFields().name.args[0].defaultValue; // => 'short'
+   * User.extensions; // => { entity: 'User' }
+   * ```
+   * @example
+   * ```ts
+   * // This variant configures a subscription field with subscribe and resolve functions.
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   *
+   * const Subscription = new GraphQLObjectType({
+   *   name: 'Subscription',
+   *   fields: {
+   *     greeting: {
+   *       type: GraphQLString,
+   *       subscribe: async function* () {
+   *         yield { greeting: 'Hello!' };
+   *       },
+   *       resolve: (event) => {
+   *         return event.greeting;
+   *       },
+   *     },
+   *   },
+   * });
+   *
+   * typeof Subscription.getFields().greeting.subscribe; // => 'function'
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN2;
 
@@ -10883,10 +13623,40 @@ class GraphQLObjectType {
           `but got: ${(0, _inspect.inspect)(config.isTypeOf)}.`,
       );
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
   }
+  /**
+   * Returns the fields defined by this type.
+   * @returns The fields keyed by field name.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   type User {
+   *     id: ID!
+   *     name: String
+   *   }
+   *
+   *   type Query {
+   *     viewer: User
+   *   }
+   * `);
+   *
+   * const User = assertObjectType(schema.getType('User'));
+   * const fields = User.getFields();
+   *
+   * Object.keys(fields); // => ['id', 'name']
+   * String(fields.id.type); // => 'ID!'
+   * ```
+   */
 
   getFields() {
     if (typeof this._fields === 'function') {
@@ -10895,6 +13665,33 @@ class GraphQLObjectType {
 
     return this._fields;
   }
+  /**
+   * Returns the interfaces implemented by this type.
+   * @returns The implemented interfaces.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   type User implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   type Query {
+   *     viewer: User
+   *   }
+   * `);
+   *
+   * const User = assertObjectType(schema.getType('User'));
+   *
+   * User.getInterfaces().map((type) => type.name); // => ['Node']
+   * ```
+   */
 
   getInterfaces() {
     if (typeof this._interfaces === 'function') {
@@ -10903,6 +13700,27 @@ class GraphQLObjectType {
 
     return this._interfaces;
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   *
+   * const User = new GraphQLObjectType({
+   *   name: 'User',
+   *   fields: {
+   *     name: { type: GraphQLString },
+   *   },
+   * });
+   *
+   * const config = User.toConfig();
+   * const UserCopy = new GraphQLObjectType(config);
+   *
+   * config.fields.name.type; // => GraphQLString
+   * UserCopy.getFields().name.type; // => GraphQLString
+   * ```
+   */
 
   toConfig() {
     return {
@@ -10916,10 +13734,49 @@ class GraphQLObjectType {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this object type.
+   * @returns The schema coordinate for this object type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   type User {
+   *     name: String
+   *   }
+   *
+   *   type Query {
+   *     viewer: User
+   *   }
+   * `);
+   *
+   * const User = assertObjectType(schema.getType('User'));
+   *
+   * User.toString(); // => 'User'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   *
+   * const User = new GraphQLObjectType({
+   *   name: 'User',
+   *   fields: { name: { type: GraphQLString } },
+   * });
+   *
+   * User.toJSON(); // => 'User'
+   * JSON.stringify({ type: User }); // => '{"type":"User"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
@@ -10990,6 +13847,7 @@ function defineFieldMap(config) {
     };
   });
 }
+/** @internal */
 
 function defineArguments(config) {
   return Object.entries(config).map(([argName, argConfig]) => ({
@@ -11019,9 +13877,7 @@ function fieldsToFieldsConfig(fields) {
     astNode: field.astNode,
   }));
 }
-/**
- * @internal
- */
+/** @internal */
 
 function argsToArgsConfig(args) {
   return (0, _keyValMap.keyValMap)(
@@ -11037,10 +13893,46 @@ function argsToArgsConfig(args) {
     }),
   );
 }
+/**
+ * Configuration used to construct a GraphQLObjectType.
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ */
 
+/**
+ * Returns true when the argument is non-null and has no default value.
+ * @param arg - The argument definition to inspect.
+ * @returns True when the argument is non-null and has no default value.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLInt,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ *   isRequiredArgument,
+ * } from 'graphql/type';
+ *
+ * const requiredArgument = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
+ * const optionalArgument = { name: 'name', type: GraphQLString };
+ * const argumentWithDefault = {
+ *   name: 'limit',
+ *   type: new GraphQLNonNull(GraphQLInt),
+ *   defaultValue: 10,
+ * };
+ *
+ * isRequiredArgument(requiredArgument); // => true
+ * isRequiredArgument(optionalArgument); // => false
+ * isRequiredArgument(argumentWithDefault); // => false
+ * ```
+ */
 function isRequiredArgument(arg) {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
+/**
+ * A map of field names to resolved field definitions.
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ */
 
 /**
  * Interface Type Definition
@@ -11049,9 +13941,7 @@ function isRequiredArgument(arg) {
  * is used to describe what types are possible, what fields are in common across
  * all types, as well as a function to determine which type is actually used
  * when the field is resolved.
- *
- * Example:
- *
+ * @example
  * ```ts
  * const EntityType = new GraphQLInterfaceType({
  *   name: 'Entity',
@@ -11062,6 +13952,70 @@ function isRequiredArgument(arg) {
  * ```
  */
 class GraphQLInterfaceType {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Function that resolves the concrete object type for this abstract type. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLInterfaceType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   interface Resource implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   extend interface Resource {
+   *     url: String
+   *   }
+   * `);
+   *
+   * const Node = new GraphQLInterfaceType({
+   *   name: 'Node',
+   *   fields: {
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *   },
+   * });
+   *
+   * const Resource = new GraphQLInterfaceType({
+   *   name: 'Resource',
+   *   description: 'An addressable resource.',
+   *   interfaces: [Node],
+   *   fields: {
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *   },
+   *   resolveType: (value) => {
+   *     return typeof value === 'object' && value != null && 'url' in value
+   *       ? 'WebPage'
+   *       : null;
+   *   },
+   *   extensions: { abstract: true },
+   *   astNode: document.definitions[1],
+   *   extensionASTNodes: [ document.definitions[2] ],
+   * });
+   *
+   * Resource.name; // => 'Resource'
+   * Resource.getInterfaces(); // => [Node]
+   * Object.keys(Resource.getFields()); // => ['id']
+   * Resource.extensions; // => { abstract: true }
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN3;
 
@@ -11085,10 +14039,43 @@ class GraphQLInterfaceType {
           `but got: ${(0, _inspect.inspect)(config.resolveType)}.`,
       );
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
   }
+  /**
+   * Returns the fields defined by this type.
+   * @returns The fields keyed by field name.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   type User implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   type Query {
+   *     node: Node
+   *   }
+   * `);
+   *
+   * const Node = assertInterfaceType(schema.getType('Node'));
+   * const fields = Node.getFields();
+   *
+   * Object.keys(fields); // => ['id']
+   * String(fields.id.type); // => 'ID!'
+   * ```
+   */
 
   getFields() {
     if (typeof this._fields === 'function') {
@@ -11097,6 +14084,39 @@ class GraphQLInterfaceType {
 
     return this._fields;
   }
+  /**
+   * Returns the interfaces implemented by this type.
+   * @returns The implemented interfaces.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Resource {
+   *     url: String!
+   *   }
+   *
+   *   interface Image implements Resource {
+   *     url: String!
+   *     width: Int
+   *   }
+   *
+   *   type Photo implements Resource & Image {
+   *     url: String!
+   *     width: Int
+   *   }
+   *
+   *   type Query {
+   *     image: Image
+   *   }
+   * `);
+   *
+   * const Image = assertInterfaceType(schema.getType('Image'));
+   *
+   * Image.getInterfaces().map((type) => type.name); // => ['Resource']
+   * ```
+   */
 
   getInterfaces() {
     if (typeof this._interfaces === 'function') {
@@ -11105,6 +14125,27 @@ class GraphQLInterfaceType {
 
     return this._interfaces;
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
+   *
+   * const Node = new GraphQLInterfaceType({
+   *   name: 'Node',
+   *   fields: {
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *   },
+   * });
+   *
+   * const config = Node.toConfig();
+   * const NodeCopy = new GraphQLInterfaceType(config);
+   *
+   * String(config.fields.id.type); // => 'ID!'
+   * String(NodeCopy.getFields().id.type); // => 'ID!'
+   * ```
+   */
 
   toConfig() {
     return {
@@ -11118,15 +14159,63 @@ class GraphQLInterfaceType {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this interface type.
+   * @returns The schema coordinate for this interface type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   type User implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   type Query {
+   *     node: Node
+   *   }
+   * `);
+   *
+   * const Node = assertInterfaceType(schema.getType('Node'));
+   *
+   * Node.toString(); // => 'Node'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLInterfaceType, GraphQLString } from 'graphql/type';
+   *
+   * const Named = new GraphQLInterfaceType({
+   *   name: 'Named',
+   *   fields: { name: { type: GraphQLString } },
+   * });
+   *
+   * Named.toJSON(); // => 'Named'
+   * JSON.stringify({ type: Named }); // => '{"type":"Named"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
   }
 }
+/**
+ * Configuration used to construct a GraphQLInterfaceType.
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ */
 
 exports.GraphQLInterfaceType = GraphQLInterfaceType;
 
@@ -11136,14 +14225,12 @@ exports.GraphQLInterfaceType = GraphQLInterfaceType;
  * When a field can return one of a heterogeneous set of types, a Union type
  * is used to describe what types are possible as well as providing a function
  * to determine which type is actually used when the field is resolved.
- *
- * Example:
- *
+ * @example
  * ```ts
  * const PetType = new GraphQLUnionType({
  *   name: 'Pet',
- *   types: [ DogType, CatType ],
- *   resolveType(value) {
+ *   types: [DogType, CatType],
+ *   resolveType: (value) => {
  *     if (value instanceof Dog) {
  *       return DogType;
  *     }
@@ -11155,6 +14242,60 @@ exports.GraphQLInterfaceType = GraphQLInterfaceType;
  * ```
  */
 class GraphQLUnionType {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Function that resolves the concrete object type for this abstract type. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLUnionType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   union Media = Photo | Video
+   *
+   *   extend union Media = Audio
+   * `);
+   *
+   * const Photo = new GraphQLObjectType({
+   *   name: 'Photo',
+   *   fields: { url: { type: GraphQLString } },
+   * });
+   * const Video = new GraphQLObjectType({
+   *   name: 'Video',
+   *   fields: { url: { type: GraphQLString } },
+   * });
+   *
+   * const Media = new GraphQLUnionType({
+   *   name: 'Media',
+   *   description: 'Media that can appear in a search result.',
+   *   types: [Photo, Video],
+   *   resolveType: (value) => {
+   *     return typeof value === 'object' && value != null && 'duration' in value
+   *       ? 'Video'
+   *       : 'Photo';
+   *   },
+   *   extensions: { searchable: true },
+   *   astNode: document.definitions[0],
+   *   extensionASTNodes: [ document.definitions[1] ],
+   * });
+   *
+   * Media.description; // => 'Media that can appear in a search result.'
+   * Media.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+   * Media.extensions; // => { searchable: true }
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN4;
 
@@ -11177,10 +14318,43 @@ class GraphQLUnionType {
           `but got: ${(0, _inspect.inspect)(config.resolveType)}.`,
       );
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
   }
+  /**
+   * Returns the object types included in this union.
+   * @returns The union member object types.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertUnionType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   type Photo {
+   *     url: String!
+   *   }
+   *
+   *   type Video {
+   *     url: String!
+   *   }
+   *
+   *   union Media = Photo | Video
+   *
+   *   type Query {
+   *     media: [Media]
+   *   }
+   * `);
+   *
+   * const Media = assertUnionType(schema.getType('Media'));
+   *
+   * Media.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+   * ```
+   */
 
   getTypes() {
     if (typeof this._types === 'function') {
@@ -11189,6 +14363,32 @@ class GraphQLUnionType {
 
     return this._types;
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   *
+   * const Photo = new GraphQLObjectType({
+   *   name: 'Photo',
+   *   fields: { url: { type: GraphQLString } },
+   * });
+   * const Video = new GraphQLObjectType({
+   *   name: 'Video',
+   *   fields: { url: { type: GraphQLString } },
+   * });
+   * const Media = new GraphQLUnionType({
+   *   name: 'Media',
+   *   types: [Photo, Video],
+   * });
+   *
+   * const config = Media.toConfig();
+   * const MediaCopy = new GraphQLUnionType(config);
+   *
+   * MediaCopy.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+   * ```
+   */
 
   toConfig() {
     return {
@@ -11201,10 +14401,55 @@ class GraphQLUnionType {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this union type.
+   * @returns The schema coordinate for this union type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertUnionType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   type Photo {
+   *     url: String!
+   *   }
+   *
+   *   union SearchResult = Photo
+   *
+   *   type Query {
+   *     search: [SearchResult]
+   *   }
+   * `);
+   *
+   * const SearchResult = assertUnionType(schema.getType('SearchResult'));
+   *
+   * SearchResult.toString(); // => 'SearchResult'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   *
+   * const Photo = new GraphQLObjectType({
+   *   name: 'Photo',
+   *   fields: { url: { type: GraphQLString } },
+   * });
+   * const SearchResult = new GraphQLUnionType({
+   *   name: 'SearchResult',
+   *   types: [Photo],
+   * });
+   *
+   * SearchResult.toJSON(); // => 'SearchResult'
+   * JSON.stringify({ type: SearchResult }); // => '{"type":"SearchResult"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
@@ -11222,25 +14467,32 @@ function defineTypes(config) {
     );
   return types;
 }
+/**
+ * Configuration used to construct a GraphQLUnionType.
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ */
 
 /**
  * Enum Type Definition
  *
- * Some leaf values of requests and input values are Enums. GraphQL serializes
- * Enum values as strings, however internally Enums can be represented by any
- * kind of type, often integers.
- *
- * Example:
- *
+ * Enum types define leaf values whose serialized form is one of a fixed set
+ * of GraphQL enum names. Internally, enum values can map to any runtime value,
+ * often integers.
+ * @example
  * ```ts
+ * import { GraphQLEnumType } from 'graphql/type';
+ *
  * const RGBType = new GraphQLEnumType({
  *   name: 'RGB',
  *   values: {
  *     RED: { value: 0 },
  *     GREEN: { value: 1 },
- *     BLUE: { value: 2 }
- *   }
+ *     BLUE: { value: 2 },
+ *   },
  * });
+ *
+ * RGBType.getValue('GREEN')?.value; // => 1
  * ```
  *
  * Note: If a value is not provided in a definition, the name of the enum value
@@ -11248,6 +14500,66 @@ function defineTypes(config) {
  */
 class GraphQLEnumType {
   /* <T> */
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLEnumType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   enum Episode {
+   *     NEW_HOPE
+   *     EMPIRE
+   *     JEDI
+   *   }
+   *
+   *   extend enum Episode {
+   *     FORCE_AWAKENS
+   *   }
+   * `);
+   * const definition = document.definitions[0];
+   *
+   * const Episode = new GraphQLEnumType({
+   *   name: 'Episode',
+   *   description: 'A Star Wars film episode.',
+   *   values: {
+   *     NEW_HOPE: {
+   *       value: 4,
+   *       description: 'Released in 1977.',
+   *       extensions: { trilogy: 'original' },
+   *       astNode: definition.values[0],
+   *     },
+   *     EMPIRE: { value: 5, astNode: definition.values[1] },
+   *     JEDI: {
+   *       value: 6,
+   *       deprecationReason: 'Use RETURN_OF_THE_JEDI.',
+   *       astNode: definition.values[2],
+   *     },
+   *   },
+   *   extensions: { catalog: 'films' },
+   *   astNode: definition,
+   *   extensionASTNodes: [ document.definitions[1] ],
+   * });
+   *
+   * Episode.description; // => 'A Star Wars film episode.'
+   * Episode.serialize(5); // => 'EMPIRE'
+   * Episode.parseValue('JEDI'); // => 6
+   * Episode.getValue('JEDI').deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+   * Episode.extensions; // => { catalog: 'films' }
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN5;
 
@@ -11267,10 +14579,39 @@ class GraphQLEnumType {
     this._valueLookup = null;
     this._nameLookup = null;
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
   }
+  /**
+   * Returns the values defined by this enum type.
+   * @returns Enum value definitions in schema order.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertEnumType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   enum Episode {
+   *     NEW_HOPE
+   *     EMPIRE
+   *     JEDI
+   *   }
+   *
+   *   type Query {
+   *     episode: Episode
+   *   }
+   * `);
+   *
+   * const Episode = assertEnumType(schema.getType('Episode'));
+   *
+   * Episode.getValues().map((value) => value.name); // => ['NEW_HOPE', 'EMPIRE', 'JEDI']
+   * ```
+   */
 
   getValues() {
     if (typeof this._values === 'function') {
@@ -11279,6 +14620,32 @@ class GraphQLEnumType {
 
     return this._values;
   }
+  /**
+   * Returns the enum value definition for a value name.
+   * @param name - The GraphQL name to look up.
+   * @returns The matching enum value definition, if it exists.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertEnumType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   enum Episode {
+   *     NEW_HOPE
+   *     EMPIRE
+   *   }
+   *
+   *   type Query {
+   *     episode: Episode
+   *   }
+   * `);
+   *
+   * const Episode = assertEnumType(schema.getType('Episode'));
+   *
+   * Episode.getValue('EMPIRE')?.name; // => 'EMPIRE'
+   * Episode.getValue('JEDI'); // => undefined
+   * ```
+   */
 
   getValue(name) {
     if (this._nameLookup === null) {
@@ -11290,6 +14657,27 @@ class GraphQLEnumType {
 
     return this._nameLookup[name];
   }
+  /**
+   * Serializes a runtime enum value as a GraphQL enum name.
+   * @param outputValue - Runtime enum value to serialize.
+   * @returns The GraphQL enum name for the runtime value.
+   * @example
+   * ```ts
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const RGB = new GraphQLEnumType({
+   *   name: 'RGB',
+   *   values: {
+   *     RED: { value: 0 },
+   *     GREEN: { value: 1 },
+   *     BLUE: { value: 2 },
+   *   },
+   * });
+   *
+   * RGB.serialize(1); // => 'GREEN'
+   * RGB.serialize(3); // throws an error
+   * ```
+   */
 
   serialize(outputValue) {
     if (this._valueLookup === null) {
@@ -11310,6 +14698,28 @@ class GraphQLEnumType {
 
     return enumValue.name;
   }
+  /**
+   * Parses a GraphQL enum name from variable input.
+   * @param inputValue - Runtime input value to parse.
+   * @returns The internal enum value represented by the input name.
+   * @example
+   * ```ts
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const RGB = new GraphQLEnumType({
+   *   name: 'RGB',
+   *   values: {
+   *     RED: { value: 0 },
+   *     GREEN: { value: 1 },
+   *     BLUE: { value: 2 },
+   *   },
+   * });
+   *
+   * RGB.parseValue('BLUE'); // => 2
+   * RGB.parseValue('PURPLE'); // throws an error
+   * RGB.parseValue(2); // throws an error
+   * ```
+   */
 
   parseValue(inputValue) /* T */
   {
@@ -11332,6 +14742,29 @@ class GraphQLEnumType {
 
     return enumValue.value;
   }
+  /**
+   * Parses a GraphQL enum name from an AST value literal.
+   * @param valueNode - AST value literal to parse.
+   * @param _variables - Runtime variable values; ignored because enum literals cannot contain variables.
+   * @returns The internal enum value represented by the literal.
+   * @example
+   * ```ts
+   * import { parseValue } from 'graphql/language';
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const RGB = new GraphQLEnumType({
+   *   name: 'RGB',
+   *   values: {
+   *     RED: { value: 0 },
+   *     GREEN: { value: 1 },
+   *     BLUE: { value: 2 },
+   *   },
+   * });
+   *
+   * RGB.parseLiteral(parseValue('RED')); // => 0
+   * RGB.parseLiteral(parseValue('"RED"')); // throws an error
+   * ```
+   */
 
   parseLiteral(valueNode, _variables) /* T */
   {
@@ -11362,6 +14795,29 @@ class GraphQLEnumType {
 
     return enumValue.value;
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const RGB = new GraphQLEnumType({
+   *   name: 'RGB',
+   *   values: {
+   *     RED: { value: 0 },
+   *     GREEN: { value: 1 },
+   *     BLUE: { value: 2 },
+   *   },
+   * });
+   *
+   * const config = RGB.toConfig();
+   * const RGBCopy = new GraphQLEnumType(config);
+   *
+   * config.values.GREEN.value; // => 1
+   * RGBCopy.serialize(2); // => 'BLUE'
+   * ```
+   */
 
   toConfig() {
     const values = (0, _keyValMap.keyValMap)(
@@ -11384,10 +14840,51 @@ class GraphQLEnumType {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this enum type.
+   * @returns The schema coordinate for this enum type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertEnumType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   enum Episode {
+   *     NEW_HOPE
+   *   }
+   *
+   *   type Query {
+   *     episode: Episode
+   *   }
+   * `);
+   *
+   * const Episode = assertEnumType(schema.getType('Episode'));
+   *
+   * Episode.toString(); // => 'Episode'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLEnumType } from 'graphql/type';
+   *
+   * const Episode = new GraphQLEnumType({
+   *   name: 'Episode',
+   *   values: {
+   *     NEW_HOPE: {},
+   *   },
+   * });
+   *
+   * Episode.toJSON(); // => 'Episode'
+   * JSON.stringify({ type: Episode }); // => '{"type":"Episode"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
@@ -11430,6 +14927,7 @@ function defineEnumValues(typeName, valueMap) {
     };
   });
 }
+/** Configuration used to construct a GraphQLEnumType. */
 
 /**
  * Input Object Type Definition
@@ -11438,9 +14936,7 @@ function defineEnumValues(typeName, valueMap) {
  * supplied to a field argument.
  *
  * Using `NonNull` will ensure that a value must be provided by the query
- *
- * Example:
- *
+ * @example
  * ```ts
  * const GeoPoint = new GraphQLInputObjectType({
  *   name: 'GeoPoint',
@@ -11453,6 +14949,86 @@ function defineEnumValues(typeName, valueMap) {
  * ```
  */
 class GraphQLInputObjectType {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /** Whether this input object uses the experimental OneOf input object semantics. */
+
+  /**
+   * Creates a GraphQLInputObjectType instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import {
+   *   GraphQLID,
+   *   GraphQLInputObjectType,
+   *   GraphQLInt,
+   *   GraphQLNonNull,
+   *   GraphQLString,
+   * } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   input ReviewInput {
+   *     stars: Int!
+   *     commentary: String
+   *   }
+   *
+   *   extend input ReviewInput {
+   *     body: String
+   *   }
+   * `);
+   * const definition = document.definitions[0];
+   *
+   * const ReviewInput = new GraphQLInputObjectType({
+   *   name: 'ReviewInput',
+   *   description: 'Input collected when reviewing a product.',
+   *   fields: {
+   *     stars: {
+   *       description: 'Star rating from one to five.',
+   *       type: new GraphQLNonNull(GraphQLInt),
+   *       extensions: { min: 1, max: 5 },
+   *       astNode: definition.fields[0],
+   *     },
+   *     commentary: {
+   *       type: GraphQLString,
+   *       defaultValue: '',
+   *       deprecationReason: 'Use body.',
+   *       astNode: definition.fields[1],
+   *     },
+   *   },
+   *   extensions: { form: 'review' },
+   *   astNode: definition,
+   *   extensionASTNodes: [ document.definitions[1] ],
+   *   isOneOf: false,
+   * });
+   * const SearchBy = new GraphQLInputObjectType({
+   *   name: 'SearchBy',
+   *   fields: {
+   *     id: { type: GraphQLID },
+   *     slug: { type: GraphQLString },
+   *   },
+   *   isOneOf: true,
+   * });
+   *
+   * const fields = ReviewInput.getFields();
+   *
+   * ReviewInput.description; // => 'Input collected when reviewing a product.'
+   * String(fields.stars.type); // => 'Int!'
+   * fields.stars.extensions; // => { min: 1, max: 5 }
+   * fields.commentary.defaultValue; // => ''
+   * fields.commentary.deprecationReason; // => 'Use body.'
+   * ReviewInput.isOneOf; // => false
+   * SearchBy.isOneOf; // => true
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN6, _config$isOneOf;
 
@@ -11471,10 +15047,40 @@ class GraphQLInputObjectType {
         : false;
     this._fields = defineInputFieldMap.bind(undefined, config);
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
   }
+  /**
+   * Returns the fields defined by this type.
+   * @returns The fields keyed by field name.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInputObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   input ReviewInput {
+   *     stars: Int!
+   *     commentary: String = ""
+   *   }
+   *
+   *   type Query {
+   *     reviews(filter: ReviewInput): [String]
+   *   }
+   * `);
+   *
+   * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
+   * const fields = ReviewInput.getFields();
+   *
+   * Object.keys(fields); // => ['stars', 'commentary']
+   * fields.commentary.defaultValue; // => ''
+   * ```
+   */
 
   getFields() {
     if (typeof this._fields === 'function') {
@@ -11483,6 +15089,31 @@ class GraphQLInputObjectType {
 
     return this._fields;
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import {
+   *   GraphQLInputObjectType,
+   *   GraphQLInt,
+   *   GraphQLNonNull,
+   * } from 'graphql/type';
+   *
+   * const ReviewInput = new GraphQLInputObjectType({
+   *   name: 'ReviewInput',
+   *   fields: {
+   *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+   *   },
+   * });
+   *
+   * const config = ReviewInput.toConfig();
+   * const ReviewInputCopy = new GraphQLInputObjectType(config);
+   *
+   * String(config.fields.stars.type); // => 'Int!'
+   * String(ReviewInputCopy.getFields().stars.type); // => 'Int!'
+   * ```
+   */
 
   toConfig() {
     const fields = (0, _mapValue.mapValue)(this.getFields(), (field) => ({
@@ -11503,10 +15134,51 @@ class GraphQLInputObjectType {
       isOneOf: this.isOneOf,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this input object type.
+   * @returns The schema coordinate for this input object type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInputObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   input ReviewInput {
+   *     stars: Int!
+   *   }
+   *
+   *   type Query {
+   *     reviews(filter: ReviewInput): [String]
+   *   }
+   * `);
+   *
+   * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
+   *
+   * ReviewInput.toString(); // => 'ReviewInput'
+   * ```
+   */
 
   toString() {
     return this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+   *
+   * const ReviewInput = new GraphQLInputObjectType({
+   *   name: 'ReviewInput',
+   *   fields: {
+   *     commentary: { type: GraphQLString },
+   *   },
+   * });
+   *
+   * ReviewInput.toJSON(); // => 'ReviewInput'
+   * JSON.stringify({ type: ReviewInput }); // => '{"type":"ReviewInput"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
@@ -11539,15 +15211,43 @@ function defineInputFieldMap(config) {
     };
   });
 }
+/** Configuration used to construct a GraphQLInputObjectType. */
 
+/**
+ * Returns true when the input field is non-null and has no default value.
+ * @param field - The input field definition to inspect.
+ * @returns True when the input field is non-null and has no default value.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLInt,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ *   isRequiredInputField,
+ * } from 'graphql/type';
+ *
+ * const requiredField = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
+ * const optionalField = { name: 'name', type: GraphQLString };
+ * const fieldWithDefault = {
+ *   name: 'limit',
+ *   type: new GraphQLNonNull(GraphQLInt),
+ *   defaultValue: 10,
+ * };
+ *
+ * isRequiredInputField(requiredField); // => true
+ * isRequiredInputField(optionalField); // => false
+ * isRequiredInputField(fieldWithDefault); // => false
+ * ```
+ */
 function isRequiredInputField(field) {
   return isNonNullType(field.type) && field.defaultValue === undefined;
 }
+/** A map of input field names to resolved input field definitions. */
 
 
 /***/ }),
 
-/***/ 4182:
+/***/ 4827:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -11568,30 +15268,65 @@ exports.isDirective = isDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = void 0;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _instanceOf = __nccwpck_require__(9494);
+var _instanceOf = __nccwpck_require__(6149);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _toObjMap = __nccwpck_require__(8764);
+var _toObjMap = __nccwpck_require__(4928);
 
-var _directiveLocation = __nccwpck_require__(3642);
+var _directiveLocation = __nccwpck_require__(3177);
 
-var _assertName = __nccwpck_require__(8261);
+var _assertName = __nccwpck_require__(4376);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
+
+/** @category Directives */
 
 /**
  * Test if the given value is a GraphQL directive.
+ * @param directive - Value to inspect.
+ * @returns True when the value is a GraphQLDirective.
+ * @example
+ * ```ts
+ * import { DirectiveLocation } from 'graphql/language';
+ * import { GraphQLDirective, GraphQLString, isDirective } from 'graphql/type';
+ *
+ * const upper = new GraphQLDirective({
+ *   name: 'upper',
+ *   locations: [DirectiveLocation.FIELD_DEFINITION],
+ * });
+ *
+ * isDirective(upper); // => true
+ * isDirective(GraphQLString); // => false
+ * ```
  */
 function isDirective(directive) {
   return (0, _instanceOf.instanceOf)(directive, GraphQLDirective);
 }
+/**
+ * Returns the value as a GraphQLDirective, or throws if it is not a directive.
+ * @param directive - Value to inspect.
+ * @returns The value typed as a GraphQLDirective.
+ * @example
+ * ```ts
+ * import { DirectiveLocation } from 'graphql/language';
+ * import { assertDirective, GraphQLDirective, GraphQLString } from 'graphql/type';
+ *
+ * const upper = new GraphQLDirective({
+ *   name: 'upper',
+ *   locations: [DirectiveLocation.FIELD_DEFINITION],
+ * });
+ *
+ * assertDirective(upper); // => upper
+ * assertDirective(GraphQLString); // throws an error
+ * ```
+ */
 
 function assertDirective(directive) {
   if (!isDirective(directive)) {
@@ -11604,7 +15339,6 @@ function assertDirective(directive) {
 }
 /**
  * Custom extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -11617,6 +15351,75 @@ function assertDirective(directive) {
  * behavior. Type system creators will usually not create these directly.
  */
 class GraphQLDirective {
+  /** The GraphQL name for this schema element. */
+
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Locations where this directive may be applied. */
+
+  /** Arguments accepted by this field or directive. */
+
+  /** Whether this directive may appear more than once at the same location. */
+
+  /** Reason this element is deprecated, if one was provided. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Creates a GraphQLDirective instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import {
+   *   GraphQLBoolean,
+   *   GraphQLDirective,
+   *   GraphQLInt,
+   *   GraphQLNonNull,
+   * } from 'graphql/type';
+   *
+   * const document = parse(`
+   *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
+   *   extend directive @cacheControl(maxAge: Int) on FIELD_DEFINITION
+   * `);
+   * const definition = document.definitions[0];
+   *
+   * const cacheControl = new GraphQLDirective({
+   *   name: 'cacheControl',
+   *   description: 'Controls HTTP cache hints for a field.',
+   *   locations: [DirectiveLocation.FIELD_DEFINITION],
+   *   args: {
+   *     inheritMaxAge: {
+   *       description: 'Inherit the parent cache hint.',
+   *       type: new GraphQLNonNull(GraphQLBoolean),
+   *       defaultValue: false,
+   *       deprecationReason: 'Use maxAge instead.',
+   *       extensions: { scope: 'cache' },
+   *     },
+   *     maxAge: {
+   *       type: GraphQLInt,
+   *       astNode: definition.arguments[0],
+   *     },
+   *   },
+   *   isRepeatable: true,
+   *   deprecationReason: 'Use @cache instead.',
+   *   extensions: { scope: 'cache' },
+   *   astNode: definition,
+   *   extensionASTNodes: [ document.definitions[1] ],
+   * });
+   *
+   * cacheControl.name; // => 'cacheControl'
+   * cacheControl.description; // => 'Controls HTTP cache hints for a field.'
+   * cacheControl.args[0].name; // => 'inheritMaxAge'
+   * cacheControl.args[0].defaultValue; // => false
+   * cacheControl.isRepeatable; // => true
+   * cacheControl.extensions; // => { scope: 'cache' }
+   * ```
+   */
   constructor(config) {
     var _config$isRepeatable, _config$extensionASTN, _config$args;
 
@@ -11652,10 +15455,37 @@ class GraphQLDirective {
       );
     this.args = (0, _definition.defineArguments)(args);
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { DirectiveLocation } from 'graphql/language';
+   * import { GraphQLDirective, GraphQLString } from 'graphql/type';
+   *
+   * const tag = new GraphQLDirective({
+   *   name: 'tag',
+   *   locations: [DirectiveLocation.FIELD_DEFINITION],
+   *   args: {
+   *     name: { type: GraphQLString },
+   *   },
+   * });
+   *
+   * const config = tag.toConfig();
+   * const tagCopy = new GraphQLDirective(config);
+   *
+   * config.args.name.type; // => GraphQLString
+   * tagCopy.args[0].name; // => 'name'
+   * ```
+   */
 
   toConfig() {
     return {
@@ -11670,21 +15500,53 @@ class GraphQLDirective {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
+  /**
+   * Returns the schema coordinate identifying this directive.
+   * @returns The directive schema coordinate.
+   * @example
+   * ```ts
+   * import { DirectiveLocation } from 'graphql/language';
+   * import { GraphQLDirective } from 'graphql/type';
+   *
+   * const tag = new GraphQLDirective({
+   *   name: 'tag',
+   *   locations: [DirectiveLocation.FIELD_DEFINITION],
+   * });
+   *
+   * tag.toString(); // => '@tag'
+   * ```
+   */
 
   toString() {
     return '@' + this.name;
   }
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { DirectiveLocation } from 'graphql/language';
+   * import { GraphQLDirective } from 'graphql/type';
+   *
+   * const tag = new GraphQLDirective({
+   *   name: 'tag',
+   *   locations: [DirectiveLocation.FIELD_DEFINITION],
+   * });
+   *
+   * tag.toJSON(); // => '@tag'
+   * JSON.stringify({ directive: tag }); // => '{"directive":"@tag"}'
+   * ```
+   */
 
   toJSON() {
     return this.toString();
   }
 }
+/** Configuration used to construct a GraphQLDirective. */
 
 exports.GraphQLDirective = GraphQLDirective;
 
-/**
- * Used to conditionally include fields or fragments.
- */
+/** Used to conditionally include fields or fragments. */
 const GraphQLIncludeDirective = new GraphQLDirective({
   name: 'include',
   description:
@@ -11701,9 +15563,7 @@ const GraphQLIncludeDirective = new GraphQLDirective({
     },
   },
 });
-/**
- * Used to conditionally skip (exclude) fields or fragments.
- */
+/** Used to conditionally skip (exclude) fields or fragments. */
 
 exports.GraphQLIncludeDirective = GraphQLIncludeDirective;
 const GraphQLSkipDirective = new GraphQLDirective({
@@ -11722,14 +15582,14 @@ const GraphQLSkipDirective = new GraphQLDirective({
     },
   },
 });
-/**
- * Constant string used for default reason for a deprecation.
- */
+/** Constant string used for default reason for a deprecation. */
 
 exports.GraphQLSkipDirective = GraphQLSkipDirective;
 const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
+ *
+ * The optional `reason` argument defaults to `DEFAULT_DEPRECATION_REASON`.
  */
 
 exports.DEFAULT_DEPRECATION_REASON = DEFAULT_DEPRECATION_REASON;
@@ -11752,9 +15612,7 @@ const GraphQLDeprecatedDirective = new GraphQLDirective({
     },
   },
 });
-/**
- * Used to provide a URL for specifying the behavior of custom scalar definitions.
- */
+/** Used to provide a URL for specifying the behavior of custom scalar definitions. */
 
 exports.GraphQLDeprecatedDirective = GraphQLDeprecatedDirective;
 const GraphQLSpecifiedByDirective = new GraphQLDirective({
@@ -11768,9 +15626,7 @@ const GraphQLSpecifiedByDirective = new GraphQLDirective({
     },
   },
 });
-/**
- * Used to indicate an Input Object is a OneOf Input Object.
- */
+/** Used to indicate an Input Object is a OneOf Input Object. */
 
 exports.GraphQLSpecifiedByDirective = GraphQLSpecifiedByDirective;
 const GraphQLOneOfDirective = new GraphQLDirective({
@@ -11780,9 +15636,7 @@ const GraphQLOneOfDirective = new GraphQLDirective({
   locations: [_directiveLocation.DirectiveLocation.INPUT_OBJECT],
   args: {},
 });
-/**
- * The full list of specified directives.
- */
+/** Full list of stable directives specified by GraphQL.js. */
 
 exports.GraphQLOneOfDirective = GraphQLOneOfDirective;
 const specifiedDirectives = Object.freeze([
@@ -11792,6 +15646,29 @@ const specifiedDirectives = Object.freeze([
   GraphQLSpecifiedByDirective,
   GraphQLOneOfDirective,
 ]);
+/**
+ * Returns true when the directive is one of the directives specified by GraphQL.
+ * @param directive - Directive to inspect.
+ * @returns True when the directive is specified by GraphQL.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLDirective,
+ *   GraphQLIncludeDirective,
+ *   isSpecifiedDirective,
+ * } from 'graphql/type';
+ * import { DirectiveLocation } from 'graphql/language';
+ *
+ * const customDirective = new GraphQLDirective({
+ *   name: 'auth',
+ *   locations: [DirectiveLocation.FIELD_DEFINITION],
+ * });
+ *
+ * isSpecifiedDirective(GraphQLIncludeDirective); // => true
+ * isSpecifiedDirective(customDirective); // => false
+ * ```
+ */
+
 exports.specifiedDirectives = specifiedDirectives;
 
 function isSpecifiedDirective(directive) {
@@ -11801,7 +15678,7 @@ function isSpecifiedDirective(directive) {
 
 /***/ }),
 
-/***/ 9222:
+/***/ 2497:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -12344,24 +16221,24 @@ Object.defineProperty(exports, "validateSchema", ({
   },
 }));
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _validate = __nccwpck_require__(5042);
+var _validate = __nccwpck_require__(6763);
 
-var _assertName = __nccwpck_require__(8261);
+var _assertName = __nccwpck_require__(4376);
 
 
 /***/ }),
 
-/***/ 9833:
+/***/ 3946:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -12385,20 +16262,23 @@ exports.introspectionTypes =
     void 0;
 exports.isIntrospectionType = isIntrospectionType;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _directiveLocation = __nccwpck_require__(3642);
+var _directiveLocation = __nccwpck_require__(3177);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _astFromValue = __nccwpck_require__(9689);
+var _astFromValue = __nccwpck_require__(3850);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
+/** @category Introspection */
+
+/** The introspection type describing a GraphQL schema. */
 const __Schema = new _definition.GraphQLObjectType({
   name: '__Schema',
   description:
@@ -12457,6 +16337,7 @@ const __Schema = new _definition.GraphQLObjectType({
     },
   }),
 });
+/** The introspection type describing a GraphQL directive. */
 
 exports.__Schema = __Schema;
 
@@ -12514,6 +16395,7 @@ const __Directive = new _definition.GraphQLObjectType({
     },
   }),
 });
+/** The introspection enum describing directive locations. */
 
 exports.__Directive = __Directive;
 
@@ -12604,6 +16486,7 @@ const __DirectiveLocation = new _definition.GraphQLEnumType({
     },
   },
 });
+/** The introspection type describing GraphQL types. */
 
 exports.__DirectiveLocation = __DirectiveLocation;
 
@@ -12772,6 +16655,7 @@ const __Type = new _definition.GraphQLObjectType({
     },
   }),
 });
+/** The introspection type describing object and interface fields. */
 
 exports.__Type = __Type;
 
@@ -12821,6 +16705,7 @@ const __Field = new _definition.GraphQLObjectType({
     },
   }),
 });
+/** The introspection type describing arguments and input fields. */
 
 exports.__Field = __Field;
 
@@ -12862,6 +16747,7 @@ const __InputValue = new _definition.GraphQLObjectType({
     },
   }),
 });
+/** The introspection type describing enum values. */
 
 exports.__InputValue = __InputValue;
 
@@ -12888,6 +16774,10 @@ const __EnumValue = new _definition.GraphQLObjectType({
     },
   }),
 });
+/**
+ * The introspection enum describing the different kinds of GraphQL types.
+ * @category Introspection
+ */
 
 exports.__EnumValue = __EnumValue;
 var TypeKind;
@@ -12904,6 +16794,7 @@ exports.TypeKind = TypeKind;
   TypeKind['NON_NULL'] = 'NON_NULL';
 })(TypeKind || (exports.TypeKind = TypeKind = {}));
 
+/** The introspection enum describing GraphQL type kinds. */
 const __TypeKind = new _definition.GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',
@@ -12964,6 +16855,8 @@ const SchemaMetaFieldDef = {
   extensions: Object.create(null),
   astNode: undefined,
 };
+/** The `__type` meta field definition used by introspection. */
+
 exports.SchemaMetaFieldDef = SchemaMetaFieldDef;
 const TypeMetaFieldDef = {
   name: '__type',
@@ -12985,6 +16878,8 @@ const TypeMetaFieldDef = {
   extensions: Object.create(null),
   astNode: undefined,
 };
+/** The `__typename` meta field definition used by execution and introspection. */
+
 exports.TypeMetaFieldDef = TypeMetaFieldDef;
 const TypeNameMetaFieldDef = {
   name: '__typename',
@@ -12996,6 +16891,8 @@ const TypeNameMetaFieldDef = {
   extensions: Object.create(null),
   astNode: undefined,
 };
+/** All introspection types defined by the GraphQL specification. */
+
 exports.TypeNameMetaFieldDef = TypeNameMetaFieldDef;
 const introspectionTypes = Object.freeze([
   __Schema,
@@ -13007,6 +16904,19 @@ const introspectionTypes = Object.freeze([
   __EnumValue,
   __TypeKind,
 ]);
+/**
+ * Returns true when the type is one of the built-in introspection types.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the type is one of the built-in introspection types.
+ * @example
+ * ```ts
+ * import { GraphQLString, isIntrospectionType, __Type } from 'graphql/type';
+ *
+ * isIntrospectionType(__Type); // => true
+ * isIntrospectionType(GraphQLString); // => false
+ * ```
+ */
+
 exports.introspectionTypes = introspectionTypes;
 
 function isIntrospectionType(type) {
@@ -13016,7 +16926,7 @@ function isIntrospectionType(type) {
 
 /***/ }),
 
-/***/ 2431:
+/***/ 4088:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -13035,30 +16945,34 @@ exports.GraphQLString =
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = void 0;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Scalars */
 
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
  * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe up-to 2^53 - 1
- * */
+ */
 const GRAPHQL_MAX_INT = 2147483647;
 /**
  * Minimum possible Int value as per GraphQL Spec (32-bit signed integer).
  * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe starting at -(2^53 - 1)
- * */
+ */
 
 exports.GRAPHQL_MAX_INT = GRAPHQL_MAX_INT;
 const GRAPHQL_MIN_INT = -2147483648;
+/** The built-in `Int` scalar type. */
+
 exports.GRAPHQL_MIN_INT = GRAPHQL_MIN_INT;
 const GraphQLInt = new _definition.GraphQLScalarType({
   name: 'Int',
@@ -13140,6 +17054,8 @@ const GraphQLInt = new _definition.GraphQLScalarType({
     return num;
   },
 });
+/** The built-in `Float` scalar type. */
+
 exports.GraphQLInt = GraphQLInt;
 const GraphQLFloat = new _definition.GraphQLScalarType({
   name: 'Float',
@@ -13198,6 +17114,8 @@ const GraphQLFloat = new _definition.GraphQLScalarType({
     return parseFloat(valueNode.value);
   },
 });
+/** The built-in `String` scalar type. */
+
 exports.GraphQLFloat = GraphQLFloat;
 const GraphQLString = new _definition.GraphQLScalarType({
   name: 'String',
@@ -13252,6 +17170,8 @@ const GraphQLString = new _definition.GraphQLScalarType({
     return valueNode.value;
   },
 });
+/** The built-in `Boolean` scalar type. */
+
 exports.GraphQLString = GraphQLString;
 const GraphQLBoolean = new _definition.GraphQLScalarType({
   name: 'Boolean',
@@ -13302,6 +17222,8 @@ const GraphQLBoolean = new _definition.GraphQLScalarType({
     return valueNode.value;
   },
 });
+/** The built-in `ID` scalar type. */
+
 exports.GraphQLBoolean = GraphQLBoolean;
 const GraphQLID = new _definition.GraphQLScalarType({
   name: 'ID',
@@ -13355,6 +17277,8 @@ const GraphQLID = new _definition.GraphQLScalarType({
     return valueNode.value;
   },
 });
+/** All built-in scalar types defined by the GraphQL specification. */
+
 exports.GraphQLID = GraphQLID;
 const specifiedScalarTypes = Object.freeze([
   GraphQLString,
@@ -13363,6 +17287,27 @@ const specifiedScalarTypes = Object.freeze([
   GraphQLBoolean,
   GraphQLID,
 ]);
+/**
+ * Returns true when the scalar type is one of the scalars specified by GraphQL.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the scalar type is one of the scalars specified by GraphQL.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLScalarType,
+ *   GraphQLString,
+ *   isSpecifiedScalarType,
+ * } from 'graphql/type';
+ *
+ * const DateTime = new GraphQLScalarType({
+ *   name: 'DateTime',
+ * });
+ *
+ * isSpecifiedScalarType(GraphQLString); // => true
+ * isSpecifiedScalarType(DateTime); // => false
+ * ```
+ */
+
 exports.specifiedScalarTypes = specifiedScalarTypes;
 
 function isSpecifiedScalarType(type) {
@@ -13392,7 +17337,7 @@ function serializeObject(outputValue) {
 
 /***/ }),
 
-/***/ 4095:
+/***/ 3582:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -13404,30 +17349,67 @@ exports.GraphQLSchema = void 0;
 exports.assertSchema = assertSchema;
 exports.isSchema = isSchema;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _instanceOf = __nccwpck_require__(9494);
+var _instanceOf = __nccwpck_require__(6149);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _toObjMap = __nccwpck_require__(8764);
+var _toObjMap = __nccwpck_require__(4928);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
+
+/** @category Schema */
 
 /**
  * Test if the given value is a GraphQL schema.
+ * @param schema - Value to inspect.
+ * @returns True when the value is a GraphQLSchema.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { GraphQLString, isSchema } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * isSchema(schema); // => true
+ * isSchema(GraphQLString); // => false
+ * ```
  */
 function isSchema(schema) {
   return (0, _instanceOf.instanceOf)(schema, GraphQLSchema);
 }
+/**
+ * Returns the value as a GraphQLSchema, or throws if it is not a schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The value typed as a GraphQLSchema.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertSchema, GraphQLString } from 'graphql/type';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * assertSchema(schema); // => schema
+ * assertSchema(GraphQLString); // throws an error
+ * ```
+ */
 
 function assertSchema(schema) {
   if (!isSchema(schema)) {
@@ -13440,7 +17422,6 @@ function assertSchema(schema) {
 }
 /**
  * Custom extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -13454,70 +17435,190 @@ function assertSchema(schema) {
  * A Schema is created by supplying the root types of each type of operation,
  * query and mutation (optional). A schema definition is then supplied to the
  * validator and executor.
- *
- * Example:
- *
+ * @example
  * ```ts
+ * const MyAppQueryRootType = new GraphQLObjectType({
+ *   name: 'Query',
+ *   fields: {
+ *     greeting: { type: GraphQLString },
+ *   },
+ * });
+ *
+ * const MyAppMutationRootType = new GraphQLObjectType({
+ *   name: 'Mutation',
+ *   fields: {
+ *     setGreeting: { type: GraphQLString },
+ *   },
+ * });
+ *
  * const MyAppSchema = new GraphQLSchema({
  *   query: MyAppQueryRootType,
  *   mutation: MyAppMutationRootType,
- * })
+ * });
  * ```
- *
- * Note: When the schema is constructed, by default only the types that are
- * reachable by traversing the root types are included, other types must be
- * explicitly referenced.
- *
- * Example:
+ * @example
+ * When the schema is constructed, by default only the types that are reachable
+ * by traversing the root types are included, other types must be explicitly
+ * referenced.
  *
  * ```ts
  * const characterInterface = new GraphQLInterfaceType({
  *   name: 'Character',
- *   ...
+ *   fields: {
+ *     name: { type: GraphQLString },
+ *   },
  * });
  *
  * const humanType = new GraphQLObjectType({
  *   name: 'Human',
  *   interfaces: [characterInterface],
- *   ...
+ *   fields: {
+ *     name: { type: GraphQLString },
+ *   },
  * });
  *
  * const droidType = new GraphQLObjectType({
  *   name: 'Droid',
  *   interfaces: [characterInterface],
- *   ...
+ *   fields: {
+ *     name: { type: GraphQLString },
+ *   },
  * });
  *
  * const schema = new GraphQLSchema({
  *   query: new GraphQLObjectType({
  *     name: 'Query',
  *     fields: {
- *       hero: { type: characterInterface, ... },
- *     }
+ *       hero: { type: characterInterface },
+ *     },
  *   }),
- *   ...
  *   // Since this schema references only the `Character` interface it's
  *   // necessary to explicitly list the types that implement it if
  *   // you want them to be included in the final schema.
  *   types: [humanType, droidType],
- * })
+ * });
  * ```
- *
- * Note: If an array of `directives` are provided to GraphQLSchema, that will be
- * the exact list of directives represented and allowed. If `directives` is not
+ * @example
+ * If an array of `directives` are provided to GraphQLSchema, that will be the
+ * exact list of directives represented and allowed. If `directives` is not
  * provided then a default set of the specified directives (e.g. `@include` and
- * `@skip`) will be used. If you wish to provide *additional* directives to these
- * specified directives, you must explicitly declare them. Example:
+ * `@skip`) will be used. If you wish to provide *additional* directives to
+ * these specified directives, you must explicitly declare them.
  *
  * ```ts
  * const MyAppSchema = new GraphQLSchema({
- *   ...
- *   directives: specifiedDirectives.concat([ myCustomDirective ]),
- * })
+ *   query: MyAppQueryRootType,
+ *   directives: specifiedDirectives.concat([myCustomDirective]),
+ * });
  * ```
  */
 class GraphQLSchema {
-  // Used as a cache for validateSchema().
+  /** Human-readable description for this schema element, if provided. */
+
+  /** Extension fields to include in the formatted result. */
+
+  /** AST node from which this schema element was built, if available. */
+
+  /** AST extension nodes applied to this schema element. */
+
+  /**
+   * Cached schema validation errors, if validation has already run.
+   * @internal
+   */
+
+  /**
+   * Creates a GraphQLSchema instance.
+   * @param config - Configuration describing this object.
+   * @example
+   * ```ts
+   * // Create a schema with the required query root.
+   * import {
+   *   GraphQLObjectType,
+   *   GraphQLSchema,
+   *   GraphQLString,
+   * } from 'graphql/type';
+   *
+   * const Query = new GraphQLObjectType({
+   *   name: 'Query',
+   *   fields: {
+   *     greeting: {
+   *       type: GraphQLString,
+   *       resolve: () => 'Hello',
+   *     },
+   *   },
+   * });
+   *
+   * const schema = new GraphQLSchema({
+   *   description: 'The application schema.',
+   *   query: Query,
+   * });
+   *
+   * schema.getQueryType(); // => Query
+   * schema.description; // => 'The application schema.'
+   * ```
+   * @example
+   * ```ts
+   * // This variant configures every schema option, including directives and extensions.
+   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import {
+   *   GraphQLBoolean,
+   *   GraphQLDirective,
+   *   GraphQLObjectType,
+   *   GraphQLSchema,
+   *   GraphQLString,
+   * } from 'graphql/type';
+   *
+   * const Query = new GraphQLObjectType({
+   *   name: 'Query',
+   *   fields: { greeting: { type: GraphQLString } },
+   * });
+   * const Mutation = new GraphQLObjectType({
+   *   name: 'Mutation',
+   *   fields: { setGreeting: { type: GraphQLString } },
+   * });
+   * const Subscription = new GraphQLObjectType({
+   *   name: 'Subscription',
+   *   fields: { greetingChanged: { type: GraphQLString } },
+   * });
+   * const AuditEvent = new GraphQLObjectType({
+   *   name: 'AuditEvent',
+   *   fields: { message: { type: GraphQLString } },
+   * });
+   * const authDirective = new GraphQLDirective({
+   *   name: 'auth',
+   *   locations: [DirectiveLocation.FIELD_DEFINITION],
+   *   args: { required: { type: GraphQLBoolean } },
+   * });
+   * const schemaDocument = parse(`
+   *   schema {
+   *     query: Query
+   *     mutation: Mutation
+   *     subscription: Subscription
+   *   }
+   *
+   *   extend schema @auth
+   * `);
+   *
+   * const schema = new GraphQLSchema({
+   *   description: 'Operations exposed by the application.',
+   *   query: Query,
+   *   mutation: Mutation,
+   *   subscription: Subscription,
+   *   types: [AuditEvent],
+   *   directives: [authDirective],
+   *   extensions: { owner: 'platform' },
+   *   astNode: schemaDocument.definitions[0],
+   *   extensionASTNodes: [ schemaDocument.definitions[1] ],
+   *   assumeValid: true,
+   * });
+   *
+   * schema.getMutationType(); // => Mutation
+   * schema.getSubscriptionType(); // => Subscription
+   * schema.getType('AuditEvent'); // => AuditEvent
+   * schema.getDirective('auth'); // => authDirective
+   * schema.extensions; // => { owner: 'platform' }
+   * ```
+   */
   constructor(config) {
     var _config$extensionASTN, _config$directives;
 
@@ -13655,22 +17756,106 @@ class GraphQLSchema {
       }
     }
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }
+  /**
+   * Returns the root object type for query operations.
+   * @returns The query root type, if this schema defines one.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   *
+   * schema.getQueryType()?.name; // => 'Query'
+   * ```
+   */
 
   getQueryType() {
     return this._queryType;
   }
+  /**
+   * Returns the root object type for mutation operations.
+   * @returns The mutation root type, if this schema defines one.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   *
+   *   type Mutation {
+   *     setGreeting(value: String!): String
+   *   }
+   * `);
+   *
+   * schema.getMutationType()?.name; // => 'Mutation'
+   * ```
+   */
 
   getMutationType() {
     return this._mutationType;
   }
+  /**
+   * Returns the root object type for subscription operations.
+   * @returns The subscription root type, if this schema defines one.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   *
+   *   type Subscription {
+   *     greetings: String
+   *   }
+   * `);
+   *
+   * schema.getSubscriptionType()?.name; // => 'Subscription'
+   * ```
+   */
 
   getSubscriptionType() {
     return this._subscriptionType;
   }
+  /**
+   * Returns the root object type for the requested operation kind.
+   * @param operation - Operation kind to resolve.
+   * @returns The root object type for the operation kind, if this schema defines one.
+   * @example
+   * ```ts
+   * import { OperationTypeNode } from 'graphql/language';
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   *
+   *   type Mutation {
+   *     setGreeting(value: String!): String
+   *   }
+   * `);
+   *
+   * schema.getRootType(OperationTypeNode.QUERY)?.name; // => 'Query'
+   * schema.getRootType(OperationTypeNode.MUTATION)?.name; // => 'Mutation'
+   * schema.getRootType(OperationTypeNode.SUBSCRIPTION); // => undefined
+   * ```
+   */
 
   getRootType(operation) {
     switch (operation) {
@@ -13684,20 +17869,139 @@ class GraphQLSchema {
         return this.getSubscriptionType();
     }
   }
+  /**
+   * Returns all named types known to this schema.
+   * @returns A map of schema types keyed by type name.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type User {
+   *     name: String
+   *   }
+   *
+   *   type Query {
+   *     viewer: User
+   *   }
+   * `);
+   *
+   * const typeMap = schema.getTypeMap();
+   *
+   * typeMap.User.name; // => 'User'
+   * typeMap.Query.name; // => 'Query'
+   * typeMap.String.name; // => 'String'
+   * ```
+   */
 
   getTypeMap() {
     return this._typeMap;
   }
+  /**
+   * Returns the named type with the provided name.
+   * @param name - The GraphQL name to look up.
+   * @returns The named schema type, if one exists.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type User {
+   *     name: String
+   *   }
+   *
+   *   type Query {
+   *     viewer: User
+   *   }
+   * `);
+   *
+   * schema.getType('User')?.toString(); // => 'User'
+   * schema.getType('Missing'); // => undefined
+   * ```
+   */
 
   getType(name) {
     return this.getTypeMap()[name];
   }
+  /**
+   * Returns object types that may be returned for an abstract type.
+   * @param abstractType - Interface or union type to inspect.
+   * @returns Object types that may satisfy the abstract type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType, assertUnionType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   type User implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   type Organization implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   union SearchResult = User | Organization
+   *
+   *   type Query {
+   *     node: Node
+   *     search: [SearchResult]
+   *   }
+   * `);
+   *
+   * const Node = assertInterfaceType(schema.getType('Node'));
+   * const SearchResult = assertUnionType(schema.getType('SearchResult'));
+   *
+   * schema.getPossibleTypes(Node).map((type) => type.name); // => ['User', 'Organization']
+   * schema.getPossibleTypes(SearchResult).map((type) => type.name); // => ['User', 'Organization']
+   * ```
+   */
 
   getPossibleTypes(abstractType) {
     return (0, _definition.isUnionType)(abstractType)
       ? abstractType.getTypes()
       : this.getImplementations(abstractType).objects;
   }
+  /**
+   * Returns objects and interfaces that implement an interface type.
+   * @param interfaceType - Interface type to inspect.
+   * @returns Object and interface implementations of the interface.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Resource {
+   *     url: String!
+   *   }
+   *
+   *   interface Image implements Resource {
+   *     url: String!
+   *     width: Int
+   *   }
+   *
+   *   type Photo implements Resource & Image {
+   *     url: String!
+   *     width: Int
+   *   }
+   *
+   *   type Query {
+   *     resource: Resource
+   *   }
+   * `);
+   *
+   * const Resource = assertInterfaceType(schema.getType('Resource'));
+   * const implementations = schema.getImplementations(Resource);
+   *
+   * implementations.interfaces.map((type) => type.name); // => ['Image']
+   * implementations.objects.map((type) => type.name); // => ['Photo']
+   * ```
+   */
 
   getImplementations(interfaceType) {
     const implementations = this._implementationsMap[interfaceType.name];
@@ -13708,6 +18012,43 @@ class GraphQLSchema {
           interfaces: [],
         };
   }
+  /**
+   * Returns whether one type is a possible runtime subtype of an abstract type.
+   * @param abstractType - Interface or union type to inspect.
+   * @param maybeSubType - Object or interface type to test as a possible subtype.
+   * @returns True when the subtype may satisfy the abstract type.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { assertInterfaceType, assertObjectType } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   interface Node {
+   *     id: ID!
+   *   }
+   *
+   *   type User implements Node {
+   *     id: ID!
+   *   }
+   *
+   *   type Review {
+   *     body: String
+   *   }
+   *
+   *   type Query {
+   *     node: Node
+   *     review: Review
+   *   }
+   * `);
+   *
+   * const Node = assertInterfaceType(schema.getType('Node'));
+   * const User = assertObjectType(schema.getType('User'));
+   * const Review = assertObjectType(schema.getType('Review'));
+   *
+   * schema.isSubType(Node, User); // => true
+   * schema.isSubType(Node, Review); // => false
+   * ```
+   */
 
   isSubType(abstractType, maybeSubType) {
     let map = this._subTypeMap[abstractType.name];
@@ -13736,14 +18077,76 @@ class GraphQLSchema {
 
     return map[maybeSubType.name] !== undefined;
   }
+  /**
+   * Returns directives available in this schema.
+   * @returns Directives available in this schema.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   directive @upper on FIELD_DEFINITION
+   *
+   *   type Query {
+   *     greeting: String @upper
+   *   }
+   * `);
+   *
+   * schema.getDirectives().map((directive) => directive.name); // => ['include', 'skip', 'deprecated', 'specifiedBy', 'oneOf', 'upper']
+   * ```
+   */
 
   getDirectives() {
     return this._directives;
   }
+  /**
+   * Returns the current directive definition.
+   * @param name - The GraphQL name to look up.
+   * @returns The current directive definition, if known.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   directive @upper on FIELD_DEFINITION
+   *
+   *   type Query {
+   *     greeting: String @upper
+   *   }
+   * `);
+   *
+   * schema.getDirective('upper')?.name; // => 'upper'
+   * schema.getDirective('missing'); // => undefined
+   * ```
+   */
 
   getDirective(name) {
     return this.getDirectives().find((directive) => directive.name === name);
   }
+  /**
+   * Returns a normalized configuration object for this object.
+   *
+   * The returned config preserves the original `assumeValid` flag so the schema
+   * can be recreated with the same validation behavior.
+   * @returns A configuration object that can be used to recreate this object.
+   * @example
+   * ```ts
+   * import { buildSchema } from 'graphql/utilities';
+   * import { GraphQLSchema } from 'graphql/type';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   *
+   * const config = schema.toConfig();
+   * const schemaCopy = new GraphQLSchema(config);
+   *
+   * config.query?.name; // => 'Query'
+   * schemaCopy.getQueryType()?.name; // => 'Query'
+   * ```
+   */
 
   toConfig() {
     return {
@@ -13801,7 +18204,7 @@ function collectReferencedTypes(type, typeSet) {
 
 /***/ }),
 
-/***/ 5042:
+/***/ 6763:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -13812,21 +18215,23 @@ Object.defineProperty(exports, "__esModule", ({
 exports.assertValidSchema = assertValidSchema;
 exports.validateSchema = validateSchema;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _typeComparators = __nccwpck_require__(5055);
+var _typeComparators = __nccwpck_require__(7242);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
+
+/** @category Validation */
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -13834,6 +18239,22 @@ var _schema = __nccwpck_require__(4095);
  *
  * Validation runs synchronously, returning an array of encountered errors, or
  * an empty array if no errors were encountered and the Schema is valid.
+ * @param schema - GraphQL schema to use.
+ * @returns Schema validation errors, or an empty array when the schema is valid.
+ * @example
+ * ```ts
+ * import { validateSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ * const errors = validateSchema(schema);
+ *
+ * errors; // => []
+ * ```
  */
 function validateSchema(schema) {
   // First check to ensure the provided value is in fact a GraphQLSchema.
@@ -13856,6 +18277,20 @@ function validateSchema(schema) {
 /**
  * Utility function which asserts a schema is valid by throwing an error if
  * it is invalid.
+ * @param schema - GraphQL schema to use.
+ * @example
+ * ```ts
+ * import { assertValidSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * assertValidSchema(schema); // does not throw
+ * ```
  */
 
 function assertValidSchema(schema) {
@@ -14514,7 +18949,7 @@ function getDeprecatedDirectiveNode(definitionNode) {
 
 /***/ }),
 
-/***/ 4380:
+/***/ 3575:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -14525,17 +18960,19 @@ Object.defineProperty(exports, "__esModule", ({
 exports.TypeInfo = void 0;
 exports.visitWithTypeInfo = visitWithTypeInfo;
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
+
+/** @category Type Info */
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -14543,6 +18980,74 @@ var _typeFromAST = __nccwpck_require__(9574);
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
 class TypeInfo {
+  /**
+   * Creates a TypeInfo instance.
+   * @param schema - Schema used for type lookups.
+   * @param initialType - Optional type to use at the start of traversal.
+   * @param getFieldDefFn - Optional field definition lookup override.
+   * @example
+   * ```ts
+   * // Track field types during a visitWithTypeInfo traversal.
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema } from 'graphql/utilities';
+   * import { TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * const seenTypes = [];
+   *
+   * visit(
+   *   parse('{ greeting }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: () => {
+   *       seenTypes.push(String(typeInfo.getType()));
+   *     },
+   *   }),
+   * );
+   *
+   * seenTypes; // => ['String']
+   * ```
+   * @example
+   * ```ts
+   * // This variant starts from an initial type and supplies a field definition resolver.
+   * import { Kind } from 'graphql/language';
+   * import { GraphQLString } from 'graphql/type';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema, schema.getQueryType(), () => ({
+   *   name: 'virtualGreeting',
+   *   description: undefined,
+   *   type: GraphQLString,
+   *   args: [],
+   *   resolve: undefined,
+   *   subscribe: undefined,
+   *   deprecationReason: undefined,
+   *   extensions: Object.create(null),
+   *   astNode: undefined,
+   * }));
+   *
+   * typeInfo.enter({
+   *   kind: Kind.SELECTION_SET,
+   *   selections: [],
+   * });
+   * typeInfo.enter({
+   *   kind: Kind.FIELD,
+   *   name: { kind: Kind.NAME, value: 'ignored' },
+   * });
+   *
+   * typeInfo.getFieldDef()?.name; // => 'virtualGreeting'
+   * String(typeInfo.getType()); // => 'String'
+   * ```
+   */
   constructor(
     schema,
     /**
@@ -14550,7 +19055,11 @@ class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType,
-    /** @deprecated will be removed in 17.0.0 */
+    /**
+     * Deprecated field definition lookup override. Use TypeInfo's built-in
+     * field definition lookup instead because this hook will be removed in v17.
+     * @deprecated will be removed in 17.0.0
+     */
     getFieldDefFn,
   ) {
     this._schema = schema;
@@ -14581,58 +19090,365 @@ class TypeInfo {
       }
     }
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'TypeInfo';
   }
+  /**
+   * Returns the current output type at this point in traversal.
+   * @returns The current output type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     viewer: User
+   *   }
+   *
+   *   type User {
+   *     name: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * const fieldTypes = {};
+   *
+   * visit(
+   *   parse('{ viewer { name } }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: (node) => {
+   *       fieldTypes[node.name.value] = String(typeInfo.getType());
+   *     },
+   *   }),
+   * );
+   *
+   * fieldTypes; // => { viewer: 'User', name: 'String' }
+   * ```
+   */
 
   getType() {
     if (this._typeStack.length > 0) {
       return this._typeStack[this._typeStack.length - 1];
     }
   }
+  /**
+   * Returns the current parent composite type.
+   * @returns The current parent composite type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     viewer: User
+   *   }
+   *
+   *   type User {
+   *     name: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * const parentTypes = {};
+   *
+   * visit(
+   *   parse('{ viewer { name } }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: (node) => {
+   *       parentTypes[node.name.value] = String(typeInfo.getParentType());
+   *     },
+   *   }),
+   * );
+   *
+   * parentTypes; // => { viewer: 'Query', name: 'User' }
+   * ```
+   */
 
   getParentType() {
     if (this._parentTypeStack.length > 0) {
       return this._parentTypeStack[this._parentTypeStack.length - 1];
     }
   }
+  /**
+   * Returns the current input type at this point in traversal.
+   * @returns The current input type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     reviews(stars: Int!, sort: Sort = NEWEST): [String]
+   *   }
+   *
+   *   enum Sort {
+   *     NEWEST
+   *     OLDEST
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * const inputTypes = {};
+   *
+   * visit(
+   *   parse('{ reviews(stars: 5, sort: OLDEST) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Argument: (node) => {
+   *       inputTypes[node.name.value] = String(typeInfo.getInputType());
+   *     },
+   *   }),
+   * );
+   *
+   * inputTypes; // => { stars: 'Int!', sort: 'Sort' }
+   * ```
+   */
 
   getInputType() {
     if (this._inputTypeStack.length > 0) {
       return this._inputTypeStack[this._inputTypeStack.length - 1];
     }
   }
+  /**
+   * Returns the parent input type for the current input position.
+   * @returns The parent input type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   input ReviewFilter {
+   *     stars: Int!
+   *   }
+   *
+   *   type Query {
+   *     reviews(filter: ReviewFilter): [String]
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * const parentInputTypes = {};
+   *
+   * visit(
+   *   parse('{ reviews(filter: { stars: 5 }) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     ObjectField: (node) => {
+   *       parentInputTypes[node.name.value] = String(typeInfo.getParentInputType());
+   *     },
+   *   }),
+   * );
+   *
+   * parentInputTypes; // => { stars: 'ReviewFilter' }
+   * ```
+   */
 
   getParentInputType() {
     if (this._inputTypeStack.length > 1) {
       return this._inputTypeStack[this._inputTypeStack.length - 2];
     }
   }
+  /**
+   * Returns the current field definition.
+   * @returns The current field definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * let fieldName;
+   *
+   * visit(
+   *   parse('{ greeting }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: () => {
+   *       fieldName = typeInfo.getFieldDef()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * fieldName; // => 'greeting'
+   * ```
+   */
 
   getFieldDef() {
     if (this._fieldDefStack.length > 0) {
       return this._fieldDefStack[this._fieldDefStack.length - 1];
     }
   }
+  /**
+   * Returns the default value for the current input position.
+   * @returns The current default value, if one is available.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     reviews(limit: Int = 10): [String]
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * let defaultLimit;
+   *
+   * visit(
+   *   parse('{ reviews(limit: 5) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Argument: () => {
+   *       defaultLimit = typeInfo.getDefaultValue();
+   *     },
+   *   }),
+   * );
+   *
+   * defaultLimit; // => 10
+   * ```
+   */
 
   getDefaultValue() {
     if (this._defaultValueStack.length > 0) {
       return this._defaultValueStack[this._defaultValueStack.length - 1];
     }
   }
+  /**
+   * Returns the current directive definition.
+   * @returns The current directive definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * let directiveName;
+   *
+   * visit(
+   *   parse('{ greeting @include(if: true) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Directive: () => {
+   *       directiveName = typeInfo.getDirective()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * directiveName; // => 'include'
+   * ```
+   */
 
   getDirective() {
     return this._directive;
   }
+  /**
+   * Returns the current argument definition.
+   * @returns The current argument definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     reviews(limit: Int = 10): [String]
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * let argumentName;
+   *
+   * visit(
+   *   parse('{ reviews(limit: 5) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     Argument: () => {
+   *       argumentName = typeInfo.getArgument()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * argumentName; // => 'limit'
+   * ```
+   */
 
   getArgument() {
     return this._argument;
   }
+  /**
+   * Returns the current enum value definition.
+   * @returns The current enum value definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   enum Sort {
+   *     NEWEST
+   *     OLDEST
+   *   }
+   *
+   *   type Query {
+   *     reviews(sort: Sort = NEWEST): [String]
+   *   }
+   * `);
+   * const typeInfo = new TypeInfo(schema);
+   * let enumValueName;
+   *
+   * visit(
+   *   parse('{ reviews(sort: OLDEST) }'),
+   *   visitWithTypeInfo(typeInfo, {
+   *     EnumValue: () => {
+   *       enumValueName = typeInfo.getEnumValue()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * enumValueName; // => 'OLDEST'
+   * ```
+   */
 
   getEnumValue() {
     return this._enumValue;
   }
+  /**
+   * Updates this TypeInfo instance for an entered AST node.
+   * @param node - AST node being entered.
+   * @returns Nothing.
+   * @example
+   * ```ts
+   * import { Kind, parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const operation = document.definitions[0];
+   * const selectionSet = operation.selectionSet;
+   * const field = selectionSet.selections[0];
+   * const typeInfo = new TypeInfo(schema);
+   *
+   * typeInfo.enter(operation);
+   * typeInfo.enter(selectionSet);
+   * typeInfo.enter(field);
+   *
+   * field.kind; // => Kind.FIELD
+   * typeInfo.getParentType()?.name; // => 'Query'
+   * String(typeInfo.getType()); // => 'String'
+   * ```
+   */
 
   enter(node) {
     const schema = this._schema; // Note: many of the types below are explicitly typed as "unknown" to drop
@@ -14799,6 +19615,35 @@ class TypeInfo {
       default: // Ignore other nodes
     }
   }
+  /**
+   * Updates this TypeInfo instance for a left AST node.
+   * @param node - AST node being entered.
+   * @returns Nothing.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const operation = document.definitions[0];
+   * const selectionSet = operation.selectionSet;
+   * const field = selectionSet.selections[0];
+   * const typeInfo = new TypeInfo(schema);
+   *
+   * typeInfo.enter(operation);
+   * typeInfo.enter(selectionSet);
+   * typeInfo.enter(field);
+   * String(typeInfo.getType()); // => 'String'
+   *
+   * typeInfo.leave(field);
+   * typeInfo.getType(); // => undefined
+   * ```
+   */
 
   leave(node) {
     switch (node.kind) {
@@ -14862,6 +19707,8 @@ exports.TypeInfo = TypeInfo;
  * Not exactly the same as the executor's definition of getFieldDef, in this
  * statically evaluated environment we do not always have an Object type,
  * and need to handle Interface and Union types.
+ *
+ * @internal
  */
 function getFieldDef(schema, parentType, fieldNode) {
   const name = fieldNode.name.value;
@@ -14897,6 +19744,37 @@ function getFieldDef(schema, parentType, fieldNode) {
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
+ * @param typeInfo - TypeInfo instance to update during traversal.
+ * @param visitor - Visitor callbacks to wrap with TypeInfo updates.
+ * @returns A visitor that keeps TypeInfo in sync while delegating callbacks.
+ * @example
+ * ```ts
+ * import { parse, visit } from 'graphql/language';
+ * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const typeInfo = new TypeInfo(schema);
+ * const fields = [];
+ *
+ * visit(
+ *   parse('{ greeting }'),
+ *   visitWithTypeInfo(typeInfo, {
+ *     Field: (node) => {
+ *       fields.push({
+ *         name: node.name.value,
+ *         parentType: String(typeInfo.getParentType()),
+ *         type: String(typeInfo.getType()),
+ *       });
+ *     },
+ *   }),
+ * );
+ *
+ * fields; // => [{ name: 'greeting', parentType: 'Query', type: 'String' }]
+ * ```
  */
 
 function visitWithTypeInfo(typeInfo, visitor) {
@@ -14939,7 +19817,7 @@ function visitWithTypeInfo(typeInfo, visitor) {
 
 /***/ }),
 
-/***/ 7789:
+/***/ 9816:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -14950,16 +19828,29 @@ Object.defineProperty(exports, "__esModule", ({
 exports.assertValidName = assertValidName;
 exports.isValidNameError = isValidNameError;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _assertName = __nccwpck_require__(8261);
+var _assertName = __nccwpck_require__(4376);
+
+/** @category Validation */
 
 /* c8 ignore start */
 
 /**
- * Upholds the spec rules about naming.
+ * Upholds the spec rules about naming. This deprecated helper is retained for
+ * backwards compatibility; call `assertName` instead because assertValidName
+ * will be removed in v17.
+ * @param name - The GraphQL name to validate.
+ * @returns The validated GraphQL name.
+ * @example
+ * ```ts
+ * import { assertValidName } from 'graphql/utilities';
+ *
+ * assertValidName('User'); // => 'User'
+ * assertValidName('__typename'); // throws an error
+ * ```
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
 function assertValidName(name) {
@@ -14972,7 +19863,20 @@ function assertValidName(name) {
   return name;
 }
 /**
- * Returns an Error if a name is invalid.
+ * Returns an Error if a name is invalid. This deprecated helper is retained for
+ * backwards compatibility; call `assertName` and catch the thrown GraphQLError
+ * instead because isValidNameError will be removed in v17.
+ * @param name - The GraphQL name to validate.
+ * @returns A GraphQLError if the name is invalid; otherwise undefined.
+ * @example
+ * ```ts
+ * import { isValidNameError } from 'graphql/utilities';
+ *
+ * isValidNameError('User'); // => undefined
+ *
+ * const error = isValidNameError('__typename');
+ * error.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
+ * ```
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
 
@@ -14997,7 +19901,7 @@ function isValidNameError(name) {
 
 /***/ }),
 
-/***/ 9689:
+/***/ 3850:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15007,26 +19911,26 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.astFromValue = astFromValue;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _isIterableObject = __nccwpck_require__(4433);
+var _isIterableObject = __nccwpck_require__(7670);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
+
+/** @category Values */
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format
- * by using suggested GraphQLInputType. For example:
- *
- *     astFromValue("value", GraphQLString)
+ * by using suggested GraphQLInputType.
  *
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.
@@ -15040,7 +19944,38 @@ var _scalars = __nccwpck_require__(2431);
  * | Number        | Int / Float          |
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
+ * @param value - Runtime value to convert.
+ * @param type - The GraphQL type to inspect.
+ * @returns A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it.
+ * @example
+ * ```ts
+ * import { print } from 'graphql/language';
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { astFromValue } from 'graphql/utilities';
  *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * const valueNode = astFromValue(
+ *   { stars: 5, tags: ['featured', 'verified'] },
+ *   ReviewInput,
+ * );
+ *
+ * print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
+ * astFromValue(undefined, GraphQLString); // => null
+ * astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
+ * ```
  */
 function astFromValue(value, type) {
   if ((0, _definition.isNonNullType)(type)) {
@@ -15187,6 +20122,8 @@ function astFromValue(value, type) {
  * IntValue:
  *   - NegativeSign? 0
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
+ *
+ * @internal
  */
 
 const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
@@ -15194,7 +20131,7 @@ const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
 
 /***/ }),
 
-/***/ 6951:
+/***/ 6960:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15205,29 +20142,58 @@ Object.defineProperty(exports, "__esModule", ({
 exports.buildASTSchema = buildASTSchema;
 exports.buildSchema = buildSchema;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
 
-var _validate = __nccwpck_require__(6891);
+var _validate = __nccwpck_require__(4702);
 
-var _extendSchema = __nccwpck_require__(1203);
+var _extendSchema = __nccwpck_require__(4140);
+
+/** @category Schema Construction */
 
 /**
- * This takes the ast of a schema document produced by the parse function in
- * src/language/parser.js.
+ * Builds a GraphQLSchema from a parsed schema definition language document.
  *
  * If no schema definition is provided, then it will look for types named Query,
  * Mutation and Subscription.
  *
- * Given that AST it constructs a GraphQLSchema. The resulting schema
- * has no resolve methods, so execution will use default resolvers.
+ * The resulting schema has no resolver functions, so execution will use the
+ * default field resolver.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param options - Optional configuration for this operation.
+ * @returns The schema built from the provided SDL document.
+ * @example
+ * ```ts
+ * // Build a schema from a valid parsed SDL document.
+ * import { parse } from 'graphql/language';
+ * import { buildASTSchema } from 'graphql/utilities';
+ *
+ * const document = parse('type Query { hello: String }');
+ * const schema = buildASTSchema(document);
+ *
+ * schema.getQueryType().name; // => 'Query'
+ * ```
+ * @example
+ * ```ts
+ * // This variant uses validation options when the SDL references unknown types.
+ * import { parse } from 'graphql/language';
+ * import { buildASTSchema } from 'graphql/utilities';
+ *
+ * const document = parse('type Query { broken: MissingType }');
+ *
+ * buildASTSchema(document); // throws an error
+ * buildASTSchema(document, {
+ *   assumeValid: true,
+ *   assumeValidSDL: true,
+ * }); // does not throw
+ * ```
  */
 function buildASTSchema(documentAST, options) {
   (documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT) ||
@@ -15292,8 +20258,38 @@ function buildASTSchema(documentAST, options) {
   return new _schema.GraphQLSchema({ ...config, directives });
 }
 /**
- * A helper function to build a GraphQLSchema directly from a source
- * document.
+ * Builds a GraphQLSchema directly from a schema definition language source.
+ * @param source - The GraphQL source text or source object.
+ * @param options - Optional configuration for this operation.
+ * @returns The schema built from the provided SDL document.
+ * @example
+ * ```ts
+ * // Build a schema from SDL source using the default options.
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema('type Query { hello: String }');
+ *
+ * schema.getQueryType().name; // => 'Query'
+ * ```
+ * @example
+ * ```ts
+ * // This variant enables parser options and omits source locations.
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(
+ *   'directive @tag on FIELD_DEFINITION\n' +
+ *     'directive @compose @tag on FIELD_DEFINITION',
+ *   {
+ *     experimentalDirectivesOnDirectiveDefinitions: true,
+ *     noLocation: true,
+ *   },
+ * );
+ *
+ * const directive = schema.getDirective('compose');
+ *
+ * directive.name; // => 'compose'
+ * directive.astNode.loc; // => undefined
+ * ```
  */
 
 function buildSchema(source, options) {
@@ -15320,7 +20316,7 @@ function buildSchema(source, options) {
 
 /***/ }),
 
-/***/ 54:
+/***/ 8747:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15330,27 +20326,29 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.buildClientSchema = buildClientSchema;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _keyValMap = __nccwpck_require__(3218);
+var _keyValMap = __nccwpck_require__(8875);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
 
-var _valueFromAST = __nccwpck_require__(4971);
+var _valueFromAST = __nccwpck_require__(2808);
+
+/** @category Introspection */
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -15363,6 +20361,20 @@ var _valueFromAST = __nccwpck_require__(4971);
  *
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
+ * @param introspection - Introspection result data to build from.
+ * @param options - Optional configuration for this operation.
+ * @returns The client schema represented by the introspection result.
+ * @example
+ * ```ts
+ * import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema('type Query { hello: String }');
+ * const clientSchema = buildClientSchema(introspectionFromSchema(schema), {
+ *   assumeValid: true,
+ * });
+ *
+ * clientSchema.getQueryType().name; // => 'Query'
+ * ```
  */
 function buildClientSchema(introspection, options) {
   ((0, _isObjectLike.isObjectLike)(introspection) &&
@@ -15715,7 +20727,7 @@ function buildClientSchema(introspection, options) {
 
 /***/ }),
 
-/***/ 3568:
+/***/ 3187:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15725,28 +20737,75 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.coerceInputValue = coerceInputValue;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _isIterableObject = __nccwpck_require__(4433);
+var _isIterableObject = __nccwpck_require__(7670);
 
-var _isObjectLike = __nccwpck_require__(3008);
+var _isObjectLike = __nccwpck_require__(4863);
 
-var _Path = __nccwpck_require__(8983);
+var _Path = __nccwpck_require__(9888);
 
-var _printPathArray = __nccwpck_require__(217);
+var _printPathArray = __nccwpck_require__(1210);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Values */
 
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
+ * @param inputValue - JavaScript value to coerce.
+ * @param type - GraphQL input type to coerce the value against.
+ * @param onError - Callback invoked for each coercion error.
+ * @returns Coerced value, or undefined if coercion failed and errors were reported.
+ * @example
+ * ```ts
+ * // Coerce runtime input values and throw on invalid input by default.
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { coerceInputValue } from 'graphql/utilities';
+ *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
+ * ```
+ * @example
+ * ```ts
+ * // This variant collects coercion errors with a custom onError callback.
+ * import { GraphQLInt, GraphQLNonNull } from 'graphql/type';
+ * import { coerceInputValue } from 'graphql/utilities';
+ *
+ * const errors = [];
+ * const value = coerceInputValue(
+ *   null,
+ *   new GraphQLNonNull(GraphQLInt),
+ *   (path, invalidValue, error) => {
+ *     errors.push({ path, invalidValue, message: error.message });
+ *   },
+ * );
+ *
+ * value; // => undefined
+ * errors; // => [ { path: [], invalidValue: null, message: 'Expected non-nullable type "Int!" not to be null.' } ]
+ * ```
  */
 function coerceInputValue(inputValue, type, onError = defaultOnError) {
   return coerceInputValueImpl(inputValue, type, onError, undefined);
@@ -15939,7 +20998,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
 /***/ }),
 
-/***/ 1682:
+/***/ 5175:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15949,12 +21008,25 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.concatAST = concatAST;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
+
+/** @category AST Utilities */
 
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many
  * GraphQL source files which together represent one conceptual application.
+ * @param documents - Document ASTs to concatenate.
+ * @returns A document AST containing all definitions from the provided documents.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { concatAST } from 'graphql/utilities';
+ *
+ * const document = concatAST([parse('type Query { a: String }'), parse('type User { id: ID }')]);
+ *
+ * document.definitions.length; // => 2
+ * ```
  */
 function concatAST(documents) {
   const definitions = [];
@@ -15972,7 +21044,7 @@ function concatAST(documents) {
 
 /***/ }),
 
-/***/ 1203:
+/***/ 4140:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -15983,35 +21055,37 @@ Object.defineProperty(exports, "__esModule", ({
 exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _mapValue = __nccwpck_require__(2475);
+var _mapValue = __nccwpck_require__(2912);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
 
-var _validate = __nccwpck_require__(6891);
+var _validate = __nccwpck_require__(4702);
 
-var _values = __nccwpck_require__(1224);
+var _values = __nccwpck_require__(5455);
 
-var _valueFromAST = __nccwpck_require__(4971);
+var _valueFromAST = __nccwpck_require__(2808);
+
+/** @category Schema Construction */
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -16024,6 +21098,60 @@ var _valueFromAST = __nccwpck_require__(4971);
  *
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
+ * @param schema - GraphQL schema to use.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param options - Optional configuration for this operation.
+ * @returns A new schema with the extensions and definitions applied.
+ * @example
+ * ```ts
+ * // Extend a schema with new fields and types.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, extendSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const extensionAST = parse(`
+ *   extend type Query {
+ *     farewell: String
+ *   }
+ *
+ *   type Review {
+ *     body: String
+ *   }
+ * `);
+ *
+ * const extendedSchema = extendSchema(schema, extensionAST);
+ *
+ * schema.getType('Review'); // => undefined
+ * extendedSchema.getType('Review')?.name; // => 'Review'
+ * Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'farewell']
+ * ```
+ * @example
+ * ```ts
+ * // This variant bypasses validation for an otherwise invalid extension.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, extendSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const invalidExtension = parse(`
+ *   extend type Missing {
+ *     field: String
+ *   }
+ * `);
+ *
+ * extendSchema(schema, invalidExtension); // throws an error
+ * extendSchema(schema, invalidExtension, {
+ *     assumeValid: true,
+ *     assumeValidSDL: true,
+ *   }); // does not throw
+ * ```
  */
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
@@ -16046,9 +21174,7 @@ function extendSchema(schema, documentAST, options) {
     ? schema
     : new _schema.GraphQLSchema(extendedConfig);
 }
-/**
- * @internal
- */
+/** @internal */
 
 function extendSchemaImpl(schemaConfig, documentAST, options) {
   var _schemaDef, _schemaDef$descriptio, _schemaDef2, _options$assumeValid;
@@ -16803,6 +21929,8 @@ const stdTypeMap = (0, _keyMap.keyMap)(
 /**
  * Given a field or enum value node, returns the string value for the
  * deprecation reason.
+ *
+ * @internal
  */
 
 function getDeprecationReason(node) {
@@ -16817,6 +21945,8 @@ function getDeprecationReason(node) {
 }
 /**
  * Given a scalar node, returns the string value for the specifiedByURL.
+ *
+ * @internal
  */
 
 function getSpecifiedByURL(node) {
@@ -16831,6 +21961,8 @@ function getSpecifiedByURL(node) {
 }
 /**
  * Given an input object node, returns if the node should be OneOf.
+ *
+ * @internal
  */
 
 function isOneOf(node) {
@@ -16842,7 +21974,7 @@ function isOneOf(node) {
 
 /***/ }),
 
-/***/ 4081:
+/***/ 2840:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -16854,22 +21986,25 @@ exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
-var _astFromValue = __nccwpck_require__(9689);
+var _astFromValue = __nccwpck_require__(3850);
 
-var _sortValueNode = __nccwpck_require__(6539);
+var _sortValueNode = __nccwpck_require__(74);
 
+/** @category Schema Changes */
+
+/** Categories of schema changes that may break existing operations. */
 var BreakingChangeType;
 exports.BreakingChangeType = BreakingChangeType;
 
@@ -16899,6 +22034,7 @@ exports.BreakingChangeType = BreakingChangeType;
   BreakingChangeType || (exports.BreakingChangeType = BreakingChangeType = {}),
 );
 
+/** Categories of schema changes that may be dangerous for existing operations. */
 var DangerousChangeType;
 exports.DangerousChangeType = DangerousChangeType;
 
@@ -16919,6 +22055,38 @@ exports.DangerousChangeType = DangerousChangeType;
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
+ * @param oldSchema - Schema before the change.
+ * @param newSchema - Schema after the change.
+ * @returns Breaking changes between the two schemas.
+ * @example
+ * ```ts
+ * import { buildSchema, findBreakingChanges } from 'graphql/utilities';
+ *
+ * const oldSchema = buildSchema(`
+ *   type User {
+ *     id: ID!
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     viewer: User
+ *   }
+ * `);
+ * const newSchema = buildSchema(`
+ *   type User {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     viewer: User
+ *   }
+ * `);
+ *
+ * const changes = findBreakingChanges(oldSchema, newSchema);
+ *
+ * changes[0].type; // => 'FIELD_REMOVED'
+ * changes[0].description; // matches /User.name was removed/
+ * ```
  */
 function findBreakingChanges(oldSchema, newSchema) {
   // @ts-expect-error
@@ -16929,6 +22097,38 @@ function findBreakingChanges(oldSchema, newSchema) {
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
+ * @param oldSchema - Schema before the change.
+ * @param newSchema - Schema after the change.
+ * @returns Dangerous changes between the two schemas.
+ * @example
+ * ```ts
+ * import { buildSchema, findDangerousChanges } from 'graphql/utilities';
+ *
+ * const oldSchema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *   }
+ *
+ *   type Query {
+ *     episode: Episode
+ *   }
+ * `);
+ * const newSchema = buildSchema(`
+ *   enum Episode {
+ *     NEW_HOPE
+ *     EMPIRE
+ *   }
+ *
+ *   type Query {
+ *     episode: Episode
+ *   }
+ * `);
+ *
+ * const changes = findDangerousChanges(oldSchema, newSchema);
+ *
+ * changes[0].type; // => 'VALUE_ADDED_TO_ENUM'
+ * changes[0].description; // matches /EMPIRE was added/
+ * ```
  */
 
 function findDangerousChanges(oldSchema, newSchema) {
@@ -17396,7 +22596,7 @@ function diff(oldArray, newArray) {
 
 /***/ }),
 
-/***/ 9327:
+/***/ 3081:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -17406,9 +22606,49 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.getIntrospectionQuery = getIntrospectionQuery;
 
+/** @category Introspection */
+
+/** Options controlling which fields are included in the introspection query. */
+
 /**
  * Produce the GraphQL query recommended for a full schema introspection.
  * Accepts optional IntrospectionOptions.
+ * @param options - Optional configuration for this operation.
+ * @returns The resolved introspection query.
+ * @example
+ * ```ts
+ * // Generate the default introspection query.
+ * import { getIntrospectionQuery } from 'graphql/utilities';
+ *
+ * const query = getIntrospectionQuery();
+ *
+ * query; // matches /__schema/
+ * query; // matches /description/
+ * query; // does not match /specifiedByURL/
+ * ```
+ * @example
+ * ```ts
+ * // This variant customizes optional introspection fields and nesting depth.
+ * import { getIntrospectionQuery } from 'graphql/utilities';
+ *
+ * const query = getIntrospectionQuery({
+ *   descriptions: false,
+ *   specifiedByUrl: true,
+ *   directiveIsRepeatable: true,
+ *   schemaDescription: true,
+ *   inputValueDeprecation: true,
+ *   experimentalDirectiveDeprecation: true,
+ *   oneOf: true,
+ *   typeDepth: 3,
+ * });
+ *
+ * query; // does not match /description/
+ * query; // matches /specifiedByURL/
+ * query; // matches /isRepeatable/
+ * query; // matches /includeDeprecated: true/
+ * query; // matches /isOneOf/
+ * (query.match(/ofType/g)?.length ?? 0) > 0; // => true
+ * ```
  */
 function getIntrospectionQuery(options) {
   const optionsWithDefault = {
@@ -17537,11 +22777,12 @@ ${indent}}`;
     }
   `;
 }
+/** The result shape returned by a full introspection query. */
 
 
 /***/ }),
 
-/***/ 4629:
+/***/ 5788:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -17551,12 +22792,28 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.getOperationAST = getOperationAST;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
+
+/** @category Operations */
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param operationName - The optional operation name to select.
+ * @returns The resolved operation ast.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { getOperationAST } from 'graphql/utilities';
+ *
+ * const document = parse('query GetName { name }');
+ * const operation = getOperationAST(document, 'GetName');
+ *
+ * operation.name.value; // => 'GetName'
+ * getOperationAST(document, 'Missing'); // => undefined
+ * ```
  */
 function getOperationAST(documentAST, operationName) {
   let operation = null;
@@ -17591,7 +22848,7 @@ function getOperationAST(documentAST, operationName) {
 
 /***/ }),
 
-/***/ 6493:
+/***/ 1034:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -17601,11 +22858,29 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.getOperationRootType = getOperationRootType;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Operations */
 
 /**
- * Extracts the root type of the operation from the schema.
+ * Extracts the root type of the operation from the schema. This deprecated
+ * helper is retained for backwards compatibility; call
+ * `GraphQLSchema.getRootType` instead because getOperationRootType will be
+ * removed in v17.
+ * @param schema - GraphQL schema to use.
+ * @param operation - The operation definition to inspect.
+ * @returns The resolved operation root type.
+ * @example
+ * ```ts
+ * import { buildSchema, getOperationRootType } from 'graphql/utilities';
+ * import { parse } from 'graphql/language';
  *
+ * const schema = buildSchema('type Query { name: String }');
+ * const operation = parse('{ name }').definitions[0];
+ * const rootType = getOperationRootType(schema, operation);
+ *
+ * rootType.name; // => 'Query'
+ * ```
  * @deprecated Please use `GraphQLSchema.getRootType` instead. Will be removed in v17
  */
 function getOperationRootType(schema, operation) {
@@ -17665,7 +22940,7 @@ function getOperationRootType(schema, operation) {
 
 /***/ }),
 
-/***/ 7578:
+/***/ 5215:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -17872,54 +23147,54 @@ Object.defineProperty(exports, "visitWithTypeInfo", ({
   },
 }));
 
-var _getIntrospectionQuery = __nccwpck_require__(9327);
+var _getIntrospectionQuery = __nccwpck_require__(3081);
 
-var _getOperationAST = __nccwpck_require__(4629);
+var _getOperationAST = __nccwpck_require__(5788);
 
-var _getOperationRootType = __nccwpck_require__(6493);
+var _getOperationRootType = __nccwpck_require__(1034);
 
-var _introspectionFromSchema = __nccwpck_require__(778);
+var _introspectionFromSchema = __nccwpck_require__(6143);
 
-var _buildClientSchema = __nccwpck_require__(54);
+var _buildClientSchema = __nccwpck_require__(8747);
 
-var _buildASTSchema = __nccwpck_require__(6951);
+var _buildASTSchema = __nccwpck_require__(6960);
 
-var _extendSchema = __nccwpck_require__(1203);
+var _extendSchema = __nccwpck_require__(4140);
 
-var _lexicographicSortSchema = __nccwpck_require__(6491);
+var _lexicographicSortSchema = __nccwpck_require__(4070);
 
-var _printSchema = __nccwpck_require__(5838);
+var _printSchema = __nccwpck_require__(4611);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
 
-var _valueFromAST = __nccwpck_require__(4971);
+var _valueFromAST = __nccwpck_require__(2808);
 
-var _valueFromASTUntyped = __nccwpck_require__(3386);
+var _valueFromASTUntyped = __nccwpck_require__(2247);
 
-var _astFromValue = __nccwpck_require__(9689);
+var _astFromValue = __nccwpck_require__(3850);
 
-var _TypeInfo = __nccwpck_require__(4380);
+var _TypeInfo = __nccwpck_require__(3575);
 
-var _coerceInputValue = __nccwpck_require__(3568);
+var _coerceInputValue = __nccwpck_require__(3187);
 
-var _concatAST = __nccwpck_require__(1682);
+var _concatAST = __nccwpck_require__(5175);
 
-var _separateOperations = __nccwpck_require__(1759);
+var _separateOperations = __nccwpck_require__(7232);
 
-var _stripIgnoredCharacters = __nccwpck_require__(2116);
+var _stripIgnoredCharacters = __nccwpck_require__(8355);
 
-var _typeComparators = __nccwpck_require__(5055);
+var _typeComparators = __nccwpck_require__(7242);
 
-var _assertValidName = __nccwpck_require__(7789);
+var _assertValidName = __nccwpck_require__(9816);
 
-var _findBreakingChanges = __nccwpck_require__(4081);
+var _findBreakingChanges = __nccwpck_require__(2840);
 
-var _resolveSchemaCoordinate = __nccwpck_require__(7095);
+var _resolveSchemaCoordinate = __nccwpck_require__(4238);
 
 
 /***/ }),
 
-/***/ 778:
+/***/ 6143:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -17929,13 +23204,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.introspectionFromSchema = introspectionFromSchema;
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _execute = __nccwpck_require__(7455);
+var _execute = __nccwpck_require__(9170);
 
-var _getIntrospectionQuery = __nccwpck_require__(9327);
+var _getIntrospectionQuery = __nccwpck_require__(3081);
+
+/** @category Introspection */
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -17945,6 +23222,59 @@ var _getIntrospectionQuery = __nccwpck_require__(9327);
  *
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
+ * @param schema - GraphQL schema to use.
+ * @param options - Optional configuration for this operation.
+ * @returns Introspection result data for the schema.
+ * @example
+ * ```ts
+ * // Include schema metadata using the default introspection options.
+ * import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+ *
+ *   type Query {
+ *     homepage: Url
+ *   }
+ * `);
+ *
+ * const introspection = introspectionFromSchema(schema);
+ * const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+ *
+ * urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
+ * ```
+ * @example
+ * ```ts
+ * // This variant disables optional introspection metadata.
+ * import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+ *
+ *   type Query {
+ *     homepage: Url
+ *   }
+ * `);
+ *
+ * const introspection = introspectionFromSchema(schema, {
+ *   descriptions: false,
+ *   specifiedByUrl: false,
+ *   directiveIsRepeatable: false,
+ *   schemaDescription: false,
+ *   inputValueDeprecation: false,
+ *   experimentalDirectiveDeprecation: false,
+ *   oneOf: false,
+ * });
+ * const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+ * const deprecatedDirective = introspection.__schema.directives.find(
+ *   (directive) => directive.name === 'deprecated',
+ * );
+ *
+ * urlType.specifiedByURL; // => undefined
+ * urlType.description; // => undefined
+ * introspection.__schema.description; // => undefined
+ * deprecatedDirective.isRepeatable; // => undefined
+ * ```
  */
 function introspectionFromSchema(schema, options) {
   const optionsWithDefaults = {
@@ -17970,7 +23300,7 @@ function introspectionFromSchema(schema, options) {
 
 /***/ }),
 
-/***/ 6491:
+/***/ 4070:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -17980,26 +23310,62 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _keyValMap = __nccwpck_require__(3218);
+var _keyValMap = __nccwpck_require__(8875);
 
-var _naturalCompare = __nccwpck_require__(9240);
+var _naturalCompare = __nccwpck_require__(3315);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _schema = __nccwpck_require__(4095);
+var _schema = __nccwpck_require__(3582);
+
+/** @category Schema Construction */
 
 /**
  * Sort GraphQLSchema.
  *
  * This function returns a sorted copy of the given GraphQLSchema.
+ * @param schema - GraphQL schema to use.
+ * @returns A copy of the schema with types, fields, arguments, and values sorted lexicographically.
+ * @example
+ * ```ts
+ * import { buildSchema, lexicographicSortSchema, printSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     zebra: String
+ *     apple: String
+ *   }
+ *
+ *   enum Episode {
+ *     JEDI
+ *     NEW_HOPE
+ *     EMPIRE
+ *   }
+ * `);
+ *
+ * const sortedSchema = lexicographicSortSchema(schema);
+ *
+ * printSchema(sortedSchema);
+ * // =>
+ * // enum Episode {
+ * //   EMPIRE
+ * //   JEDI
+ * //   NEW_HOPE
+ * // }
+ * //
+ * // type Query {
+ * //   apple: String
+ * //   zebra: String
+ * // }
+ * ```
  */
 function lexicographicSortSchema(schema) {
   const schemaConfig = schema.toConfig();
@@ -18154,7 +23520,7 @@ function sortBy(array, mapToKey) {
 
 /***/ }),
 
-/***/ 5838:
+/***/ 4611:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -18166,26 +23532,47 @@ exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printSchema = printSchema;
 exports.printType = printType;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _blockString = __nccwpck_require__(1408);
+var _blockString = __nccwpck_require__(3931);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
 
-var _astFromValue = __nccwpck_require__(9689);
+var _astFromValue = __nccwpck_require__(3850);
 
+/** @category Schema Printing */
+
+/**
+ * Prints the schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   directive @upper on FIELD_DEFINITION
+ *
+ *   type Query {
+ *     greeting: String @upper
+ *   }
+ * `);
+ *
+ * printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
+ * ```
+ */
 function printSchema(schema) {
   return printFilteredSchema(
     schema,
@@ -18193,6 +23580,27 @@ function printSchema(schema) {
     isDefinedType,
   );
 }
+/**
+ * Prints the introspection schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printIntrospectionSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const printed = printIntrospectionSchema(schema);
+ *
+ * printed; // matches /type __Schema/
+ * printed; // matches /enum __TypeKind/
+ * printed; // does not match /type Query/
+ * ```
+ */
 
 function printIntrospectionSchema(schema) {
   return printFilteredSchema(
@@ -18261,6 +23669,8 @@ function printSchemaDefinition(schema) {
  * ```
  *
  * When using this naming convention, the schema description can be omitted.
+ *
+ * @internal
  */
 
 function isSchemaOfCommonNames(schema) {
@@ -18284,6 +23694,28 @@ function isSchemaOfCommonNames(schema) {
 
   return true;
 }
+/**
+ * Prints the type.
+ * @param type - The GraphQL type to inspect.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printType } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type User {
+ *     id: ID!
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     viewer: User
+ *   }
+ * `);
+ *
+ * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * ```
+ */
 
 function printType(type) {
   if ((0, _definition.isScalarType)(type)) {
@@ -18500,7 +23932,7 @@ function printDescription(def, indentation = '', firstInBlock = true) {
 
 /***/ }),
 
-/***/ 7095:
+/***/ 4238:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -18511,13 +23943,15 @@ Object.defineProperty(exports, "__esModule", ({
 exports.resolveASTSchemaCoordinate = resolveASTSchemaCoordinate;
 exports.resolveSchemaCoordinate = resolveSchemaCoordinate;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _parser = __nccwpck_require__(165);
+var _parser = __nccwpck_require__(2868);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Schema Coordinates */
 
 /**
  * A schema coordinate is resolved in the context of a GraphQL schema to
@@ -18527,6 +23961,38 @@ var _definition = __nccwpck_require__(5421);
  * applicable) does not exist.
  *
  * https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
+ * @param schema - GraphQL schema to use.
+ * @param schemaCoordinate - The schema coordinate to resolve.
+ * @returns The schema element identified by the coordinate, or undefined if none exists.
+ * @example
+ * ```ts
+ * import { buildSchema, resolveSchemaCoordinate } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   directive @tag(name: String!) on FIELD_DEFINITION
+ *
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   enum Episode {
+ *     NEW_HOPE
+ *   }
+ *
+ *   type Query {
+ *     reviews(input: ReviewInput): [String] @tag(name: "reviews")
+ *   }
+ * `);
+ *
+ * resolveSchemaCoordinate(schema, 'Query').kind; // => 'NamedType'
+ * resolveSchemaCoordinate(schema, 'Query.reviews').kind; // => 'Field'
+ * resolveSchemaCoordinate(schema, 'Query.reviews(input:)').kind; // => 'FieldArgument'
+ * resolveSchemaCoordinate(schema, 'ReviewInput.stars').kind; // => 'InputField'
+ * resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE').kind; // => 'EnumValue'
+ * resolveSchemaCoordinate(schema, '@tag').kind; // => 'Directive'
+ * resolveSchemaCoordinate(schema, '@tag(name:)').kind; // => 'DirectiveArgument'
+ * resolveSchemaCoordinate(schema, 'Query.missing'); // => undefined
+ * ```
  */
 function resolveSchemaCoordinate(schema, schemaCoordinate) {
   return resolveASTSchemaCoordinate(
@@ -18536,6 +24002,8 @@ function resolveSchemaCoordinate(schema, schemaCoordinate) {
 }
 /**
  * TypeCoordinate : Name
+ *
+ * @internal
  */
 
 function resolveTypeCoordinate(schema, schemaCoordinate) {
@@ -18554,6 +24022,8 @@ function resolveTypeCoordinate(schema, schemaCoordinate) {
 }
 /**
  * MemberCoordinate : Name . Name
+ *
+ * @internal
  */
 
 function resolveMemberCoordinate(schema, schemaCoordinate) {
@@ -18631,6 +24101,8 @@ function resolveMemberCoordinate(schema, schemaCoordinate) {
 }
 /**
  * ArgumentCoordinate : Name . Name ( Name : )
+ *
+ * @internal
  */
 
 function resolveArgumentCoordinate(schema, schemaCoordinate) {
@@ -18690,6 +24162,8 @@ function resolveArgumentCoordinate(schema, schemaCoordinate) {
 }
 /**
  * DirectiveCoordinate : \@ Name
+ *
+ * @internal
  */
 
 function resolveDirectiveCoordinate(schema, schemaCoordinate) {
@@ -18708,6 +24182,8 @@ function resolveDirectiveCoordinate(schema, schemaCoordinate) {
 }
 /**
  * DirectiveArgumentCoordinate : \@ Name ( Name : )
+ *
+ * @internal
  */
 
 function resolveDirectiveArgumentCoordinate(schema, schemaCoordinate) {
@@ -18743,6 +24219,26 @@ function resolveDirectiveArgumentCoordinate(schema, schemaCoordinate) {
 }
 /**
  * Resolves schema coordinate from a parsed SchemaCoordinate node.
+ * @param schema - GraphQL schema to use.
+ * @param schemaCoordinate - The schema coordinate to resolve.
+ * @returns The schema element identified by the parsed coordinate, or undefined if none exists.
+ * @example
+ * ```ts
+ * import { parseSchemaCoordinate } from 'graphql/language';
+ * import { buildSchema, resolveASTSchemaCoordinate } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String): String
+ *   }
+ * `);
+ * const coordinate = parseSchemaCoordinate('Query.greeting(name:)');
+ * const resolved = resolveASTSchemaCoordinate(schema, coordinate);
+ *
+ * resolved.kind; // => 'FieldArgument'
+ * resolved.field.name; // => 'greeting'
+ * resolved.fieldArgument.name; // => 'name'
+ * ```
  */
 
 function resolveASTSchemaCoordinate(schema, schemaCoordinate) {
@@ -18767,7 +24263,7 @@ function resolveASTSchemaCoordinate(schema, schemaCoordinate) {
 
 /***/ }),
 
-/***/ 1759:
+/***/ 7232:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -18777,15 +24273,46 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.separateOperations = separateOperations;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
+
+/** @category AST Utilities */
 
 /**
  * separateOperations accepts a single AST document which may contain many
  * operations and fragments and returns a collection of AST documents each of
  * which contains a single operation as well the fragment definitions it
  * refers to.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @returns A map of operation names to documents containing each operation and its referenced fragments.
+ * @example
+ * ```ts
+ * import { parse, print } from 'graphql/language';
+ * import { separateOperations } from 'graphql/utilities';
+ *
+ * const document = parse(`
+ *   query GetUser {
+ *     viewer {
+ *       ...UserFields
+ *     }
+ *   }
+ *
+ *   query GetStatus {
+ *     status
+ *   }
+ *
+ *   fragment UserFields on User {
+ *     id
+ *   }
+ * `);
+ *
+ * const separated = separateOperations(document);
+ *
+ * Object.keys(separated); // => ['GetUser', 'GetStatus']
+ * print(separated.GetUser); // matches /fragment UserFields/
+ * print(separated.GetStatus); // does not match /fragment UserFields/
+ * ```
  */
 function separateOperations(documentAST) {
   const operations = [];
@@ -18862,7 +24389,7 @@ function collectDependencies(selectionSet) {
 
 /***/ }),
 
-/***/ 6539:
+/***/ 74:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -18872,9 +24399,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.sortValueNode = sortValueNode;
 
-var _naturalCompare = __nccwpck_require__(9240);
+var _naturalCompare = __nccwpck_require__(3315);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
 /**
  * Sort ValueNode.
@@ -18916,7 +24443,7 @@ function sortFields(fields) {
 
 /***/ }),
 
-/***/ 2116:
+/***/ 8355:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -18926,13 +24453,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
 
-var _blockString = __nccwpck_require__(1408);
+var _blockString = __nccwpck_require__(3931);
 
-var _lexer = __nccwpck_require__(8762);
+var _lexer = __nccwpck_require__(6085);
 
-var _source = __nccwpck_require__(1807);
+var _source = __nccwpck_require__(4214);
 
-var _tokenKind = __nccwpck_require__(3779);
+var _tokenKind = __nccwpck_require__(9352);
+
+/** @category AST Utilities */
 
 /**
  * Strips characters that are not significant to the validity or execution
@@ -18953,9 +24482,9 @@ var _tokenKind = __nccwpck_require__(3779);
  * Warning: It is guaranteed that this function will always produce stable results.
  * However, it's not guaranteed that it will stay the same between different
  * releases due to bugfixes or changes in the GraphQL specification.
- *
- * Query example:
- *
+ * @param source - The GraphQL source text or source object.
+ * @returns A semantically equivalent GraphQL source string without ignored characters.
+ * @example Query source
  * ```graphql
  * query SomeQuery($foo: String!, $bar: String) {
  *   someField(foo: $foo, bar: $bar) {
@@ -18973,9 +24502,7 @@ var _tokenKind = __nccwpck_require__(3779);
  * ```graphql
  * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
  * ```
- *
- * SDL example:
- *
+ * @example SDL source
  * ```graphql
  * """
  * Type description
@@ -18992,6 +24519,14 @@ var _tokenKind = __nccwpck_require__(3779);
  *
  * ```graphql
  * """Type description""" type Foo{"""Field description""" bar:String}
+ * ```
+ * @example
+ * ```ts
+ * import { stripIgnoredCharacters } from 'graphql/utilities';
+ *
+ * const source = stripIgnoredCharacters('query Example { name }');
+ *
+ * source; // => 'query Example{name}'
  * ```
  */
 function stripIgnoredCharacters(source) {
@@ -19010,6 +24545,8 @@ function stripIgnoredCharacters(source) {
      * Every two non-punctuator tokens should have space between them.
      * Also prevent case of non-punctuator token following by spread resulting
      * in invalid token (e.g. `1...` is invalid Float token).
+     *
+     * @internal
      */
 
     const isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(
@@ -19044,7 +24581,7 @@ function stripIgnoredCharacters(source) {
 
 /***/ }),
 
-/***/ 5055:
+/***/ 7242:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19056,10 +24593,28 @@ exports.doTypesOverlap = doTypesOverlap;
 exports.isEqualType = isEqualType;
 exports.isTypeSubTypeOf = isTypeSubTypeOf;
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Type Comparisons */
 
 /**
  * Provided two types, return true if the types are equal (invariant).
+ * @param typeA - The first GraphQL type to compare.
+ * @param typeB - The second GraphQL type to compare.
+ * @returns True when both types are equal.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { isEqualType } from 'graphql/utilities';
+ *
+ * isEqualType(GraphQLString, GraphQLString); // => true
+ * isEqualType(new GraphQLList(GraphQLString), new GraphQLList(GraphQLString)); // => true
+ * isEqualType(new GraphQLNonNull(GraphQLString), GraphQLString); // => false
+ * ```
  */
 function isEqualType(typeA, typeB) {
   // Equivalent types are equal.
@@ -19086,6 +24641,40 @@ function isEqualType(typeA, typeB) {
 /**
  * Provided a type and a super type, return true if the first type is either
  * equal or a subset of the second super type (covariant).
+ * @param schema - GraphQL schema to use.
+ * @param maybeSubType - The possible subtype to compare.
+ * @param superType - The possible supertype to compare.
+ * @returns True when `maybeSubType` is equal to or a subtype of `superType`.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import {
+ *   GraphQLNonNull,
+ *   assertInterfaceType,
+ *   assertObjectType,
+ * } from 'graphql/type';
+ * import { isTypeSubTypeOf } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   interface Node {
+ *     id: ID!
+ *   }
+ *
+ *   type User implements Node {
+ *     id: ID!
+ *   }
+ *
+ *   type Query {
+ *     node: Node
+ *   }
+ * `);
+ * const Node = assertInterfaceType(schema.getType('Node'));
+ * const User = assertObjectType(schema.getType('User'));
+ *
+ * isTypeSubTypeOf(schema, User, Node); // => true
+ * isTypeSubTypeOf(schema, new GraphQLNonNull(User), Node); // => true
+ * isTypeSubTypeOf(schema, Node, User); // => false
+ * ```
  */
 
 function isTypeSubTypeOf(schema, maybeSubType, superType) {
@@ -19136,6 +24725,39 @@ function isTypeSubTypeOf(schema, maybeSubType, superType) {
  * be visited in a context of another type.
  *
  * This function is commutative.
+ * @param schema - GraphQL schema to use.
+ * @param typeA - The first GraphQL type to compare.
+ * @param typeB - The second GraphQL type to compare.
+ * @returns True when the two composite types can apply to at least one common object type.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql/utilities';
+ * import { assertObjectType, assertUnionType } from 'graphql/type';
+ * import { doTypesOverlap } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Photo {
+ *     url: String!
+ *   }
+ *
+ *   type Video {
+ *     url: String!
+ *   }
+ *
+ *   union Media = Photo | Video
+ *   union StillImage = Photo
+ *
+ *   type Query {
+ *     media: [Media]
+ *   }
+ * `);
+ * const Media = assertUnionType(schema.getType('Media'));
+ * const StillImage = assertUnionType(schema.getType('StillImage'));
+ * const Video = assertObjectType(schema.getType('Video'));
+ *
+ * doTypesOverlap(schema, Media, StillImage); // => true
+ * doTypesOverlap(schema, StillImage, Video); // => false
+ * ```
  */
 
 function doTypesOverlap(schema, typeA, typeB) {
@@ -19167,7 +24789,7 @@ function doTypesOverlap(schema, typeA, typeB) {
 
 /***/ }),
 
-/***/ 9574:
+/***/ 6711:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19177,10 +24799,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.typeFromAST = typeFromAST;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
+/** @category Values */
+
+/** @internal */
 function typeFromAST(schema, typeNode) {
   switch (typeNode.kind) {
     case _kinds.Kind.LIST_TYPE: {
@@ -19201,7 +24826,7 @@ function typeFromAST(schema, typeNode) {
 
 /***/ }),
 
-/***/ 4971:
+/***/ 2808:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19211,15 +24836,17 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.valueFromAST = valueFromAST;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Values */
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -19239,7 +24866,44 @@ var _definition = __nccwpck_require__(5421);
  * | Int / Float          | Number        |
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
+ * @param valueNode - GraphQL value AST node to convert.
+ * @param type - The GraphQL type to inspect.
+ * @param variables - Optional runtime variable values keyed by variable name.
+ * @returns The coerced JavaScript value, or undefined if the AST value cannot be coerced to the type.
+ * @example
+ * ```ts
+ * // Coerce literal values without variables.
+ * import { parseValue } from 'graphql/language';
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
  *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined
+ * ```
+ * @example
+ * ```ts
+ * // This variant resolves variable references from runtime values.
+ * import { parseValue } from 'graphql/language';
+ * import { GraphQLInt } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
+ *
+ * valueFromAST(parseValue('$stars'), GraphQLInt, { stars: 5 }); // => 5
+ * valueFromAST(parseValue('$stars'), GraphQLInt, {}); // => undefined
+ * ```
  */
 function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
@@ -19415,7 +25079,7 @@ function hasOwnProperty(obj, prop) {
 
 /***/ }),
 
-/***/ 3386:
+/***/ 2247:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19425,15 +25089,17 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _keyValMap = __nccwpck_require__(3218);
+var _keyValMap = __nccwpck_require__(8875);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
+
+/** @category Values */
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
- * Unlike `valueFromAST()`, no type is provided. The resulting JavaScript value
- * will reflect the provided GraphQL value AST.
+ * Because no GraphQL type is provided, the returned JavaScript value reflects
+ * the provided GraphQL value AST.
  *
  * | GraphQL Value        | JavaScript Value |
  * | -------------------- | ---------------- |
@@ -19443,7 +25109,19 @@ var _kinds = __nccwpck_require__(3111);
  * | String / Enum        | String           |
  * | Int / Float          | Number           |
  * | Null                 | null             |
+ * @param valueNode - GraphQL value AST node to convert.
+ * @param variables - Optional runtime variable values keyed by variable name.
+ * @returns JavaScript value represented by the GraphQL value AST.
+ * @example
+ * ```ts
+ * import { parseValue } from 'graphql/language';
+ * import { valueFromASTUntyped } from 'graphql/utilities';
  *
+ * const value = valueFromASTUntyped(parseValue('[1, 2, 3]'));
+ *
+ * value; // => [1, 2, 3]
+ * valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
+ * ```
  */
 function valueFromASTUntyped(valueNode, variables) {
   switch (valueNode.kind) {
@@ -19483,7 +25161,7 @@ function valueFromASTUntyped(valueNode, variables) {
 
 /***/ }),
 
-/***/ 7031:
+/***/ 8444:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19496,16 +25174,20 @@ exports.ValidationContext =
   exports.ASTValidationContext =
     void 0;
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
 
-var _TypeInfo = __nccwpck_require__(4380);
+var _TypeInfo = __nccwpck_require__(3575);
+
+/** @category Validation Context */
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
  * validation rule.
+ *
+ * @internal
  */
 class ASTValidationContext {
   constructor(ast, onError) {
@@ -19603,9 +25285,11 @@ class ASTValidationContext {
     return fragments;
   }
 }
+/** @internal */
 
 exports.ASTValidationContext = ASTValidationContext;
 
+/** @internal */
 class SDLValidationContext extends ASTValidationContext {
   constructor(ast, schema, onError) {
     super(ast, onError);
@@ -19620,10 +25304,45 @@ class SDLValidationContext extends ASTValidationContext {
     return this._schema;
   }
 }
+/** @internal */
 
 exports.SDLValidationContext = SDLValidationContext;
 
+/** Validation context passed to query validation rules. */
 class ValidationContext extends ASTValidationContext {
+  /**
+   * Creates a ValidationContext instance.
+   * @param schema - Schema used to validate the document.
+   * @param ast - Document AST being validated.
+   * @param typeInfo - TypeInfo instance used to track traversal state.
+   * @param onError - Callback invoked for each validation error.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const errors = [];
+   * const context = new ValidationContext(
+   *   schema,
+   *   document,
+   *   new TypeInfo(schema),
+   *   (error) => errors.push(error),
+   * );
+   *
+   * context.reportError(new GraphQLError('Example validation error.'));
+   *
+   * context.getSchema(); // => schema
+   * errors[0].message; // => 'Example validation error.'
+   * ```
+   */
   constructor(schema, ast, typeInfo, onError) {
     super(ast, onError);
     this._schema = schema;
@@ -19631,14 +25350,72 @@ class ValidationContext extends ASTValidationContext {
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
   }
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
 
   get [Symbol.toStringTag]() {
     return 'ValidationContext';
   }
+  /**
+   * Returns the schema being used by this validation context.
+   * @returns The schema being validated against.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const context = new ValidationContext(
+   *   schema,
+   *   parse('{ greeting }'),
+   *   new TypeInfo(schema),
+   *   () => {},
+   * );
+   *
+   * context.getSchema().getQueryType()?.name; // => 'Query'
+   * ```
+   */
 
   getSchema() {
     return this._schema;
   }
+  /**
+   * Returns variable usages found directly within this node.
+   * @param node - The AST node to inspect or visit.
+   * @returns Variable usages found directly within this node.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting(name: String): String
+   *   }
+   * `);
+   * const document = parse('query ($name: String) { greeting(name: $name) }');
+   * const operation = document.definitions[0];
+   * const context = new ValidationContext(
+   *   schema,
+   *   document,
+   *   new TypeInfo(schema),
+   *   () => {},
+   * );
+   *
+   * const usages = context.getVariableUsages(operation);
+   *
+   * usages[0].node.name.value; // => 'name'
+   * String(usages[0].type); // => 'String'
+   * ```
+   */
 
   getVariableUsages(node) {
     let usages = this._variableUsages.get(node);
@@ -19668,6 +25445,49 @@ class ValidationContext extends ASTValidationContext {
 
     return usages;
   }
+  /**
+   * Returns variable usages for an operation, including variables used by referenced fragments.
+   * @param operation - Operation definition to inspect.
+   * @returns Variable usages reachable from the operation.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     viewer: User
+   *   }
+   *
+   *   type User {
+   *     name(prefix: String): String
+   *   }
+   * `);
+   * const document = parse(`
+   *   query ($prefix: String) {
+   *     viewer {
+   *       ...UserName
+   *     }
+   *   }
+   *
+   *   fragment UserName on User {
+   *     name(prefix: $prefix)
+   *   }
+   * `);
+   * const operation = document.definitions[0];
+   * const context = new ValidationContext(
+   *   schema,
+   *   document,
+   *   new TypeInfo(schema),
+   *   () => {},
+   * );
+   *
+   * const usages = context.getRecursiveVariableUsages(operation);
+   *
+   * usages.map((usage) => usage.node.name.value); // => ['prefix']
+   * ```
+   */
 
   getRecursiveVariableUsages(operation) {
     let usages = this._recursiveVariableUsages.get(operation);
@@ -19684,46 +25504,304 @@ class ValidationContext extends ASTValidationContext {
 
     return usages;
   }
+  /**
+   * Returns the current output type at this point in traversal.
+   * @returns The current output type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let typeName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: () => {
+   *       typeName = String(context.getType());
+   *     },
+   *   }),
+   * );
+   *
+   * typeName; // => 'String'
+   * ```
+   */
 
   getType() {
     return this._typeInfo.getType();
   }
+  /**
+   * Returns the current parent composite type.
+   * @returns The current parent composite type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let parentTypeName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: () => {
+   *       parentTypeName = context.getParentType()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * parentTypeName; // => 'Query'
+   * ```
+   */
 
   getParentType() {
     return this._typeInfo.getParentType();
   }
+  /**
+   * Returns the current input type at this point in traversal.
+   * @returns The current input type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     reviews(limit: Int): [String]
+   *   }
+   * `);
+   * const document = parse('{ reviews(limit: 5) }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let inputTypeName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Argument: () => {
+   *       inputTypeName = String(context.getInputType());
+   *     },
+   *   }),
+   * );
+   *
+   * inputTypeName; // => 'Int'
+   * ```
+   */
 
   getInputType() {
     return this._typeInfo.getInputType();
   }
+  /**
+   * Returns the parent input type for the current input position.
+   * @returns The parent input type, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   input ReviewFilter {
+   *     stars: Int
+   *   }
+   *
+   *   type Query {
+   *     reviews(filter: ReviewFilter): [String]
+   *   }
+   * `);
+   * const document = parse('{ reviews(filter: { stars: 5 }) }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let parentInputTypeName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     ObjectField: () => {
+   *       parentInputTypeName = String(context.getParentInputType());
+   *     },
+   *   }),
+   * );
+   *
+   * parentInputTypeName; // => 'ReviewFilter'
+   * ```
+   */
 
   getParentInputType() {
     return this._typeInfo.getParentInputType();
   }
+  /**
+   * Returns the current field definition.
+   * @returns The current field definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let fieldName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Field: () => {
+   *       fieldName = context.getFieldDef()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * fieldName; // => 'greeting'
+   * ```
+   */
 
   getFieldDef() {
     return this._typeInfo.getFieldDef();
   }
+  /**
+   * Returns the current directive definition.
+   * @returns The current directive definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     greeting: String
+   *   }
+   * `);
+   * const document = parse('{ greeting @include(if: true) }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let directiveName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Directive: () => {
+   *       directiveName = context.getDirective()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * directiveName; // => 'include'
+   * ```
+   */
 
   getDirective() {
     return this._typeInfo.getDirective();
   }
+  /**
+   * Returns the current argument definition.
+   * @returns The current argument definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   type Query {
+   *     reviews(limit: Int): [String]
+   *   }
+   * `);
+   * const document = parse('{ reviews(limit: 5) }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let argumentName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     Argument: () => {
+   *       argumentName = context.getArgument()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * argumentName; // => 'limit'
+   * ```
+   */
 
   getArgument() {
     return this._typeInfo.getArgument();
   }
+  /**
+   * Returns the current enum value definition.
+   * @returns The current enum value definition, if known.
+   * @example
+   * ```ts
+   * import { parse, visit } from 'graphql/language';
+   * import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema(`
+   *   enum Sort {
+   *     NEWEST
+   *     OLDEST
+   *   }
+   *
+   *   type Query {
+   *     reviews(sort: Sort): [String]
+   *   }
+   * `);
+   * const document = parse('{ reviews(sort: OLDEST) }');
+   * const typeInfo = new TypeInfo(schema);
+   * const context = new ValidationContext(schema, document, typeInfo, () => {});
+   * let enumValueName;
+   *
+   * visit(
+   *   document,
+   *   visitWithTypeInfo(typeInfo, {
+   *     EnumValue: () => {
+   *       enumValueName = context.getEnumValue()?.name;
+   *     },
+   *   }),
+   * );
+   *
+   * enumValueName; // => 'OLDEST'
+   * ```
+   */
 
   getEnumValue() {
     return this._typeInfo.getEnumValue();
   }
 }
+/** A function that creates an AST visitor for validating a GraphQL document. */
 
 exports.ValidationContext = ValidationContext;
 
 
 /***/ }),
 
-/***/ 2513:
+/***/ 8938:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -19978,90 +26056,90 @@ Object.defineProperty(exports, "validate", ({
   },
 }));
 
-var _validate = __nccwpck_require__(6891);
+var _validate = __nccwpck_require__(4702);
 
-var _ValidationContext = __nccwpck_require__(7031);
+var _ValidationContext = __nccwpck_require__(8444);
 
-var _specifiedRules = __nccwpck_require__(2264);
+var _specifiedRules = __nccwpck_require__(3889);
 
-var _ExecutableDefinitionsRule = __nccwpck_require__(6797);
+var _ExecutableDefinitionsRule = __nccwpck_require__(590);
 
-var _FieldsOnCorrectTypeRule = __nccwpck_require__(3613);
+var _FieldsOnCorrectTypeRule = __nccwpck_require__(9646);
 
-var _FragmentsOnCompositeTypesRule = __nccwpck_require__(1463);
+var _FragmentsOnCompositeTypesRule = __nccwpck_require__(6200);
 
-var _KnownArgumentNamesRule = __nccwpck_require__(2427);
+var _KnownArgumentNamesRule = __nccwpck_require__(4486);
 
-var _KnownDirectivesRule = __nccwpck_require__(574);
+var _KnownDirectivesRule = __nccwpck_require__(5721);
 
-var _KnownFragmentNamesRule = __nccwpck_require__(9426);
+var _KnownFragmentNamesRule = __nccwpck_require__(1995);
 
-var _KnownTypeNamesRule = __nccwpck_require__(7868);
+var _KnownTypeNamesRule = __nccwpck_require__(8155);
 
-var _LoneAnonymousOperationRule = __nccwpck_require__(7337);
+var _LoneAnonymousOperationRule = __nccwpck_require__(1832);
 
-var _NoFragmentCyclesRule = __nccwpck_require__(8263);
+var _NoFragmentCyclesRule = __nccwpck_require__(3462);
 
-var _NoUndefinedVariablesRule = __nccwpck_require__(6661);
+var _NoUndefinedVariablesRule = __nccwpck_require__(1444);
 
-var _NoUnusedFragmentsRule = __nccwpck_require__(3873);
+var _NoUnusedFragmentsRule = __nccwpck_require__(9058);
 
-var _NoUnusedVariablesRule = __nccwpck_require__(3773);
+var _NoUnusedVariablesRule = __nccwpck_require__(5790);
 
-var _OverlappingFieldsCanBeMergedRule = __nccwpck_require__(5002);
+var _OverlappingFieldsCanBeMergedRule = __nccwpck_require__(7307);
 
-var _PossibleFragmentSpreadsRule = __nccwpck_require__(858);
+var _PossibleFragmentSpreadsRule = __nccwpck_require__(5449);
 
-var _ProvidedRequiredArgumentsRule = __nccwpck_require__(3021);
+var _ProvidedRequiredArgumentsRule = __nccwpck_require__(2146);
 
-var _ScalarLeafsRule = __nccwpck_require__(3390);
+var _ScalarLeafsRule = __nccwpck_require__(2493);
 
-var _SingleFieldSubscriptionsRule = __nccwpck_require__(6813);
+var _SingleFieldSubscriptionsRule = __nccwpck_require__(8628);
 
-var _UniqueArgumentNamesRule = __nccwpck_require__(1287);
+var _UniqueArgumentNamesRule = __nccwpck_require__(684);
 
-var _UniqueDirectivesPerLocationRule = __nccwpck_require__(1512);
+var _UniqueDirectivesPerLocationRule = __nccwpck_require__(9703);
 
-var _UniqueFragmentNamesRule = __nccwpck_require__(8318);
+var _UniqueFragmentNamesRule = __nccwpck_require__(4309);
 
-var _UniqueInputFieldNamesRule = __nccwpck_require__(102);
+var _UniqueInputFieldNamesRule = __nccwpck_require__(9997);
 
-var _UniqueOperationNamesRule = __nccwpck_require__(7127);
+var _UniqueOperationNamesRule = __nccwpck_require__(1690);
 
-var _UniqueVariableNamesRule = __nccwpck_require__(3110);
+var _UniqueVariableNamesRule = __nccwpck_require__(4053);
 
-var _ValuesOfCorrectTypeRule = __nccwpck_require__(8244);
+var _ValuesOfCorrectTypeRule = __nccwpck_require__(3919);
 
-var _VariablesAreInputTypesRule = __nccwpck_require__(663);
+var _VariablesAreInputTypesRule = __nccwpck_require__(2642);
 
-var _VariablesInAllowedPositionRule = __nccwpck_require__(7918);
+var _VariablesInAllowedPositionRule = __nccwpck_require__(5783);
 
-var _MaxIntrospectionDepthRule = __nccwpck_require__(6769);
+var _MaxIntrospectionDepthRule = __nccwpck_require__(7818);
 
-var _LoneSchemaDefinitionRule = __nccwpck_require__(6789);
+var _LoneSchemaDefinitionRule = __nccwpck_require__(568);
 
-var _UniqueOperationTypesRule = __nccwpck_require__(4086);
+var _UniqueOperationTypesRule = __nccwpck_require__(9931);
 
-var _UniqueTypeNamesRule = __nccwpck_require__(3070);
+var _UniqueTypeNamesRule = __nccwpck_require__(93);
 
-var _UniqueEnumValueNamesRule = __nccwpck_require__(6178);
+var _UniqueEnumValueNamesRule = __nccwpck_require__(1379);
 
-var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(1515);
+var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(5462);
 
-var _UniqueArgumentDefinitionNamesRule = __nccwpck_require__(3916);
+var _UniqueArgumentDefinitionNamesRule = __nccwpck_require__(8787);
 
-var _UniqueDirectiveNamesRule = __nccwpck_require__(9448);
+var _UniqueDirectiveNamesRule = __nccwpck_require__(9870);
 
-var _PossibleTypeExtensionsRule = __nccwpck_require__(1734);
+var _PossibleTypeExtensionsRule = __nccwpck_require__(583);
 
-var _NoDeprecatedCustomRule = __nccwpck_require__(5770);
+var _NoDeprecatedCustomRule = __nccwpck_require__(250);
 
-var _NoSchemaIntrospectionCustomRule = __nccwpck_require__(3767);
+var _NoSchemaIntrospectionCustomRule = __nccwpck_require__(6262);
 
 
 /***/ }),
 
-/***/ 6797:
+/***/ 590:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20071,11 +26149,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.ExecutableDefinitionsRule = ExecutableDefinitionsRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
+
+/** @category Validation Rules */
 
 /**
  * Executable definitions
@@ -20084,6 +26164,33 @@ var _predicates = __nccwpck_require__(420);
  * operation or fragment definitions.
  *
  * See https://spec.graphql.org/draft/#sec-Executable-Definitions
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ExecutableDefinitionsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   type Extra { field: String }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function ExecutableDefinitionsRule(context) {
   return {
@@ -20114,7 +26221,7 @@ function ExecutableDefinitionsRule(context) {
 
 /***/ }),
 
-/***/ 3613:
+/***/ 9646:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20124,15 +26231,17 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _naturalCompare = __nccwpck_require__(9240);
+var _naturalCompare = __nccwpck_require__(3315);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Fields on correct type
@@ -20141,6 +26250,33 @@ var _definition = __nccwpck_require__(5421);
  * parent type, or are an allowed meta field such as __typename.
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selections
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { FieldsOnCorrectTypeRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { missing }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function FieldsOnCorrectTypeRule(context) {
   return {
@@ -20184,6 +26320,8 @@ function FieldsOnCorrectTypeRule(context) {
  * Go through all of the implementations of type, as well as the interfaces that
  * they implement. If any of those types include the provided field, suggest them,
  * sorted by how often the type is referenced.
+ *
+ * @internal
  */
 
 function getSuggestedTypeNames(schema, type, fieldName) {
@@ -20249,6 +26387,8 @@ function getSuggestedTypeNames(schema, type, fieldName) {
 /**
  * For the field name provided, determine if there are any similar field names
  * that may be the result of a typo.
+ *
+ * @internal
  */
 
 function getSuggestedFieldNames(type, fieldName) {
@@ -20266,7 +26406,7 @@ function getSuggestedFieldNames(type, fieldName) {
 
 /***/ }),
 
-/***/ 1463:
+/***/ 6200:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20276,13 +26416,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.FragmentsOnCompositeTypesRule = FragmentsOnCompositeTypesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
+
+/** @category Validation Rules */
 
 /**
  * Fragments on composite type
@@ -20292,6 +26434,33 @@ var _typeFromAST = __nccwpck_require__(9574);
  * type condition must also be a composite type.
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { FragmentsOnCompositeTypesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment Bad on String { length }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment Good on Query { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function FragmentsOnCompositeTypesRule(context) {
   return {
@@ -20342,7 +26511,7 @@ function FragmentsOnCompositeTypesRule(context) {
 
 /***/ }),
 
-/***/ 2427:
+/***/ 4486:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20353,15 +26522,17 @@ Object.defineProperty(exports, "__esModule", ({
 exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
 exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
+
+/** @category Validation Rules */
 
 /**
  * Known argument names
@@ -20371,6 +26542,33 @@ var _directives = __nccwpck_require__(4182);
  *
  * See https://spec.graphql.org/draft/#sec-Argument-Names
  * See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownArgumentNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: String): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { field(unknown: "1") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { field(arg: "1") }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function KnownArgumentNamesRule(context) {
   return {
@@ -20402,9 +26600,7 @@ function KnownArgumentNamesRule(context) {
     },
   };
 }
-/**
- * @internal
- */
+/** @internal */
 
 function KnownArgumentNamesOnDirectivesRule(context) {
   const directiveArgs = Object.create(null);
@@ -20469,7 +26665,7 @@ function KnownArgumentNamesOnDirectivesRule(context) {
 
 /***/ }),
 
-/***/ 574:
+/***/ 5721:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20479,19 +26675,21 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.KnownDirectivesRule = KnownDirectivesRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _directiveLocation = __nccwpck_require__(3642);
+var _directiveLocation = __nccwpck_require__(3177);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
+
+/** @category Validation Rules */
 
 /**
  * Known directives
@@ -20500,6 +26698,33 @@ var _directives = __nccwpck_require__(4182);
  * schema and legally positioned.
  *
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownDirectivesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { name @unknown }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownDirectivesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name @include(if: true) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function KnownDirectivesRule(context) {
   const locationsMap = Object.create(null);
@@ -20647,7 +26872,7 @@ function getDirectiveLocationForOperation(operation) {
 
 /***/ }),
 
-/***/ 9426:
+/***/ 1995:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20657,7 +26882,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Known fragment names
@@ -20666,6 +26893,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * to fragments defined in the same document.
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownFragmentNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { ...Missing }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment NameFields on Query { name } query { ...NameFields }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function KnownFragmentNamesRule(context) {
   return {
@@ -20690,7 +26944,7 @@ function KnownFragmentNamesRule(context) {
 
 /***/ }),
 
-/***/ 7868:
+/***/ 8155:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20700,17 +26954,19 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.KnownTypeNamesRule = KnownTypeNamesRule;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
 
-var _scalars = __nccwpck_require__(2431);
+var _scalars = __nccwpck_require__(4088);
+
+/** @category Validation Rules */
 
 /**
  * Known type names
@@ -20719,6 +26975,33 @@ var _scalars = __nccwpck_require__(2431);
  * variable definitions and fragment conditions) are defined by the type schema.
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownTypeNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment Bad on Missing { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownTypeNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment Good on Query { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function KnownTypeNamesRule(context) {
   const schema = context.getSchema();
@@ -20786,7 +27069,7 @@ function isSDLNode(value) {
 
 /***/ }),
 
-/***/ 7337:
+/***/ 1832:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20796,9 +27079,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.LoneAnonymousOperationRule = LoneAnonymousOperationRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
+
+/** @category Validation Rules */
 
 /**
  * Lone anonymous operation
@@ -20807,6 +27092,33 @@ var _kinds = __nccwpck_require__(3111);
  * (the query short-hand) that it contains only that one operation definition.
  *
  * See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { LoneAnonymousOperationRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query { name } query Other { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function LoneAnonymousOperationRule(context) {
   let operationCount = 0;
@@ -20835,7 +27147,7 @@ function LoneAnonymousOperationRule(context) {
 
 /***/ }),
 
-/***/ 6789:
+/***/ 568:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20845,12 +27157,34 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Lone Schema definition
  *
  * A GraphQL document is only valid if it contains only one schema definition.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { LoneSchemaDefinitionRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   schema { query: Query } schema { query: Query } type Query { name: String }
+ * `;
+ *
+ * LoneSchemaDefinitionRule.name; // => 'LoneSchemaDefinitionRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   schema { query: Query } type Query { name: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function LoneSchemaDefinitionRule(context) {
   var _ref, _ref2, _oldSchema$astNode;
@@ -20909,7 +27243,7 @@ function LoneSchemaDefinitionRule(context) {
 
 /***/ }),
 
-/***/ 6769:
+/***/ 7818:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20919,16 +27253,49 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.MaxIntrospectionDepthRule = MaxIntrospectionDepthRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
+/** @category Validation Rules */
 const MAX_LISTS_DEPTH = 3;
+/**
+ * Implements the max introspection depth validation rule.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { MaxIntrospectionDepthRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { __schema { types { fields { type { fields { type { fields { name } } } } } } } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [MaxIntrospectionDepthRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { __schema { queryType { name } } }
+ * `);
+ * const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
+ *
+ * validErrors; // => []
+ * ```
+ */
 
 function MaxIntrospectionDepthRule(context) {
   /**
    * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
+   *
+   * @internal
    */
   function checkDepth(node, visitedFragments = Object.create(null), depth = 0) {
     if (node.kind === _kinds.Kind.FRAGMENT_SPREAD) {
@@ -21006,7 +27373,7 @@ function MaxIntrospectionDepthRule(context) {
 
 /***/ }),
 
-/***/ 8263:
+/***/ 3462:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -21016,7 +27383,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoFragmentCyclesRule = NoFragmentCyclesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * No fragment cycles
@@ -21025,6 +27394,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * Otherwise an operation could infinitely spread or infinitely execute on cycles in the underlying data.
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoFragmentCyclesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment A on Query { ...B } fragment B on Query { ...A } query { ...A }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoFragmentCyclesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment A on Query { name } query { ...A }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
@@ -21098,7 +27494,7 @@ function NoFragmentCyclesRule(context) {
 
 /***/ }),
 
-/***/ 6661:
+/***/ 1444:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -21108,7 +27504,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoUndefinedVariablesRule = NoUndefinedVariablesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * No undefined variables
@@ -21117,6 +27515,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * and via fragment spreads, are defined by that operation.
  *
  * See https://spec.graphql.org/draft/#sec-All-Variable-Uses-Defined
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoUndefinedVariablesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($id: ID) { field(arg: $missing) }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoUndefinedVariablesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoUndefinedVariablesRule(context) {
   let variableNameDefined = Object.create(null);
@@ -21157,7 +27582,7 @@ function NoUndefinedVariablesRule(context) {
 
 /***/ }),
 
-/***/ 3873:
+/***/ 9058:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -21167,7 +27592,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoUnusedFragmentsRule = NoUnusedFragmentsRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * No unused fragments
@@ -21176,6 +27603,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * within operations, or spread within other fragments spread within operations.
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoUnusedFragmentsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment Unused on Query { name } query { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment Used on Query { name } query { ...Used }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoUnusedFragmentsRule(context) {
   const operationDefs = [];
@@ -21225,7 +27679,7 @@ function NoUnusedFragmentsRule(context) {
 
 /***/ }),
 
-/***/ 3773:
+/***/ 5790:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -21235,7 +27689,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoUnusedVariablesRule = NoUnusedVariablesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * No unused variables
@@ -21244,6 +27700,34 @@ var _GraphQLError = __nccwpck_require__(727);
  * are used, either directly or within a spread fragment.
  *
  * See https://spec.graphql.org/draft/#sec-All-Variables-Used
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoUnusedVariablesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID): String
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($id: ID) { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoUnusedVariablesRule(context) {
   let variableDefs = [];
@@ -21289,7 +27773,7 @@ function NoUnusedVariablesRule(context) {
 
 /***/ }),
 
-/***/ 5002:
+/***/ 7307:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -21299,20 +27783,21 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _sortValueNode = __nccwpck_require__(6539);
+var _sortValueNode = __nccwpck_require__(74);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
 
+/** @category Validation Rules */
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
     return reason
@@ -21334,6 +27819,38 @@ function reasonMessage(reason) {
  * without ambiguity.
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { OverlappingFieldsCanBeMergedRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     dog: Dog
+ *   }
+ *
+ *   type Dog {
+ *     name: String
+ *     barkVolume: Int
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { dog { value: barkVolume value: name } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { dog { barkVolume name } }
+ * `);
+ * const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 
 function OverlappingFieldsCanBeMergedRule(context) {
@@ -21373,6 +27890,10 @@ function OverlappingFieldsCanBeMergedRule(context) {
 }
 
 /**
+ * Find all conflicts found "within" a selection set, including those found
+ * via spreading in fragments. Called when visiting each SelectionSet in the
+ * GraphQL Document.
+ *
  * Algorithm:
  *
  * Conflicts occur when two fields exist in a query which will produce the same
@@ -21388,7 +27909,7 @@ function OverlappingFieldsCanBeMergedRule(context) {
  * A) Each selection set represented in the document first compares "within" its
  * collected set of fields, finding any conflicts between every pair of
  * overlapping fields.
- * Note: This is the *only time* that a the fields "within" a set are compared
+ * Note: This is the *only time* that the fields "within" a set are compared
  * to each other. After this only fields "between" sets are compared.
  *
  * B) Also, if any fragment is referenced in a selection set, then a
@@ -21400,14 +27921,14 @@ function OverlappingFieldsCanBeMergedRule(context) {
  *
  * D) When comparing "between" a set of fields and a referenced fragment, first
  * a comparison is made between each field in the original set of fields and
- * each field in the the referenced set of fields.
+ * each field in the referenced set of fields.
  *
  * E) Also, if any fragment is referenced in the referenced selection set,
  * then a comparison is made "between" the original set of fields and the
  * referenced fragment (recursively referring to step D).
  *
  * F) When comparing "between" two fragments, first a comparison is made between
- * each field in the first referenced set of fields and each field in the the
+ * each field in the first referenced set of fields and each field in the
  * second referenced set of fields.
  *
  * G) Also, any fragments referenced by the first must be compared to the
@@ -21425,10 +27946,8 @@ function OverlappingFieldsCanBeMergedRule(context) {
  * J) Also, if two fragments are referenced in both selection sets, then a
  * comparison is made "between" the two fragments.
  *
+ * @internal
  */
-// Find all conflicts found "within" a selection set, including those found
-// via spreading in fragments. Called when visiting each SelectionSet in the
-// GraphQL Document.
 function findConflictsWithinSelectionSet(
   context,
   cachedFieldsAndFragmentNames,
@@ -22103,6 +28622,8 @@ function subfieldConflicts(conflicts, responseName, node1, node2) {
  *
  * Provides a third argument for has/set to allow flagging the pair as
  * weakly or strongly present within the collection.
+ *
+ * @internal
  */
 
 class OrderedPairSet {
@@ -22139,6 +28660,8 @@ class OrderedPairSet {
 /**
  * A way to keep track of pairs of similar things when the ordering of the pair
  * does not matter.
+ *
+ * @internal
  */
 
 class PairSet {
@@ -22164,7 +28687,7 @@ class PairSet {
 
 /***/ }),
 
-/***/ 858:
+/***/ 5449:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22174,15 +28697,17 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.PossibleFragmentSpreadsRule = PossibleFragmentSpreadsRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _typeComparators = __nccwpck_require__(5055);
+var _typeComparators = __nccwpck_require__(7242);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
+
+/** @category Validation Rules */
 
 /**
  * Possible fragment spread
@@ -22190,6 +28715,41 @@ var _typeFromAST = __nccwpck_require__(9574);
  * A fragment spread is only valid if the type condition could ever possibly
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { PossibleFragmentSpreadsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     dog: Dog
+ *   }
+ *
+ *   type Dog {
+ *     barkVolume: Int
+ *   }
+ *
+ *   type Cat {
+ *     meowVolume: Int
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { dog { ... on Cat { meowVolume } } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { dog { ... on Dog { barkVolume } } }
+ * `);
+ * const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function PossibleFragmentSpreadsRule(context) {
   return {
@@ -22266,7 +28826,7 @@ function getFragmentType(context, name) {
 
 /***/ }),
 
-/***/ 1734:
+/***/ 583:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22276,26 +28836,48 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { PossibleTypeExtensionsRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   extend type Missing { name: String } type Query { name: String }
+ * `;
+ *
+ * PossibleTypeExtensionsRule.name; // => 'PossibleTypeExtensionsRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   type Query { name: String } extend type Query { other: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function PossibleTypeExtensionsRule(context) {
   const schema = context.getSchema();
@@ -22444,7 +29026,7 @@ function extensionKindToTypeName(kind) {
 
 /***/ }),
 
-/***/ 3021:
+/***/ 2146:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22456,25 +29038,54 @@ exports.ProvidedRequiredArgumentsOnDirectivesRule =
   ProvidedRequiredArgumentsOnDirectivesRule;
 exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
+
+/** @category Validation Rules */
 
 /**
  * Provided required arguments
  *
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ProvidedRequiredArgumentsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(required: String!): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { field }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { field(required: "x") }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function ProvidedRequiredArgumentsRule(context) {
   return {
@@ -22519,9 +29130,7 @@ function ProvidedRequiredArgumentsRule(context) {
     },
   };
 }
-/**
- * @internal
- */
+/** @internal */
 
 function ProvidedRequiredArgumentsOnDirectivesRule(context) {
   var _schema$getDirectives;
@@ -22613,7 +29222,7 @@ function isRequiredArgumentNode(arg) {
 
 /***/ }),
 
-/***/ 3390:
+/***/ 2493:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22623,17 +29232,46 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.ScalarLeafsRule = ScalarLeafsRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Scalar leafs
  *
  * A GraphQL document is valid only if all leaf fields (fields without
  * sub selections) are of scalar or enum types.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ScalarLeafsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { name { length } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ScalarLeafsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function ScalarLeafsRule(context) {
   return {
@@ -22686,7 +29324,7 @@ function ScalarLeafsRule(context) {
 
 /***/ }),
 
-/***/ 6813:
+/***/ 8628:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22696,11 +29334,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _collectFields = __nccwpck_require__(6463);
+var _collectFields = __nccwpck_require__(3938);
+
+/** @category Validation Rules */
 
 /**
  * Subscriptions must only include a non-introspection field.
@@ -22709,6 +29349,38 @@ var _collectFields = __nccwpck_require__(6463);
  * that root field is not an introspection field.
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { SingleFieldSubscriptionsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   type Subscription {
+ *     a: String
+ *     b: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   subscription { a b }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   subscription { a }
+ * `);
+ * const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function SingleFieldSubscriptionsRule(context) {
   return {
@@ -22779,7 +29451,7 @@ function SingleFieldSubscriptionsRule(context) {
 
 /***/ }),
 
-/***/ 3916:
+/***/ 8787:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22789,15 +29461,37 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueArgumentDefinitionNamesRule = UniqueArgumentDefinitionNamesRule;
 
-var _groupBy = __nccwpck_require__(5156);
+var _groupBy = __nccwpck_require__(3637);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique argument definition names
  *
  * A GraphQL Object or Interface type is only valid if all its fields have uniquely named arguments.
  * A GraphQL Directive is only valid if all its arguments are uniquely named.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueArgumentDefinitionNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   type Query { field(arg: String, arg: Int): String }
+ * `;
+ *
+ * UniqueArgumentDefinitionNamesRule.name; // => 'UniqueArgumentDefinitionNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   type Query { field(arg: String): String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueArgumentDefinitionNamesRule(context) {
   return {
@@ -22878,7 +29572,7 @@ function UniqueArgumentDefinitionNamesRule(context) {
 
 /***/ }),
 
-/***/ 1287:
+/***/ 684:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22888,9 +29582,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueArgumentNamesRule = UniqueArgumentNamesRule;
 
-var _groupBy = __nccwpck_require__(5156);
+var _groupBy = __nccwpck_require__(3637);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique argument names
@@ -22899,6 +29595,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * uniquely named.
  *
  * See https://spec.graphql.org/draft/#sec-Argument-Names
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueArgumentNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: String): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { field(arg: "1", arg: "2") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { field(arg: "1") }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueArgumentNamesRule(context) {
   return {
@@ -22940,7 +29663,7 @@ function UniqueArgumentNamesRule(context) {
 
 /***/ }),
 
-/***/ 9448:
+/***/ 9870:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -22950,12 +29673,34 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueDirectiveNamesRule = UniqueDirectiveNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique directive names
  *
  * A GraphQL document is only valid if all defined directives have unique names.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueDirectiveNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   directive @tag on FIELD directive @tag on QUERY type Query { name: String }
+ * `;
+ *
+ * UniqueDirectiveNamesRule.name; // => 'UniqueDirectiveNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   directive @tag on FIELD type Query { name: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueDirectiveNamesRule(context) {
   const knownDirectiveNames = Object.create(null);
@@ -23001,7 +29746,7 @@ function UniqueDirectiveNamesRule(context) {
 
 /***/ }),
 
-/***/ 1512:
+/***/ 9703:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23011,13 +29756,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueDirectivesPerLocationRule = UniqueDirectivesPerLocationRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _predicates = __nccwpck_require__(420);
+var _predicates = __nccwpck_require__(2937);
 
-var _directives = __nccwpck_require__(4182);
+var _directives = __nccwpck_require__(4827);
+
+/** @category Validation Rules */
 
 /**
  * Unique directive names per location
@@ -23026,6 +29773,33 @@ var _directives = __nccwpck_require__(4182);
  * a given location are uniquely named.
  *
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueDirectivesPerLocationRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { name @include(if: true) @include(if: false) }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name @include(if: true) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueDirectivesPerLocationRule(context) {
   const uniqueDirectiveMap = Object.create(null);
@@ -23115,7 +29889,7 @@ function UniqueDirectivesPerLocationRule(context) {
 
 /***/ }),
 
-/***/ 6178:
+/***/ 1379:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23125,14 +29899,36 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Unique enum value names
  *
  * A GraphQL enum type is only valid if all its values are uniquely named.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueEnumValueNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   enum Status { ACTIVE ACTIVE } type Query { status: Status }
+ * `;
+ *
+ * UniqueEnumValueNamesRule.name; // => 'UniqueEnumValueNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   enum Status { ACTIVE INACTIVE } type Query { status: Status }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueEnumValueNamesRule(context) {
   const schema = context.getSchema();
@@ -23197,7 +29993,7 @@ function UniqueEnumValueNamesRule(context) {
 
 /***/ }),
 
-/***/ 1515:
+/***/ 5462:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23207,14 +30003,36 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueFieldDefinitionNamesRule = UniqueFieldDefinitionNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Unique field definition names
  *
  * A GraphQL complex type is only valid if all its fields are uniquely named.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueFieldDefinitionNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   type Query { name: String name: String }
+ * `;
+ *
+ * UniqueFieldDefinitionNamesRule.name; // => 'UniqueFieldDefinitionNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   type Query { name: String other: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueFieldDefinitionNamesRule(context) {
   const schema = context.getSchema();
@@ -23291,7 +30109,7 @@ function hasField(type, fieldName) {
 
 /***/ }),
 
-/***/ 8318:
+/***/ 4309:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23301,7 +30119,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique fragment names
@@ -23309,6 +30129,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * A GraphQL document is only valid if all defined fragments have unique names.
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueFragmentNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment A on Query { name } fragment A on Query { name } query { ...A }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment A on Query { name } query { ...A }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueFragmentNamesRule(context) {
   const knownFragmentNames = Object.create(null);
@@ -23339,7 +30186,7 @@ function UniqueFragmentNamesRule(context) {
 
 /***/ }),
 
-/***/ 102:
+/***/ 9997:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23349,9 +30196,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique input field names
@@ -23360,6 +30209,37 @@ var _GraphQLError = __nccwpck_require__(727);
  * uniquely named.
  *
  * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueInputFieldNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   input Filter {
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     search(filter: Filter): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { search(filter: { name: "a", name: "b" }) }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { search(filter: { name: "a" }) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueInputFieldNamesRule(context) {
   const knownNameStack = [];
@@ -23400,7 +30280,7 @@ function UniqueInputFieldNamesRule(context) {
 
 /***/ }),
 
-/***/ 7127:
+/***/ 1690:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23410,7 +30290,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueOperationNamesRule = UniqueOperationNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique operation names
@@ -23418,6 +30300,33 @@ var _GraphQLError = __nccwpck_require__(727);
  * A GraphQL document is only valid if all defined operations have unique names.
  *
  * See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueOperationNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query Same { name } query Same { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query One { name } query Two { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueOperationNamesRule(context) {
   const knownOperationNames = Object.create(null);
@@ -23453,7 +30362,7 @@ function UniqueOperationNamesRule(context) {
 
 /***/ }),
 
-/***/ 4086:
+/***/ 9931:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23463,12 +30372,34 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueOperationTypesRule = UniqueOperationTypesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique operation types
  *
  * A GraphQL document is only valid if it has only one type per operation.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueOperationTypesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   schema { query: Query query: Other } type Query { name: String } type Other { name: String }
+ * `;
+ *
+ * UniqueOperationTypesRule.name; // => 'UniqueOperationTypesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   schema { query: Query } type Query { name: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueOperationTypesRule(context) {
   const schema = context.getSchema();
@@ -23531,7 +30462,7 @@ function UniqueOperationTypesRule(context) {
 
 /***/ }),
 
-/***/ 3070:
+/***/ 93:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23541,12 +30472,34 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique type names
  *
  * A GraphQL document is only valid if all defined types have unique names.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueTypeNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   type Query { name: String } type Query { other: String }
+ * `;
+ *
+ * UniqueTypeNamesRule.name; // => 'UniqueTypeNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   type Query { name: String } type Other { name: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 function UniqueTypeNamesRule(context) {
   const knownTypeNames = Object.create(null);
@@ -23595,7 +30548,7 @@ function UniqueTypeNamesRule(context) {
 
 /***/ }),
 
-/***/ 3110:
+/***/ 4053:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23605,14 +30558,43 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UniqueVariableNamesRule = UniqueVariableNamesRule;
 
-var _groupBy = __nccwpck_require__(5156);
+var _groupBy = __nccwpck_require__(3637);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
+
+/** @category Validation Rules */
 
 /**
  * Unique variable names
  *
  * A GraphQL operation is only valid if all its variables are uniquely named.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { UniqueVariableNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($id: ID, $id: ID) { field(arg: $id) }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function UniqueVariableNamesRule(context) {
   return {
@@ -23651,7 +30633,7 @@ function UniqueVariableNamesRule(context) {
 
 /***/ }),
 
-/***/ 8244:
+/***/ 3919:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23661,21 +30643,23 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 
-var _didYouMean = __nccwpck_require__(3293);
+var _didYouMean = __nccwpck_require__(4150);
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _keyMap = __nccwpck_require__(6711);
+var _keyMap = __nccwpck_require__(6520);
 
-var _suggestionList = __nccwpck_require__(2868);
+var _suggestionList = __nccwpck_require__(2927);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Validation Rules */
 
 /**
  * Value literals of correct type
@@ -23684,6 +30668,33 @@ var _definition = __nccwpck_require__(5421);
  * expected at their position.
  *
  * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ValuesOfCorrectTypeRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     count(limit: Int): Int
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { count(limit: "many") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { count(limit: 1) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function ValuesOfCorrectTypeRule(context) {
   return {
@@ -23789,6 +30800,8 @@ function ValuesOfCorrectTypeRule(context) {
 /**
  * Any value literal may be a valid representation of a Scalar, depending on
  * that scalar type.
+ *
+ * @internal
  */
 
 function isValidValueNode(context, node) {
@@ -23898,7 +30911,7 @@ function validateOneOfInputObject(context, node, type, fieldNodeMap) {
 
 /***/ }),
 
-/***/ 663:
+/***/ 2642:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23908,13 +30921,15 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.VariablesAreInputTypesRule = VariablesAreInputTypesRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _printer = __nccwpck_require__(6892);
+var _printer = __nccwpck_require__(507);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
+
+/** @category Validation Rules */
 
 /**
  * Variables are input types
@@ -23923,6 +30938,37 @@ var _typeFromAST = __nccwpck_require__(9574);
  * input types (scalar, enum, or input object).
  *
  * See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { VariablesAreInputTypesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID): String
+ *   }
+ *
+ *   type User {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($user: User) { field(arg: "1") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function VariablesAreInputTypesRule(context) {
   return {
@@ -23951,7 +30997,7 @@ function VariablesAreInputTypesRule(context) {
 
 /***/ }),
 
-/***/ 7918:
+/***/ 5783:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -23961,17 +31007,19 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 
-var _inspect = __nccwpck_require__(3994);
+var _inspect = __nccwpck_require__(2039);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _kinds = __nccwpck_require__(3111);
+var _kinds = __nccwpck_require__(4280);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _typeComparators = __nccwpck_require__(5055);
+var _typeComparators = __nccwpck_require__(7242);
 
-var _typeFromAST = __nccwpck_require__(9574);
+var _typeFromAST = __nccwpck_require__(6711);
+
+/** @category Validation Rules */
 
 /**
  * Variables in allowed position
@@ -23979,6 +31027,33 @@ var _typeFromAST = __nccwpck_require__(9574);
  * Variable usages must be compatible with the arguments they are passed to.
  *
  * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { VariablesInAllowedPositionRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID!): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($id: String) { field(arg: $id) }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID!) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function VariablesInAllowedPositionRule(context) {
   let varDefMap = Object.create(null);
@@ -24052,8 +31127,13 @@ function VariablesInAllowedPositionRule(context) {
 }
 /**
  * Returns true if the variable is allowed in the location it was found,
- * which includes considering if default values exist for either the variable
+ * including considering if default values exist for either the variable
  * or the location at which it is located.
+ *
+ * OneOf Input Object Type fields are considered separately above to
+ * provide a more descriptive error message.
+ *
+ * @internal
  */
 
 function allowedVariableUsage(
@@ -24089,7 +31169,7 @@ function allowedVariableUsage(
 
 /***/ }),
 
-/***/ 5770:
+/***/ 250:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -24099,11 +31179,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
 
-var _invariant = __nccwpck_require__(2950);
+var _invariant = __nccwpck_require__(2843);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
+
+/** @category Custom Rules */
 
 /**
  * No deprecated
@@ -24114,6 +31196,46 @@ var _definition = __nccwpck_require__(5421);
  * Note: This rule is optional and is not part of the Validation section of the GraphQL
  * Specification. The main purpose of this rule is detection of deprecated usages and not
  * necessarily to forbid their use when querying a service.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLObjectType,
+ *   GraphQLSchema,
+ *   GraphQLString,
+ *   parse,
+ *   validate,
+ * } from 'graphql';
+ * import { NoDeprecatedCustomRule } from 'graphql/validation';
+ *
+ * const schema = new GraphQLSchema({
+ *   query: new GraphQLObjectType({
+ *     name: 'Query',
+ *     fields: {
+ *       name: { type: GraphQLString },
+ *       oldName: {
+ *         type: GraphQLString,
+ *         deprecationReason: 'Use name instead.',
+ *       },
+ *     },
+ *   }),
+ * });
+ *
+ * const invalidDocument = parse(`
+ *   { oldName }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoDeprecatedCustomRule(context) {
   return {
@@ -24227,7 +31349,7 @@ function NoDeprecatedCustomRule(context) {
 
 /***/ }),
 
-/***/ 3767:
+/***/ 6262:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -24237,11 +31359,13 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _definition = __nccwpck_require__(5421);
+var _definition = __nccwpck_require__(2000);
 
-var _introspection = __nccwpck_require__(9833);
+var _introspection = __nccwpck_require__(3946);
+
+/** @category Custom Rules */
 
 /**
  * Prohibit introspection queries
@@ -24252,6 +31376,33 @@ var _introspection = __nccwpck_require__(9833);
  * Note: This rule is optional and is not part of the Validation section of the
  * GraphQL Specification. This rule effectively disables introspection, which
  * does not reflect best practices and should only be done if absolutely necessary.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoSchemaIntrospectionCustomRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { __schema { queryType { name } } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 function NoSchemaIntrospectionCustomRule(context) {
   return {
@@ -24275,7 +31426,7 @@ function NoSchemaIntrospectionCustomRule(context) {
 
 /***/ }),
 
-/***/ 2264:
+/***/ 3889:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -24288,76 +31439,77 @@ exports.specifiedSDLRules =
   exports.recommendedRules =
     void 0;
 
-var _ExecutableDefinitionsRule = __nccwpck_require__(6797);
+var _ExecutableDefinitionsRule = __nccwpck_require__(590);
 
-var _FieldsOnCorrectTypeRule = __nccwpck_require__(3613);
+var _FieldsOnCorrectTypeRule = __nccwpck_require__(9646);
 
-var _FragmentsOnCompositeTypesRule = __nccwpck_require__(1463);
+var _FragmentsOnCompositeTypesRule = __nccwpck_require__(6200);
 
-var _KnownArgumentNamesRule = __nccwpck_require__(2427);
+var _KnownArgumentNamesRule = __nccwpck_require__(4486);
 
-var _KnownDirectivesRule = __nccwpck_require__(574);
+var _KnownDirectivesRule = __nccwpck_require__(5721);
 
-var _KnownFragmentNamesRule = __nccwpck_require__(9426);
+var _KnownFragmentNamesRule = __nccwpck_require__(1995);
 
-var _KnownTypeNamesRule = __nccwpck_require__(7868);
+var _KnownTypeNamesRule = __nccwpck_require__(8155);
 
-var _LoneAnonymousOperationRule = __nccwpck_require__(7337);
+var _LoneAnonymousOperationRule = __nccwpck_require__(1832);
 
-var _LoneSchemaDefinitionRule = __nccwpck_require__(6789);
+var _LoneSchemaDefinitionRule = __nccwpck_require__(568);
 
-var _MaxIntrospectionDepthRule = __nccwpck_require__(6769);
+var _MaxIntrospectionDepthRule = __nccwpck_require__(7818);
 
-var _NoFragmentCyclesRule = __nccwpck_require__(8263);
+var _NoFragmentCyclesRule = __nccwpck_require__(3462);
 
-var _NoUndefinedVariablesRule = __nccwpck_require__(6661);
+var _NoUndefinedVariablesRule = __nccwpck_require__(1444);
 
-var _NoUnusedFragmentsRule = __nccwpck_require__(3873);
+var _NoUnusedFragmentsRule = __nccwpck_require__(9058);
 
-var _NoUnusedVariablesRule = __nccwpck_require__(3773);
+var _NoUnusedVariablesRule = __nccwpck_require__(5790);
 
-var _OverlappingFieldsCanBeMergedRule = __nccwpck_require__(5002);
+var _OverlappingFieldsCanBeMergedRule = __nccwpck_require__(7307);
 
-var _PossibleFragmentSpreadsRule = __nccwpck_require__(858);
+var _PossibleFragmentSpreadsRule = __nccwpck_require__(5449);
 
-var _PossibleTypeExtensionsRule = __nccwpck_require__(1734);
+var _PossibleTypeExtensionsRule = __nccwpck_require__(583);
 
-var _ProvidedRequiredArgumentsRule = __nccwpck_require__(3021);
+var _ProvidedRequiredArgumentsRule = __nccwpck_require__(2146);
 
-var _ScalarLeafsRule = __nccwpck_require__(3390);
+var _ScalarLeafsRule = __nccwpck_require__(2493);
 
-var _SingleFieldSubscriptionsRule = __nccwpck_require__(6813);
+var _SingleFieldSubscriptionsRule = __nccwpck_require__(8628);
 
-var _UniqueArgumentDefinitionNamesRule = __nccwpck_require__(3916);
+var _UniqueArgumentDefinitionNamesRule = __nccwpck_require__(8787);
 
-var _UniqueArgumentNamesRule = __nccwpck_require__(1287);
+var _UniqueArgumentNamesRule = __nccwpck_require__(684);
 
-var _UniqueDirectiveNamesRule = __nccwpck_require__(9448);
+var _UniqueDirectiveNamesRule = __nccwpck_require__(9870);
 
-var _UniqueDirectivesPerLocationRule = __nccwpck_require__(1512);
+var _UniqueDirectivesPerLocationRule = __nccwpck_require__(9703);
 
-var _UniqueEnumValueNamesRule = __nccwpck_require__(6178);
+var _UniqueEnumValueNamesRule = __nccwpck_require__(1379);
 
-var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(1515);
+var _UniqueFieldDefinitionNamesRule = __nccwpck_require__(5462);
 
-var _UniqueFragmentNamesRule = __nccwpck_require__(8318);
+var _UniqueFragmentNamesRule = __nccwpck_require__(4309);
 
-var _UniqueInputFieldNamesRule = __nccwpck_require__(102);
+var _UniqueInputFieldNamesRule = __nccwpck_require__(9997);
 
-var _UniqueOperationNamesRule = __nccwpck_require__(7127);
+var _UniqueOperationNamesRule = __nccwpck_require__(1690);
 
-var _UniqueOperationTypesRule = __nccwpck_require__(4086);
+var _UniqueOperationTypesRule = __nccwpck_require__(9931);
 
-var _UniqueTypeNamesRule = __nccwpck_require__(3070);
+var _UniqueTypeNamesRule = __nccwpck_require__(93);
 
-var _UniqueVariableNamesRule = __nccwpck_require__(3110);
+var _UniqueVariableNamesRule = __nccwpck_require__(4053);
 
-var _ValuesOfCorrectTypeRule = __nccwpck_require__(8244);
+var _ValuesOfCorrectTypeRule = __nccwpck_require__(3919);
 
-var _VariablesAreInputTypesRule = __nccwpck_require__(663);
+var _VariablesAreInputTypesRule = __nccwpck_require__(2642);
 
-var _VariablesInAllowedPositionRule = __nccwpck_require__(7918);
+var _VariablesInAllowedPositionRule = __nccwpck_require__(5783);
 
+/** @category Validation Rules */
 // Spec Section: "Executable Definitions"
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 // Spec Section: "Fragments on Composite Types"
@@ -24431,9 +31583,7 @@ const specifiedRules = Object.freeze([
   _UniqueInputFieldNamesRule.UniqueInputFieldNamesRule,
   ...recommendedRules,
 ]);
-/**
- * @internal
- */
+/** @internal */
 
 exports.specifiedRules = specifiedRules;
 const specifiedSDLRules = Object.freeze([
@@ -24458,7 +31608,7 @@ exports.specifiedSDLRules = specifiedSDLRules;
 
 /***/ }),
 
-/***/ 6891:
+/***/ 4702:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -24471,30 +31621,36 @@ exports.assertValidSDLExtension = assertValidSDLExtension;
 exports.validate = validate;
 exports.validateSDL = validateSDL;
 
-var _devAssert = __nccwpck_require__(2163);
+var _devAssert = __nccwpck_require__(7774);
 
-var _mapValue = __nccwpck_require__(2475);
+var _mapValue = __nccwpck_require__(2912);
 
-var _GraphQLError = __nccwpck_require__(727);
+var _GraphQLError = __nccwpck_require__(6432);
 
-var _ast = __nccwpck_require__(3952);
+var _ast = __nccwpck_require__(2955);
 
-var _visitor = __nccwpck_require__(8730);
+var _visitor = __nccwpck_require__(1909);
 
-var _validate = __nccwpck_require__(5042);
+var _validate = __nccwpck_require__(6763);
 
-var _TypeInfo = __nccwpck_require__(4380);
+var _TypeInfo = __nccwpck_require__(3575);
 
-var _specifiedRules = __nccwpck_require__(2264);
+var _specifiedRules = __nccwpck_require__(3889);
 
-var _ValidationContext = __nccwpck_require__(7031);
+var _ValidationContext = __nccwpck_require__(8444);
 
+/** @category Validation */
 // Per the specification, descriptions must not affect validation.
 // See https://spec.graphql.org/draft/#sec-Descriptions
 const QueryDocumentKeysToValidate = (0, _mapValue.mapValue)(
   _ast.QueryDocumentKeys,
   (keys) => keys.filter((key) => key !== 'description'),
 );
+/**
+ * Options used when validating a GraphQL document.
+ * @internal
+ */
+
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -24504,24 +31660,76 @@ const QueryDocumentKeysToValidate = (0, _mapValue.mapValue)(
  * A list of specific validation rules may be provided. If not provided, the
  * default list of rules defined by the GraphQL specification will be used.
  *
- * Each validation rules is a function which returns a visitor
+ * Each validation rule is a function that returns a visitor
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
  *
  * Validate will stop validation after a `maxErrors` limit has been reached.
  * Attackers can send pathologically invalid queries to induce a DoS attack,
- * so by default `maxErrors` set to 100 errors.
+ * so `maxErrors` defaults to 100 errors.
  *
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
+ * @param schema - Schema to validate against.
+ * @param documentAST - Document AST to validate.
+ * @param rules - Validation rules to apply.
+ * @param options - Validation options, including error limits.
+ * @param typeInfo - TypeInfo instance to update during traversal.
+ * @returns Validation errors, or an empty array when the document is valid.
+ * @example
+ * ```ts
+ * // Validate with the default specified rules.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { validate } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * validate(schema, parse('{ greeting }')); // => []
+ *
+ * const errors = validate(schema, parse('{ missing }'));
+ * errors[0].message; // => 'Cannot query field "missing" on type "Query".'
+ * ```
+ * @example
+ * ```ts
+ * // This variant uses a custom rule list, TypeInfo, and validation options.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, TypeInfo } from 'graphql/utilities';
+ * import { FieldsOnCorrectTypeRule, validate } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const document = parse('{ missingOne missingTwo }');
+ *
+ * const errors = validate(
+ *   schema,
+ *   document,
+ *   [FieldsOnCorrectTypeRule],
+ *   { maxErrors: 1 },
+ *   new TypeInfo(schema),
+ * );
+ *
+ * errors.length; // => 2
+ * errors[1].message; // => 'Too many validation errors, error limit reached. Validation aborted.'
+ * ```
  */
-
 function validate(
   schema,
   documentAST,
   rules = _specifiedRules.specifiedRules,
   options,
-  /** @deprecated will be removed in 17.0.0 */
+  /**
+   * Deprecated TypeInfo instance used to track traversal state during
+   * validation. Omit this argument so validate creates the TypeInfo instance.
+   * @deprecated will be removed in 17.0.0
+   */
   typeInfo = new _TypeInfo.TypeInfo(schema),
 ) {
   var _options$maxErrors;
@@ -24575,9 +31783,7 @@ function validate(
 
   return errors;
 }
-/**
- * @internal
- */
+/** @internal */
 
 function validateSDL(
   documentAST,
@@ -24628,7 +31834,7 @@ function assertValidSDLExtension(documentAST, schema) {
 
 /***/ }),
 
-/***/ 2985:
+/***/ 552:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -24637,22 +31843,20 @@ Object.defineProperty(exports, "__esModule", ({
   value: true,
 }));
 exports.versionInfo = exports.version = void 0;
+
+/** @category Version */
 // Note: This file is autogenerated using "resources/gen-version.js" script and
 // automatically updated by "npm version" command.
 
-/**
- * A string containing the version of the GraphQL.js library
- */
-const version = '16.14.0';
-/**
- * An object containing the components of the GraphQL.js version string
- */
+/** A string containing the version of the GraphQL.js library */
+const version = '16.14.1';
+/** An object containing the components of the GraphQL.js version string */
 
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
   minor: 14,
-  patch: 0,
+  patch: 1,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
@@ -26575,7 +33779,7 @@ var of_1 = __nccwpck_require__(9395);
 Object.defineProperty(exports, "of", ({ enumerable: true, get: function () { return of_1.of; } }));
 var onErrorResumeNext_1 = __nccwpck_require__(1743);
 Object.defineProperty(exports, "onErrorResumeNext", ({ enumerable: true, get: function () { return onErrorResumeNext_1.onErrorResumeNext; } }));
-var pairs_1 = __nccwpck_require__(93);
+var pairs_1 = __nccwpck_require__(2474);
 Object.defineProperty(exports, "pairs", ({ enumerable: true, get: function () { return pairs_1.pairs; } }));
 var partition_1 = __nccwpck_require__(9038);
 Object.defineProperty(exports, "partition", ({ enumerable: true, get: function () { return partition_1.partition; } }));
@@ -26662,13 +33866,13 @@ var exhaust_1 = __nccwpck_require__(3736);
 Object.defineProperty(exports, "exhaust", ({ enumerable: true, get: function () { return exhaust_1.exhaust; } }));
 var exhaustAll_1 = __nccwpck_require__(6393);
 Object.defineProperty(exports, "exhaustAll", ({ enumerable: true, get: function () { return exhaustAll_1.exhaustAll; } }));
-var exhaustMap_1 = __nccwpck_require__(9352);
+var exhaustMap_1 = __nccwpck_require__(6971);
 Object.defineProperty(exports, "exhaustMap", ({ enumerable: true, get: function () { return exhaustMap_1.exhaustMap; } }));
-var expand_1 = __nccwpck_require__(9816);
+var expand_1 = __nccwpck_require__(5054);
 Object.defineProperty(exports, "expand", ({ enumerable: true, get: function () { return expand_1.expand; } }));
 var filter_1 = __nccwpck_require__(3598);
 Object.defineProperty(exports, "filter", ({ enumerable: true, get: function () { return filter_1.filter; } }));
-var finalize_1 = __nccwpck_require__(1261);
+var finalize_1 = __nccwpck_require__(3642);
 Object.defineProperty(exports, "finalize", ({ enumerable: true, get: function () { return finalize_1.finalize; } }));
 var find_1 = __nccwpck_require__(5095);
 Object.defineProperty(exports, "find", ({ enumerable: true, get: function () { return find_1.find; } }));
@@ -26728,7 +33932,7 @@ var raceWith_1 = __nccwpck_require__(2101);
 Object.defineProperty(exports, "raceWith", ({ enumerable: true, get: function () { return raceWith_1.raceWith; } }));
 var reduce_1 = __nccwpck_require__(838);
 Object.defineProperty(exports, "reduce", ({ enumerable: true, get: function () { return reduce_1.reduce; } }));
-var repeat_1 = __nccwpck_require__(3315);
+var repeat_1 = __nccwpck_require__(5696);
 Object.defineProperty(exports, "repeat", ({ enumerable: true, get: function () { return repeat_1.repeat; } }));
 var repeatWhen_1 = __nccwpck_require__(9435);
 Object.defineProperty(exports, "repeatWhen", ({ enumerable: true, get: function () { return repeatWhen_1.repeatWhen; } }));
@@ -26740,13 +33944,13 @@ var refCount_1 = __nccwpck_require__(5432);
 Object.defineProperty(exports, "refCount", ({ enumerable: true, get: function () { return refCount_1.refCount; } }));
 var sample_1 = __nccwpck_require__(2842);
 Object.defineProperty(exports, "sample", ({ enumerable: true, get: function () { return sample_1.sample; } }));
-var sampleTime_1 = __nccwpck_require__(4140);
+var sampleTime_1 = __nccwpck_require__(1759);
 Object.defineProperty(exports, "sampleTime", ({ enumerable: true, get: function () { return sampleTime_1.sampleTime; } }));
 var scan_1 = __nccwpck_require__(3245);
 Object.defineProperty(exports, "scan", ({ enumerable: true, get: function () { return scan_1.scan; } }));
 var sequenceEqual_1 = __nccwpck_require__(4793);
 Object.defineProperty(exports, "sequenceEqual", ({ enumerable: true, get: function () { return sequenceEqual_1.sequenceEqual; } }));
-var share_1 = __nccwpck_require__(7802);
+var share_1 = __nccwpck_require__(5421);
 Object.defineProperty(exports, "share", ({ enumerable: true, get: function () { return share_1.share; } }));
 var shareReplay_1 = __nccwpck_require__(5638);
 Object.defineProperty(exports, "shareReplay", ({ enumerable: true, get: function () { return shareReplay_1.shareReplay; } }));
@@ -26758,7 +33962,7 @@ var skipLast_1 = __nccwpck_require__(4391);
 Object.defineProperty(exports, "skipLast", ({ enumerable: true, get: function () { return skipLast_1.skipLast; } }));
 var skipUntil_1 = __nccwpck_require__(7447);
 Object.defineProperty(exports, "skipUntil", ({ enumerable: true, get: function () { return skipUntil_1.skipUntil; } }));
-var skipWhile_1 = __nccwpck_require__(8193);
+var skipWhile_1 = __nccwpck_require__(574);
 Object.defineProperty(exports, "skipWhile", ({ enumerable: true, get: function () { return skipWhile_1.skipWhile; } }));
 var startWith_1 = __nccwpck_require__(3982);
 Object.defineProperty(exports, "startWith", ({ enumerable: true, get: function () { return startWith_1.startWith; } }));
@@ -26766,7 +33970,7 @@ var subscribeOn_1 = __nccwpck_require__(5167);
 Object.defineProperty(exports, "subscribeOn", ({ enumerable: true, get: function () { return subscribeOn_1.subscribeOn; } }));
 var switchAll_1 = __nccwpck_require__(4617);
 Object.defineProperty(exports, "switchAll", ({ enumerable: true, get: function () { return switchAll_1.switchAll; } }));
-var switchMap_1 = __nccwpck_require__(6859);
+var switchMap_1 = __nccwpck_require__(9240);
 Object.defineProperty(exports, "switchMap", ({ enumerable: true, get: function () { return switchMap_1.switchMap; } }));
 var switchMapTo_1 = __nccwpck_require__(5033);
 Object.defineProperty(exports, "switchMapTo", ({ enumerable: true, get: function () { return switchMapTo_1.switchMapTo; } }));
@@ -26786,7 +33990,7 @@ var throttle_1 = __nccwpck_require__(1024);
 Object.defineProperty(exports, "throttle", ({ enumerable: true, get: function () { return throttle_1.throttle; } }));
 var throttleTime_1 = __nccwpck_require__(8061);
 Object.defineProperty(exports, "throttleTime", ({ enumerable: true, get: function () { return throttleTime_1.throttleTime; } }));
-var throwIfEmpty_1 = __nccwpck_require__(4280);
+var throwIfEmpty_1 = __nccwpck_require__(1899);
 Object.defineProperty(exports, "throwIfEmpty", ({ enumerable: true, get: function () { return throwIfEmpty_1.throwIfEmpty; } }));
 var timeInterval_1 = __nccwpck_require__(9036);
 Object.defineProperty(exports, "timeInterval", ({ enumerable: true, get: function () { return timeInterval_1.timeInterval; } }));
@@ -28032,7 +35236,7 @@ exports.ConnectableObservable = ConnectableObservable;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bindCallback = void 0;
-var bindCallbackInternals_1 = __nccwpck_require__(9058);
+var bindCallbackInternals_1 = __nccwpck_require__(6677);
 function bindCallback(callbackFunc, resultSelector, scheduler) {
     return bindCallbackInternals_1.bindCallbackInternals(false, callbackFunc, resultSelector, scheduler);
 }
@@ -28041,7 +35245,7 @@ exports.bindCallback = bindCallback;
 
 /***/ }),
 
-/***/ 9058:
+/***/ 6677:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -28156,7 +35360,7 @@ exports.bindCallbackInternals = bindCallbackInternals;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bindNodeCallback = void 0;
-var bindCallbackInternals_1 = __nccwpck_require__(9058);
+var bindCallbackInternals_1 = __nccwpck_require__(6677);
 function bindNodeCallback(callbackFunc, resultSelector, scheduler) {
     return bindCallbackInternals_1.bindCallbackInternals(true, callbackFunc, resultSelector, scheduler);
 }
@@ -29036,7 +36240,7 @@ exports.onErrorResumeNext = onErrorResumeNext;
 
 /***/ }),
 
-/***/ 93:
+/***/ 2474:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -30393,7 +37597,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.elementAt = void 0;
 var ArgumentOutOfRangeError_1 = __nccwpck_require__(384);
 var filter_1 = __nccwpck_require__(3598);
-var throwIfEmpty_1 = __nccwpck_require__(4280);
+var throwIfEmpty_1 = __nccwpck_require__(1899);
 var defaultIfEmpty_1 = __nccwpck_require__(239);
 var take_1 = __nccwpck_require__(9055);
 function elementAt(index, defaultValue) {
@@ -30496,7 +37700,7 @@ exports.exhaust = exhaustAll_1.exhaustAll;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.exhaustAll = void 0;
-var exhaustMap_1 = __nccwpck_require__(9352);
+var exhaustMap_1 = __nccwpck_require__(6971);
 var identity_1 = __nccwpck_require__(3683);
 function exhaustAll() {
     return exhaustMap_1.exhaustMap(identity_1.identity);
@@ -30506,7 +37710,7 @@ exports.exhaustAll = exhaustAll;
 
 /***/ }),
 
-/***/ 9352:
+/***/ 6971:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -30545,7 +37749,7 @@ exports.exhaustMap = exhaustMap;
 
 /***/ }),
 
-/***/ 9816:
+/***/ 5054:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -30584,7 +37788,7 @@ exports.filter = filter;
 
 /***/ }),
 
-/***/ 1261:
+/***/ 3642:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -30665,7 +37869,7 @@ var EmptyError_1 = __nccwpck_require__(3120);
 var filter_1 = __nccwpck_require__(3598);
 var take_1 = __nccwpck_require__(9055);
 var defaultIfEmpty_1 = __nccwpck_require__(239);
-var throwIfEmpty_1 = __nccwpck_require__(4280);
+var throwIfEmpty_1 = __nccwpck_require__(1899);
 var identity_1 = __nccwpck_require__(3683);
 function first(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
@@ -30834,7 +38038,7 @@ exports.last = void 0;
 var EmptyError_1 = __nccwpck_require__(3120);
 var filter_1 = __nccwpck_require__(3598);
 var takeLast_1 = __nccwpck_require__(5791);
-var throwIfEmpty_1 = __nccwpck_require__(4280);
+var throwIfEmpty_1 = __nccwpck_require__(1899);
 var defaultIfEmpty_1 = __nccwpck_require__(239);
 var identity_1 = __nccwpck_require__(3683);
 function last(predicate, defaultValue) {
@@ -31509,7 +38713,7 @@ exports.refCount = refCount;
 
 /***/ }),
 
-/***/ 3315:
+/***/ 5696:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -31789,7 +38993,7 @@ exports.sample = sample;
 
 /***/ }),
 
-/***/ 4140:
+/***/ 1759:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -31905,7 +39109,7 @@ function createState() {
 
 /***/ }),
 
-/***/ 7802:
+/***/ 5421:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -32027,7 +39231,7 @@ function handleReset(reset, on) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.shareReplay = void 0;
 var ReplaySubject_1 = __nccwpck_require__(3677);
-var share_1 = __nccwpck_require__(7802);
+var share_1 = __nccwpck_require__(5421);
 function shareReplay(configOrBufferSize, windowTime, scheduler) {
     var _a, _b, _c;
     var bufferSize;
@@ -32169,7 +39373,7 @@ exports.skipUntil = skipUntil;
 
 /***/ }),
 
-/***/ 8193:
+/***/ 574:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -32237,7 +39441,7 @@ exports.subscribeOn = subscribeOn;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.switchAll = void 0;
-var switchMap_1 = __nccwpck_require__(6859);
+var switchMap_1 = __nccwpck_require__(9240);
 var identity_1 = __nccwpck_require__(3683);
 function switchAll() {
     return switchMap_1.switchMap(identity_1.identity);
@@ -32247,7 +39451,7 @@ exports.switchAll = switchAll;
 
 /***/ }),
 
-/***/ 6859:
+/***/ 9240:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -32287,7 +39491,7 @@ exports.switchMap = switchMap;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.switchMapTo = void 0;
-var switchMap_1 = __nccwpck_require__(6859);
+var switchMap_1 = __nccwpck_require__(9240);
 var isFunction_1 = __nccwpck_require__(2665);
 function switchMapTo(innerObservable, resultSelector) {
     return isFunction_1.isFunction(resultSelector) ? switchMap_1.switchMap(function () { return innerObservable; }, resultSelector) : switchMap_1.switchMap(function () { return innerObservable; });
@@ -32303,7 +39507,7 @@ exports.switchMapTo = switchMapTo;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.switchScan = void 0;
-var switchMap_1 = __nccwpck_require__(6859);
+var switchMap_1 = __nccwpck_require__(9240);
 var lift_1 = __nccwpck_require__(2988);
 function switchScan(accumulator, seed) {
     return lift_1.operate(function (source, subscriber) {
@@ -32572,7 +39776,7 @@ exports.throttleTime = throttleTime;
 
 /***/ }),
 
-/***/ 4280:
+/***/ 1899:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -69665,11 +76869,11 @@ function getInputOrNull(key) {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/cross-fetch@4.1.0/node_modules/cross-fetch/dist/node-ponyfill.js
 var node_ponyfill = __nccwpck_require__(7867);
-// EXTERNAL MODULE: ./node_modules/.pnpm/graphql@16.14.0/node_modules/graphql/index.js
-var graphql = __nccwpck_require__(7049);
+// EXTERNAL MODULE: ./node_modules/.pnpm/graphql@16.14.1/node_modules/graphql/index.js
+var graphql = __nccwpck_require__(8532);
 // EXTERNAL MODULE: ./node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/dist/cjs/index.js
 var cjs = __nccwpck_require__(7828);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasDirectives.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasDirectives.js
 
 /**
 * @internal
@@ -69692,10 +76896,10 @@ function hasDirectives(names, root, all) {
 }
 //# sourceMappingURL=hasDirectives.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/environment/index.production.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/environment/index.production.js
 const index_production_DEV_ = false;
 //# sourceMappingURL=index.production.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/maybe.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/maybe.js
 function maybe(thunk) {
     try {
         return thunk();
@@ -69703,7 +76907,7 @@ function maybe(thunk) {
     catch { }
 }
 //# sourceMappingURL=maybe.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/global.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/global.js
 
 /* harmony default export */ const globals_global = (// We don't expect the Function constructor ever to be invoked at runtime, as
 // long as at least one of globalThis, window, self, or global is defined, so
@@ -69719,12 +76923,12 @@ maybe(function () {
 }));
 //# sourceMappingURL=global.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/version.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/version.js
 const version = "4.2.1";
 const build = "esm";
 //# sourceMappingURL=version.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeUniqueId.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeUniqueId.js
 const prefixCounts = new Map();
 /**
 * These IDs won't be globally unique, but they will be unique within this
@@ -69741,7 +76945,7 @@ function makeUniqueId(prefix) {
 }
 //# sourceMappingURL=makeUniqueId.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/stringifyForDisplay.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/stringifyForDisplay.js
 
 /**
 * @internal
@@ -69758,7 +76962,7 @@ function stringifyForDisplay(value, space = 0) {
 }
 //# sourceMappingURL=stringifyForDisplay.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/invariant/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/invariant/index.js
 
 
 
@@ -69852,7 +77056,7 @@ function getFallbackErrorMsg(message, messageArgs = []) {
     }))}`;
 }
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/incremental/handlers/notImplemented.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/incremental/handlers/notImplemented.js
 
 
 class NotImplementedHandler {
@@ -69869,7 +77073,7 @@ class NotImplementedHandler {
 }
 //# sourceMappingURL=notImplemented.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationName.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationName.js
 /**
 * @internal
 * 
@@ -69880,7 +77084,7 @@ function getOperationName(doc, fallback) {
 }
 //# sourceMappingURL=getOperationName.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/caching/sizes.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/caching/sizes.js
 
 const cacheSizeSymbol = Symbol.for("apollo.cacheSize");
 /**
@@ -69911,7 +77115,7 @@ const sizes_cacheSizes = { ...globals_global[cacheSizeSymbol] };
 var bundle = __nccwpck_require__(8481);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@wry+caches@1.0.1/node_modules/@wry/caches/lib/bundle.cjs
 var lib_bundle = __nccwpck_require__(2706);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/caches.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/caches.js
 
 const scheduledCleanup = new WeakSet();
 function schedule(cache) {
@@ -69986,7 +77190,7 @@ const AutoCleanedStrongCache = function (max, dispose) {
 };
 //# sourceMappingURL=caches.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/memoize.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/memoize.js
 
 
 /**
@@ -70015,7 +77219,7 @@ function memoize(fn, { max, makeCacheKey = (args) => args, }) {
     };
 }
 //# sourceMappingURL=memoize.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/checkDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/checkDocument.js
 // Checks the document for errors and throws an exception if there is an error.
 
 
@@ -70081,7 +77285,7 @@ const checkDocument = memoize((doc, expectedType) => {
 });
 //# sourceMappingURL=checkDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationDefinition.js
 
 /**
 * @internal
@@ -70094,7 +77298,7 @@ function getOperationDefinition(doc) {
 }
 //# sourceMappingURL=getOperationDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/utils/createOperation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/utils/createOperation.js
 
 function createOperation(request, { client }) {
     const operation = {
@@ -70129,7 +77333,7 @@ function createOperation(request, { client }) {
     return operation;
 }
 //# sourceMappingURL=createOperation.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/core/ApolloLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/core/ApolloLink.js
 
 
 
@@ -70397,13 +77601,13 @@ class ApolloLink {
 }
 //# sourceMappingURL=ApolloLink.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/core/execute.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/core/execute.js
 
 const execute = ApolloLink.execute;
 //# sourceMappingURL=execute.js.map
 // EXTERNAL MODULE: ./node_modules/.pnpm/optimism@0.18.1/node_modules/optimism/lib/bundle.cjs
 var optimism_lib_bundle = __nccwpck_require__(254);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/DocumentTransform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/DocumentTransform.js
 
 
 
@@ -70591,7 +77795,7 @@ class DocumentTransform {
 }
 //# sourceMappingURL=DocumentTransform.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/compact.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/compact.js
 /**
 * Merges the provided objects shallowly and removes
 * all properties with an `undefined` value
@@ -70616,7 +77820,7 @@ function compact(...objects) {
 }
 //# sourceMappingURL=compact.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeOptions.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeOptions.js
 
 /**
 * @internal
@@ -70633,7 +77837,7 @@ function mergeOptions(defaults, options) {
 }
 //# sourceMappingURL=mergeOptions.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mapObservableFragment.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mapObservableFragment.js
 
 
 function mapObservableFragment(observable, mapFn) {
@@ -70658,7 +77862,7 @@ _cacheKey, mapFn) {
     return mapObservableFragment(observable, mapFn);
 }, { max: 1, makeCacheKey: (args) => args.slice(0, 2) });
 //# sourceMappingURL=mapObservableFragment.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeFragmentSpreads.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeFragmentSpreads.js
 
 function removeMaskedFragmentSpreads(document) {
     return (0,graphql/* visit */.YRT)(document, {
@@ -70670,7 +77874,7 @@ function removeMaskedFragmentSpreads(document) {
     });
 }
 //# sourceMappingURL=removeFragmentSpreads.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/index.production.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/index.production.js
 // eslint-disable-next-line no-restricted-syntax
 
 function unsupported() {
@@ -70678,7 +77882,7 @@ function unsupported() {
 }
 const getApolloCacheMemoryInternals = unsupported, getApolloClientMemoryInternals = unsupported, getInMemoryCacheMemoryInternals = unsupported;
 //# sourceMappingURL=index.production.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMemoryInternals.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMemoryInternals.js
 
 
 const globalCaches = {};
@@ -70808,7 +78012,7 @@ function linkInfo(link) {
 }
 //# sourceMappingURL=getMemoryInternals.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/canonicalStringify.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/canonicalStringify.js
 
 
 
@@ -70918,7 +78122,7 @@ function everyKeyInOrder(key, i, keys) {
     return i === 0 || keys[i - 1] <= key;
 }
 //# sourceMappingURL=canonicalStringify.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/utils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/utils.js
 function isBranded(error, name) {
     return (typeof error === "object" &&
         error !== null &&
@@ -70933,7 +78137,7 @@ function brand(error) {
     });
 }
 //# sourceMappingURL=utils.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedGraphQLErrors.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedGraphQLErrors.js
 
 function defaultFormatMessage(errors) {
     return (errors
@@ -71036,7 +78240,7 @@ class CombinedGraphQLErrors extends Error {
 }
 //# sourceMappingURL=CombinedGraphQLErrors.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedProtocolErrors.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedProtocolErrors.js
 
 function CombinedProtocolErrors_defaultFormatMessage(errors) {
     return errors.map((e) => e.message || "Error message not found.").join("\n");
@@ -71118,7 +78322,7 @@ class CombinedProtocolErrors extends Error {
 }
 //# sourceMappingURL=CombinedProtocolErrors.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/isErrorLike.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/isErrorLike.js
 function isErrorLike(error) {
     return (error !== null &&
         typeof error === "object" &&
@@ -71128,7 +78332,7 @@ function isErrorLike(error) {
             typeof error.stack === "undefined"));
 }
 //# sourceMappingURL=isErrorLike.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/UnconventionalError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/UnconventionalError.js
 
 /**
  * A wrapper error type that represents a non-standard error thrown from a
@@ -71192,7 +78396,7 @@ class UnconventionalError extends Error {
     }
 }
 //# sourceMappingURL=UnconventionalError.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/index.js
 
 
 
@@ -71224,7 +78428,7 @@ function toErrorLike(error) {
 
 
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/LinkError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/LinkError.js
 const registry = new WeakSet();
 /**
 * @internal Please do not use directly.
@@ -71289,7 +78493,7 @@ const LinkError = {
 };
 //# sourceMappingURL=LinkError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/createFragmentMap.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/createFragmentMap.js
 /**
 * Utility function that takes a list of fragment definitions and makes a hash out of them
 * that maps the name of the fragment to the fragment definition.
@@ -71307,7 +78511,7 @@ function createFragmentMap(fragments = []) {
 }
 //# sourceMappingURL=createFragmentMap.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinitions.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinitions.js
 /**
 * @internal
 * 
@@ -71318,7 +78522,7 @@ function getFragmentDefinitions(doc) {
 }
 //# sourceMappingURL=getFragmentDefinitions.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonNullObject.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonNullObject.js
 /**
 * @internal
 * 
@@ -71329,7 +78533,7 @@ function isNonNullObject(obj) {
 }
 //# sourceMappingURL=isNonNullObject.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/deepFreeze.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/deepFreeze.js
 
 
 /**
@@ -71367,7 +78571,7 @@ function shallowFreeze(obj) {
 }
 //# sourceMappingURL=deepFreeze.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/maybeDeepFreeze.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/maybeDeepFreeze.js
 
 
 /**
@@ -71383,7 +78587,7 @@ function maybeDeepFreeze(obj) {
 }
 //# sourceMappingURL=maybeDeepFreeze.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/resultKeyNameFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/resultKeyNameFromField.js
 /**
 * @internal
 * 
@@ -71394,7 +78598,7 @@ function resultKeyNameFromField(field) {
 }
 //# sourceMappingURL=resultKeyNameFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/utils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/utils.js
 
 
 
@@ -71435,7 +78639,7 @@ function getFragmentMaskMode(fragment) {
 }
 //# sourceMappingURL=utils.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskDefinition.js
 
 
 
@@ -71569,7 +78773,7 @@ function getAccessorWarningDescriptor(fieldName, value, path, operationName, ope
 }
 //# sourceMappingURL=maskDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskOperation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskOperation.js
 
 
 
@@ -71598,7 +78802,7 @@ function maskOperation(data, document, cache) {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@wry+equality@0.5.7/node_modules/@wry/equality/lib/bundle.cjs
 var equality_lib_bundle = __nccwpck_require__(2174);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskFragment.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/masking/maskFragment.js
 
 
 
@@ -71638,7 +78842,7 @@ function maskFragment(data, document, cache, fragmentName) {
 }
 //# sourceMappingURL=maskFragment.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/print.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/print.js
 
 
 
@@ -71669,7 +78873,7 @@ if (index_production_DEV_) {
     registerGlobalCache("print", () => (printCache ? printCache.size : 0));
 }
 //# sourceMappingURL=print.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestSettled.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestSettled.js
 /**
  * Returns true if the network request is in ready or error state according to a given network
  * status.
@@ -71678,7 +78882,7 @@ function isNetworkRequestSettled(networkStatus) {
     return networkStatus === 7 || networkStatus === 8;
 }
 //# sourceMappingURL=isNetworkRequestSettled.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestInFlight.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestInFlight.js
 
 /**
  * Returns true if there is currently a network request in flight according to a given network
@@ -71688,7 +78892,7 @@ function isNetworkRequestInFlight(networkStatus) {
     return !isNetworkRequestSettled(networkStatus);
 }
 //# sourceMappingURL=isNetworkRequestInFlight.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/graphQLResultHasError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/graphQLResultHasError.js
 /**
 * @internal
 * 
@@ -71699,7 +78903,7 @@ function graphQLResultHasError(result) {
 }
 //# sourceMappingURL=graphQLResultHasError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/filterMap.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/filterMap.js
 
 function filterMap(fn, makeContext = () => undefined) {
     return (source) => new cjs.Observable((subscriber) => {
@@ -71728,7 +78932,7 @@ function filterMap(fn, makeContext = () => undefined) {
     });
 }
 //# sourceMappingURL=filterMap.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/toQueryResult.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/toQueryResult.js
 /**
 * @internal
 * 
@@ -71745,7 +78949,7 @@ function toQueryResult(value) {
 }
 //# sourceMappingURL=toQueryResult.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasForcedResolvers.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasForcedResolvers.js
 
 function hasForcedResolvers(document) {
     let forceResolvers = false;
@@ -71766,7 +78970,7 @@ function hasForcedResolvers(document) {
     return forceResolvers;
 }
 //# sourceMappingURL=hasForcedResolvers.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinition.js
 
 /**
 * @internal
@@ -71782,7 +78986,7 @@ function getFragmentDefinition(doc) {
 }
 //# sourceMappingURL=getFragmentDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isArray.js
 /**
 * A version of Array.isArray that works better with readonly arrays.
 *
@@ -71793,7 +78997,7 @@ function getFragmentDefinition(doc) {
 const isArray = Array.isArray;
 //# sourceMappingURL=isArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonEmptyArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonEmptyArray.js
 /**
 * @internal
 * 
@@ -71804,7 +79008,7 @@ function isNonEmptyArray(value) {
 }
 //# sourceMappingURL=isNonEmptyArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeDirectivesFromDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeDirectivesFromDocument.js
 
 
 
@@ -72105,7 +79309,7 @@ function nullIfDocIsEmpty(doc) {
 }
 //# sourceMappingURL=removeDirectivesFromDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/valueToObjectRepresentation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/valueToObjectRepresentation.js
 
 
 /**
@@ -72148,7 +79352,7 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
 }
 //# sourceMappingURL=valueToObjectRepresentation.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getDefaultValues.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getDefaultValues.js
 
 /**
 * @internal
@@ -72169,7 +79373,7 @@ function getDefaultValues(definition) {
 }
 //# sourceMappingURL=getDefaultValues.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isDocumentNode.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isDocumentNode.js
 
 /**
 * @internal
@@ -72183,7 +79387,7 @@ function isDocumentNode(value) {
 }
 //# sourceMappingURL=isDocumentNode.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/constants.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/constants.js
 /**
 * @internal
 * Used to set `extensions` on the GraphQL result without exposing it
@@ -72208,7 +79412,7 @@ const streamInfoSymbol = Symbol.for("apollo.result.streamInfo");
 const variablesUnknownSymbol = Symbol.for("apollo.observableQuery.variablesUnknown");
 //# sourceMappingURL=constants.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/networkStatus.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/networkStatus.js
 /**
  * The current status of a query’s execution in our system.
  */
@@ -72257,7 +79461,7 @@ var NetworkStatus;
     NetworkStatus[NetworkStatus["streaming"] = 9] = "streaming";
 })(NetworkStatus || (NetworkStatus = {}));
 //# sourceMappingURL=networkStatus.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentFromSelection.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentFromSelection.js
 
 /**
 * @internal
@@ -72283,7 +79487,7 @@ function getFragmentFromSelection(selection, fragmentMap) {
 }
 //# sourceMappingURL=getFragmentFromSelection.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMainDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMainDefinition.js
 
 
 /**
@@ -72343,7 +79547,7 @@ function getMainDefinition(queryDoc) {
 }
 //# sourceMappingURL=getMainDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isField.js
 /**
 * @internal
 * 
@@ -72354,7 +79558,7 @@ function isField(selection) {
 }
 //# sourceMappingURL=isField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/shouldInclude.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/shouldInclude.js
 
 /**
 * @internal
@@ -72403,7 +79607,7 @@ function getInclusionDirectives(directives) {
 }
 //# sourceMappingURL=shouldInclude.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/equalByQuery.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/equalByQuery.js
 
 
 
@@ -72494,7 +79698,7 @@ function directiveIsNonreactive(dir) {
     return dir.name.value === "nonreactive";
 }
 //# sourceMappingURL=equalByQuery.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getQueryDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getQueryDefinition.js
 
 
 /**
@@ -72509,13 +79713,13 @@ function getQueryDefinition(doc) {
 }
 //# sourceMappingURL=getQueryDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/preventUnhandledRejection.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/preventUnhandledRejection.js
 function preventUnhandledRejection(promise) {
     promise.catch(() => { });
     return promise;
 }
 //# sourceMappingURL=preventUnhandledRejection.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/ObservableQuery.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/ObservableQuery.js
 
 
 
@@ -73921,7 +81125,7 @@ function getTrackingOperatorPromise(defaultValue) {
 }
 //# sourceMappingURL=ObservableQuery.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/QueryInfo.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/QueryInfo.js
 
 
 
@@ -74320,7 +81524,7 @@ function shouldWriteResult(result, errorPolicy = "none") {
 }
 //# sourceMappingURL=QueryInfo.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/QueryManager.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/QueryManager.js
 
 
 
@@ -75469,7 +82673,7 @@ function removeStreamDetailsFromExtensions(original) {
 }
 //# sourceMappingURL=QueryManager.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/ApolloClient.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/core/ApolloClient.js
 
 
 
@@ -76058,7 +83262,7 @@ if (index_production_DEV_) {
 }
 //# sourceMappingURL=ApolloClient.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/client-awareness/ClientAwarenessLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/client-awareness/ClientAwarenessLink.js
 
 
 /**
@@ -76145,7 +83349,7 @@ class ClientAwarenessLink extends ApolloLink {
     }
 }
 //# sourceMappingURL=ClientAwarenessLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/utils/filterOperationVariables.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/utils/filterOperationVariables.js
 
 function filterOperationVariables(variables, query) {
     const result = { ...variables };
@@ -76168,7 +83372,7 @@ function filterOperationVariables(variables, query) {
     return result;
 }
 //# sourceMappingURL=filterOperationVariables.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/operations.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/operations.js
 
 function isOperation(document, operation) {
     return getOperationDefinition(document)?.operation === operation;
@@ -76255,14 +83459,14 @@ function isSubscriptionOperation(document) {
     return isOperation(document, "subscription");
 }
 //# sourceMappingURL=operations.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/checkFetcher.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/checkFetcher.js
 
 const checkFetcher = (fetcher) => {
     invariant(fetcher || typeof fetch !== "undefined", 61);
 };
 //# sourceMappingURL=checkFetcher.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerError.js
 
 /**
  * Represents an error when a non-200 HTTP status code is returned from the
@@ -76339,7 +83543,7 @@ class ServerError extends Error {
 }
 //# sourceMappingURL=ServerError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerParseError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerParseError.js
 
 /**
  * Represents a failure to parse the response as JSON from the server. This
@@ -76413,7 +83617,7 @@ class ServerParseError extends Error {
 }
 //# sourceMappingURL=ServerParseError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/parseAndCheckHttpResponse.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/parseAndCheckHttpResponse.js
 
 
 
@@ -76574,7 +83778,7 @@ function parseAndCheckHttpResponse(operations) {
 }
 //# sourceMappingURL=parseAndCheckHttpResponse.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/rewriteURIForGET.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/rewriteURIForGET.js
 // For GET operations, returns the given URI rewritten with parameters, or a
 // parse error.
 function rewriteURIForGET(chosenURI, body) {
@@ -76627,7 +83831,7 @@ function rewriteURIForGET(chosenURI, body) {
     return { newURI };
 }
 //# sourceMappingURL=rewriteURIForGET.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectHttpOptionsAndBody.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectHttpOptionsAndBody.js
 
 const defaultHttpOptions = {
     includeQuery: true,
@@ -76731,7 +83935,7 @@ function removeDuplicateHeaders(headers, preserveHeaderCase) {
     return normalizedHeaders;
 }
 //# sourceMappingURL=selectHttpOptionsAndBody.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectURI.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectURI.js
 const selectURI = (operation, fallbackURI) => {
     const context = operation.getContext();
     const contextURI = context.uri;
@@ -76746,7 +83950,7 @@ const selectURI = (operation, fallbackURI) => {
     }
 };
 //# sourceMappingURL=selectURI.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/BaseHttpLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/BaseHttpLink.js
 
 
 
@@ -76904,7 +84108,7 @@ class BaseHttpLink extends ApolloLink {
     }
 }
 //# sourceMappingURL=BaseHttpLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/HttpLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/link/http/HttpLink.js
 
 
 
@@ -76946,7 +84150,7 @@ class HttpLink extends ApolloLink {
  */
 const createHttpLink = (options = {}) => new HttpLink(options);
 //# sourceMappingURL=HttpLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/transform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/transform.js
 
 const TYPENAME_FIELD = {
     kind: graphql/* Kind */.b8C.FIELD,
@@ -77018,7 +84222,7 @@ const addTypenameToDocument = Object.assign(function (doc) {
     },
 });
 //# sourceMappingURL=transform.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/storeUtils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/storeUtils.js
 /**
  * Determines if a given object is a reference object.
  *
@@ -77037,7 +84241,7 @@ function isReference(obj) {
     return Boolean(obj && typeof obj === "object" && typeof obj.__ref === "string");
 }
 //# sourceMappingURL=storeUtils.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/combineLatestBatched.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/combineLatestBatched.js
 
 /**
  * Like `combineLatest` but with some differences:
@@ -77106,7 +84310,7 @@ function combineLatestBatched(observables) {
     });
 }
 //# sourceMappingURL=combineLatestBatched.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentQueryDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentQueryDocument.js
 
 /**
 * Returns a query document which adds a single query operation that only
@@ -77201,7 +84405,7 @@ function getFragmentQueryDocument(document, fragmentName) {
 }
 //# sourceMappingURL=getFragmentQueryDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/bindCacheKey.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/bindCacheKey.js
 
 /**
  * A variant of `optimism`'s `defaultMakeCacheKey` function that allows us to
@@ -77220,7 +84424,7 @@ function bindCacheKey(...prebound) {
     return optimism_lib_bundle/* defaultMakeCacheKey */.NS.bind(null, ...prebound);
 }
 //# sourceMappingURL=bindCacheKey.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/core/cache.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/core/cache.js
 
 
 
@@ -77576,7 +84780,7 @@ const emptyArrayObservable = Object.assign(new cjs.Observable((observer) => {
 }), { getCurrentResult: () => emptyArrayResult });
 //# sourceMappingURL=cache.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/DeepMerger.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/DeepMerger.js
 
 const { hasOwnProperty: DeepMerger_hasOwnProperty } = Object.prototype;
 const defaultReconciler = function (target, source, property) {
@@ -77673,7 +84877,7 @@ class DeepMerger {
 }
 //# sourceMappingURL=DeepMerger.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeReference.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeReference.js
 /**
 * @internal
 * 
@@ -77684,7 +84888,7 @@ function makeReference(id) {
 }
 //# sourceMappingURL=makeReference.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/helpers.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/helpers.js
 
 
 const { hasOwnProperty: hasOwn } = Object.prototype;
@@ -77767,7 +84971,7 @@ function extractFragmentContext(document, fragments) {
     };
 }
 //# sourceMappingURL=helpers.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/entityStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/entityStore.js
 
 
 
@@ -78438,7 +85642,7 @@ function supportsResultCaching(store) {
 }
 //# sourceMappingURL=entityStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/argumentsObjectFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/argumentsObjectFromField.js
 
 /**
 * @internal
@@ -78455,7 +85659,7 @@ function argumentsObjectFromField(field, variables) {
 }
 //# sourceMappingURL=argumentsObjectFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getStoreKeyName.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getStoreKeyName.js
 
 const KNOWN_DIRECTIVES = [
     "connection",
@@ -78530,7 +85734,7 @@ const getStoreKeyName = Object.assign(function (fieldName, args, directives) {
 });
 //# sourceMappingURL=getStoreKeyName.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/storeKeyNameFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/storeKeyNameFromField.js
 
 
 /**
@@ -78558,7 +85762,7 @@ function storeKeyNameFromField(field, variables) {
 }
 //# sourceMappingURL=storeKeyNameFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/key-extractor.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/key-extractor.js
 
 
 
@@ -78745,7 +85949,7 @@ function normalize(value) {
 }
 //# sourceMappingURL=key-extractor.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/reactiveVars.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/reactiveVars.js
 
 // Contextual Slot that acquires its value when custom read functions are
 // called in Policies#readField.
@@ -78829,7 +86033,7 @@ function broadcast(cache) {
     }
 }
 //# sourceMappingURL=reactiveVars.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/policies.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/policies.js
 
 
 
@@ -79495,7 +86699,7 @@ function makeMergeObjectsFunction(store) {
 }
 //# sourceMappingURL=policies.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeDeepArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeDeepArray.js
 
 // In almost any situation where you could succeed in getting the
 // TypeScript compiler to infer a tuple type for the sources array, you
@@ -79521,7 +86725,7 @@ function mergeDeepArray(sources) {
 }
 //# sourceMappingURL=mergeDeepArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/core/types/common.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/core/types/common.js
 class MissingFieldError extends Error {
     message;
     path;
@@ -79551,7 +86755,7 @@ class MissingFieldError extends Error {
     missing;
 }
 //# sourceMappingURL=common.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/readFromStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/readFromStore.js
 
 
 
@@ -79842,7 +87046,7 @@ function assertSelectionSetForIdValue(store, field, fieldValue) {
 }
 //# sourceMappingURL=readFromStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/cloneDeep.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/cloneDeep.js
 const { toString: cloneDeep_toString } = Object.prototype;
 /**
 * Deeply clones a value to create a new instance.
@@ -79886,7 +87090,7 @@ function __cloneDeep(val, seen) {
 }
 //# sourceMappingURL=cloneDeep.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/writeToStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/writeToStore.js
 
 
 
@@ -80474,7 +87678,7 @@ function getTypenameFromResult(result, selectionSet, fragmentMap) {
 }
 //# sourceMappingURL=writeToStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.0_ws@8.20.0__graphql@16.14.0_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/inMemoryCache.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.1_graphql-ws@6.0.8_graphql@16.14.1_ws@8.20.0__graphql@16.14.1_react@19.2.7_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/inMemoryCache.js
 
 
 
