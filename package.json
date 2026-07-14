@@ -34,7 +34,7 @@
         "@octokit/graphql-schema": "15.26.1",
         "@types/jest": "30.0.0",
         "@types/node": "25.9.3",
-        "@typescript-eslint/eslint-plugin": "8.62.1",
+        "@typescript-eslint/eslint-plugin": "8.63.0",
         "@typescript-eslint/parser": "8.63.0",
         "@vercel/ncc": "0.44.1",
         "cross-env": "10.1.0",
