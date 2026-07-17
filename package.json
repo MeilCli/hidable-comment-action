@@ -23,7 +23,7 @@
         "graphql": "16.14.2"
     },
     "devDependencies": {
-        "@eslint/eslintrc": "3.3.5",
+        "@eslint/eslintrc": "3.3.6",
         "@eslint/js": "10.0.1",
         "@graphql-codegen/cli": "7.2.0",
         "@graphql-codegen/typescript": "6.1.0",
