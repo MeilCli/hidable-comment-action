@@ -76872,7 +76872,7 @@ var node_ponyfill = __nccwpck_require__(5311);
 var graphql = __nccwpck_require__(119);
 // EXTERNAL MODULE: ./node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/dist/cjs/index.js
 var cjs = __nccwpck_require__(4648);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasDirectives.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasDirectives.js
 
 /**
 * @internal
@@ -76895,10 +76895,10 @@ function hasDirectives(names, root, all) {
 }
 //# sourceMappingURL=hasDirectives.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/environment/index.production.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/environment/index.production.js
 const index_production_DEV_ = false;
 //# sourceMappingURL=index.production.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/maybe.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/maybe.js
 function maybe(thunk) {
     try {
         return thunk();
@@ -76906,7 +76906,7 @@ function maybe(thunk) {
     catch { }
 }
 //# sourceMappingURL=maybe.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/global.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/globals/global.js
 
 /* harmony default export */ const globals_global = (// We don't expect the Function constructor ever to be invoked at runtime, as
 // long as at least one of globalThis, window, self, or global is defined, so
@@ -76922,12 +76922,12 @@ maybe(function () {
 }));
 //# sourceMappingURL=global.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/version.js
-const version = "4.2.12";
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/version.js
+const version = "4.3.0";
 const build = "esm";
 //# sourceMappingURL=version.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeUniqueId.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeUniqueId.js
 const prefixCounts = new Map();
 /**
 * These IDs won't be globally unique, but they will be unique within this
@@ -76944,7 +76944,7 @@ function makeUniqueId(prefix) {
 }
 //# sourceMappingURL=makeUniqueId.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/stringifyForDisplay.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/stringifyForDisplay.js
 
 /**
 * @internal
@@ -76961,7 +76961,7 @@ function stringifyForDisplay(value, space = 0) {
 }
 //# sourceMappingURL=stringifyForDisplay.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/invariant/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/invariant/index.js
 
 
 
@@ -77055,7 +77055,7 @@ function getFallbackErrorMsg(message, messageArgs = []) {
     }))}`;
 }
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/incremental/handlers/notImplemented.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/incremental/handlers/notImplemented.js
 
 
 class NotImplementedHandler {
@@ -77063,7 +77063,7 @@ class NotImplementedHandler {
         return false;
     }
     prepareRequest(request) {
-        invariant(!hasDirectives(["defer", "stream"], request.query), 67);
+        invariant(!hasDirectives(["defer", "stream"], request.query), 69);
         return request;
     }
     extractErrors() { }
@@ -77072,7 +77072,7 @@ class NotImplementedHandler {
 }
 //# sourceMappingURL=notImplemented.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationName.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationName.js
 /**
 * @internal
 * 
@@ -77083,7 +77083,7 @@ function getOperationName(doc, fallback) {
 }
 //# sourceMappingURL=getOperationName.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/caching/sizes.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/caching/sizes.js
 
 const cacheSizeSymbol = Symbol.for("apollo.cacheSize");
 /**
@@ -77114,7 +77114,7 @@ const sizes_cacheSizes = { ...globals_global[cacheSizeSymbol] };
 var bundle = __nccwpck_require__(2157);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@wry+caches@1.0.1/node_modules/@wry/caches/lib/bundle.cjs
 var lib_bundle = __nccwpck_require__(2838);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/caches.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/caches.js
 
 const scheduledCleanup = new WeakSet();
 function schedule(cache) {
@@ -77189,7 +77189,7 @@ const AutoCleanedStrongCache = function (max, dispose) {
 };
 //# sourceMappingURL=caches.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/memoize.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/memoize.js
 
 
 /**
@@ -77218,7 +77218,7 @@ function memoize(fn, { max, makeCacheKey = (args) => args, }) {
     };
 }
 //# sourceMappingURL=memoize.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/checkDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/checkDocument.js
 // Checks the document for errors and throws an exception if there is an error.
 
 
@@ -77284,7 +77284,7 @@ const checkDocument = memoize((doc, expectedType) => {
 });
 //# sourceMappingURL=checkDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getOperationDefinition.js
 
 /**
 * @internal
@@ -77297,7 +77297,7 @@ function getOperationDefinition(doc) {
 }
 //# sourceMappingURL=getOperationDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/utils/createOperation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/utils/createOperation.js
 
 function createOperation(request, { client }) {
     const operation = {
@@ -77332,7 +77332,7 @@ function createOperation(request, { client }) {
     return operation;
 }
 //# sourceMappingURL=createOperation.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/core/ApolloLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/core/ApolloLink.js
 
 
 
@@ -77435,7 +77435,7 @@ class ApolloLink {
             const result = test(operation);
             if (index_production_DEV_) {
                 if (typeof result !== "boolean") {
-                    index_production_DEV_ && invariant.warn(63, result);
+                    index_production_DEV_ && invariant.warn(65, result);
                 }
             }
             return result ?
@@ -77477,7 +77477,7 @@ class ApolloLink {
     static execute(link, request, context) {
         return link.request(createOperation(request, context), () => {
             if (index_production_DEV_) {
-                index_production_DEV_ && invariant.warn(64);
+                index_production_DEV_ && invariant.warn(66);
             }
             return cjs.EMPTY;
         });
@@ -77581,7 +77581,7 @@ class ApolloLink {
      * > request instead.
      */
     request(operation, forward) {
-        throw newInvariantError(65);
+        throw newInvariantError(67);
     }
     /**
     * @internal
@@ -77600,13 +77600,13 @@ class ApolloLink {
 }
 //# sourceMappingURL=ApolloLink.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/core/execute.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/core/execute.js
 
 const execute = ApolloLink.execute;
 //# sourceMappingURL=execute.js.map
 // EXTERNAL MODULE: ./node_modules/.pnpm/optimism@0.18.1/node_modules/optimism/lib/bundle.cjs
 var optimism_lib_bundle = __nccwpck_require__(1074);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/DocumentTransform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/DocumentTransform.js
 
 
 
@@ -77705,7 +77705,7 @@ class DocumentTransform {
                 makeCacheKey: (document) => {
                     const cacheKeys = this.getCacheKey(document);
                     if (cacheKeys) {
-                        invariant(Array.isArray(cacheKeys), 20);
+                        invariant(Array.isArray(cacheKeys), 22);
                         return stableCacheKeys.lookupArray(cacheKeys);
                     }
                 },
@@ -77794,7 +77794,7 @@ class DocumentTransform {
 }
 //# sourceMappingURL=DocumentTransform.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/compact.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/compact.js
 /**
 * Merges the provided objects shallowly and removes
 * all properties with an `undefined` value
@@ -77819,7 +77819,7 @@ function compact(...objects) {
 }
 //# sourceMappingURL=compact.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeOptions.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeOptions.js
 
 /**
 * @internal
@@ -77836,7 +77836,7 @@ function mergeOptions(defaults, options) {
 }
 //# sourceMappingURL=mergeOptions.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mapObservableFragment.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mapObservableFragment.js
 
 
 function mapObservableFragment(observable, mapFn) {
@@ -77861,7 +77861,7 @@ _cacheKey, mapFn) {
     return mapObservableFragment(observable, mapFn);
 }, { max: 1, makeCacheKey: (args) => args.slice(0, 2) });
 //# sourceMappingURL=mapObservableFragment.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeFragmentSpreads.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeFragmentSpreads.js
 
 function removeMaskedFragmentSpreads(document) {
     return (0,graphql/* visit */.YRT)(document, {
@@ -77873,7 +77873,7 @@ function removeMaskedFragmentSpreads(document) {
     });
 }
 //# sourceMappingURL=removeFragmentSpreads.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/index.production.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/index.production.js
 // eslint-disable-next-line no-restricted-syntax
 
 function unsupported() {
@@ -77881,7 +77881,7 @@ function unsupported() {
 }
 const getApolloCacheMemoryInternals = unsupported, getApolloClientMemoryInternals = unsupported, getInMemoryCacheMemoryInternals = unsupported;
 //# sourceMappingURL=index.production.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMemoryInternals.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMemoryInternals.js
 
 
 const globalCaches = {};
@@ -77920,6 +77920,8 @@ function getCurrentCacheSizes() {
     const defaults = {
         canonicalStringify: 1000 /* defaultCacheSizes["canonicalStringify"] */,
         checkDocument: 2000 /* defaultCacheSizes["checkDocument"] */,
+        isDeferredFragment: 2000 /* defaultCacheSizes["isDeferredFragment"] */,
+        isStreamField: 2000 /* defaultCacheSizes["isStreamField"] */,
         print: 2000 /* defaultCacheSizes["print"] */,
         "documentTransform.cache": 2000 /* defaultCacheSizes["documentTransform.cache"] */,
         "queryManager.getDocumentInfo": 2000 /* defaultCacheSizes["queryManager.getDocumentInfo"] */,
@@ -77932,6 +77934,8 @@ function getCurrentCacheSizes() {
         "inMemoryCache.maybeBroadcastWatch": 5000 /* defaultCacheSizes["inMemoryCache.maybeBroadcastWatch"] */,
         "inMemoryCache.executeSelectionSet": 50000 /* defaultCacheSizes["inMemoryCache.executeSelectionSet"] */,
         "inMemoryCache.executeSubSelectedArray": 10000 /* defaultCacheSizes["inMemoryCache.executeSubSelectedArray"] */,
+        "inMemoryCache.prunePartialBoundaries": 20000 /* defaultCacheSizes["inMemoryCache.prunePartialBoundaries"] */,
+        "inMemoryCache.prunePartialStreamArray": 20000 /* defaultCacheSizes["inMemoryCache.prunePartialStreamArray"] */,
     };
     return Object.fromEntries(Object.entries(defaults).map(([k, v]) => [
         k,
@@ -77971,6 +77975,8 @@ function _getInMemoryCacheMemoryInternals() {
             executeSelectionSet: getWrapperInformation(this["storeReader"]["executeSelectionSet"]),
             executeSubSelectedArray: getWrapperInformation(this["storeReader"]["executeSubSelectedArray"]),
             maybeBroadcastWatch: getWrapperInformation(this["maybeBroadcastWatch"]),
+            prunePartialBoundaries: getWrapperInformation(this["storeReader"]["prunePartialBoundaries"]),
+            prunePartialStreamArray: getWrapperInformation(this["storeReader"]["prunePartialStreamArray"]),
         },
         fragmentRegistry: {
             findFragmentSpreads: getWrapperInformation(fragments?.findFragmentSpreads),
@@ -78011,7 +78017,7 @@ function linkInfo(link) {
 }
 //# sourceMappingURL=getMemoryInternals.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/canonicalStringify.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/canonicalStringify.js
 
 
 
@@ -78121,7 +78127,7 @@ function everyKeyInOrder(key, i, keys) {
     return i === 0 || keys[i - 1] <= key;
 }
 //# sourceMappingURL=canonicalStringify.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/utils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/utils.js
 function isBranded(error, name) {
     return (typeof error === "object" &&
         error !== null &&
@@ -78136,7 +78142,7 @@ function brand(error) {
     });
 }
 //# sourceMappingURL=utils.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedGraphQLErrors.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedGraphQLErrors.js
 
 function defaultFormatMessage(errors) {
     return (errors
@@ -78239,7 +78245,7 @@ class CombinedGraphQLErrors extends Error {
 }
 //# sourceMappingURL=CombinedGraphQLErrors.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedProtocolErrors.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/CombinedProtocolErrors.js
 
 function CombinedProtocolErrors_defaultFormatMessage(errors) {
     return errors.map((e) => e.message || "Error message not found.").join("\n");
@@ -78321,7 +78327,7 @@ class CombinedProtocolErrors extends Error {
 }
 //# sourceMappingURL=CombinedProtocolErrors.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/isErrorLike.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/isErrorLike.js
 function isErrorLike(error) {
     return (error !== null &&
         typeof error === "object" &&
@@ -78331,7 +78337,7 @@ function isErrorLike(error) {
             typeof error.stack === "undefined"));
 }
 //# sourceMappingURL=isErrorLike.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/UnconventionalError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/UnconventionalError.js
 
 /**
  * A wrapper error type that represents a non-standard error thrown from a
@@ -78395,7 +78401,7 @@ class UnconventionalError extends Error {
     }
 }
 //# sourceMappingURL=UnconventionalError.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/index.js
 
 
 
@@ -78427,7 +78433,7 @@ function toErrorLike(error) {
 
 
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/LinkError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/LinkError.js
 const registry = new WeakSet();
 /**
 * @internal Please do not use directly.
@@ -78492,7 +78498,7 @@ const LinkError = {
 };
 //# sourceMappingURL=LinkError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/createFragmentMap.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/createFragmentMap.js
 /**
 * Utility function that takes a list of fragment definitions and makes a hash out of them
 * that maps the name of the fragment to the fragment definition.
@@ -78510,7 +78516,7 @@ function createFragmentMap(fragments = []) {
 }
 //# sourceMappingURL=createFragmentMap.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinitions.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinitions.js
 /**
 * @internal
 * 
@@ -78521,7 +78527,7 @@ function getFragmentDefinitions(doc) {
 }
 //# sourceMappingURL=getFragmentDefinitions.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonNullObject.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonNullObject.js
 /**
 * @internal
 * 
@@ -78532,7 +78538,7 @@ function isNonNullObject(obj) {
 }
 //# sourceMappingURL=isNonNullObject.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/deepFreeze.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/deepFreeze.js
 
 
 /**
@@ -78570,7 +78576,7 @@ function shallowFreeze(obj) {
 }
 //# sourceMappingURL=deepFreeze.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/maybeDeepFreeze.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/maybeDeepFreeze.js
 
 
 /**
@@ -78586,7 +78592,7 @@ function maybeDeepFreeze(obj) {
 }
 //# sourceMappingURL=maybeDeepFreeze.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/resultKeyNameFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/resultKeyNameFromField.js
 /**
 * @internal
 * 
@@ -78597,7 +78603,7 @@ function resultKeyNameFromField(field) {
 }
 //# sourceMappingURL=resultKeyNameFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/utils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/utils.js
 
 
 
@@ -78619,13 +78625,13 @@ function getFragmentMaskMode(fragment) {
     if (index_production_DEV_) {
         if (modeArg) {
             if (modeArg.value.kind === graphql/* Kind */.b8C.VARIABLE) {
-                index_production_DEV_ && invariant.warn(44);
+                index_production_DEV_ && invariant.warn(46);
             }
             else if (modeArg.value.kind !== graphql/* Kind */.b8C.STRING) {
-                index_production_DEV_ && invariant.warn(45);
+                index_production_DEV_ && invariant.warn(47);
             }
             else if (modeArg.value.value !== "migrate") {
-                index_production_DEV_ && invariant.warn(46, modeArg.value.value);
+                index_production_DEV_ && invariant.warn(48, modeArg.value.value);
             }
         }
     }
@@ -78638,7 +78644,7 @@ function getFragmentMaskMode(fragment) {
 }
 //# sourceMappingURL=utils.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskDefinition.js
 
 
 
@@ -78727,7 +78733,7 @@ function maskSelectionSet(data, selectionSet, context, migration, path) {
             const fragment = context.fragmentMap[fragmentName] ||
                 (context.fragmentMap[fragmentName] =
                     context.cache.lookupFragment(fragmentName));
-            invariant(fragment, 39, fragmentName);
+            invariant(fragment, 41, fragmentName);
             const mode = getFragmentMaskMode(selection);
             if (mode !== "mask") {
                 value = maskSelectionSet(data, fragment.selectionSet, context, mode === "migrate", path);
@@ -78753,7 +78759,7 @@ function getAccessorWarningDescriptor(fieldName, value, path, operationName, ope
         if (disableWarningsSlot.getValue()) {
             return value;
         }
-        index_production_DEV_ && invariant.warn(40, operationName ?
+        index_production_DEV_ && invariant.warn(42, operationName ?
             `${operationType} '${operationName}'`
             : `anonymous ${operationType}`, `${path}.${fieldName}`.replace(/^\./, ""));
         getValue = () => value;
@@ -78772,7 +78778,7 @@ function getAccessorWarningDescriptor(fieldName, value, path, operationName, ope
 }
 //# sourceMappingURL=maskDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskOperation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskOperation.js
 
 
 
@@ -78783,7 +78789,7 @@ function getAccessorWarningDescriptor(fieldName, value, path, operationName, ope
 */
 function maskOperation(data, document, cache) {
     const definition = getOperationDefinition(document);
-    invariant(definition, 43);
+    invariant(definition, 45);
     if (data == null) {
         // Maintain the original `null` or `undefined` value
         return data;
@@ -78801,7 +78807,7 @@ function maskOperation(data, document, cache) {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@wry+equality@0.5.7/node_modules/@wry/equality/lib/bundle.cjs
 var equality_lib_bundle = __nccwpck_require__(2898);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskFragment.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/masking/maskFragment.js
 
 
 
@@ -78815,11 +78821,11 @@ var equality_lib_bundle = __nccwpck_require__(2898);
 function maskFragment(data, document, cache, fragmentName) {
     const fragments = document.definitions.filter((node) => node.kind === graphql/* Kind */.b8C.FRAGMENT_DEFINITION);
     if (typeof fragmentName === "undefined") {
-        invariant(fragments.length === 1, 41, fragments.length);
+        invariant(fragments.length === 1, 43, fragments.length);
         fragmentName = fragments[0].name.value;
     }
     const fragment = fragments.find((fragment) => fragment.name.value === fragmentName);
-    invariant(!!fragment, 42, fragmentName);
+    invariant(!!fragment, 44, fragmentName);
     if (data == null) {
         // Maintain the original `null` or `undefined` value
         return data;
@@ -78841,7 +78847,7 @@ function maskFragment(data, document, cache, fragmentName) {
 }
 //# sourceMappingURL=maskFragment.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/print.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/print.js
 
 
 
@@ -78872,7 +78878,7 @@ if (index_production_DEV_) {
     registerGlobalCache("print", () => (printCache ? printCache.size : 0));
 }
 //# sourceMappingURL=print.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestSettled.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestSettled.js
 /**
  * Returns true if the network request is in ready or error state according to a given network
  * status.
@@ -78881,7 +78887,7 @@ function isNetworkRequestSettled(networkStatus) {
     return networkStatus === 7 || networkStatus === 8;
 }
 //# sourceMappingURL=isNetworkRequestSettled.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestInFlight.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/isNetworkRequestInFlight.js
 
 /**
  * Returns true if there is currently a network request in flight according to a given network
@@ -78891,7 +78897,7 @@ function isNetworkRequestInFlight(networkStatus) {
     return !isNetworkRequestSettled(networkStatus);
 }
 //# sourceMappingURL=isNetworkRequestInFlight.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/graphQLResultHasError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/graphQLResultHasError.js
 /**
 * @internal
 * 
@@ -78902,7 +78908,7 @@ function graphQLResultHasError(result) {
 }
 //# sourceMappingURL=graphQLResultHasError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/filterMap.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/filterMap.js
 
 function filterMap(fn, makeContext = () => undefined) {
     return (source) => new cjs.Observable((subscriber) => {
@@ -78931,7 +78937,7 @@ function filterMap(fn, makeContext = () => undefined) {
     });
 }
 //# sourceMappingURL=filterMap.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/toQueryResult.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/toQueryResult.js
 /**
 * @internal
 * 
@@ -78948,7 +78954,7 @@ function toQueryResult(value) {
 }
 //# sourceMappingURL=toQueryResult.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasForcedResolvers.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/hasForcedResolvers.js
 
 function hasForcedResolvers(document) {
     let forceResolvers = false;
@@ -78969,7 +78975,7 @@ function hasForcedResolvers(document) {
     return forceResolvers;
 }
 //# sourceMappingURL=hasForcedResolvers.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentDefinition.js
 
 /**
 * @internal
@@ -78977,15 +78983,15 @@ function hasForcedResolvers(document) {
 * @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
 */
 function getFragmentDefinition(doc) {
-    invariant(doc.kind === "Document", 6);
-    invariant(doc.definitions.length <= 1, 7);
+    invariant(doc.kind === "Document", 8);
+    invariant(doc.definitions.length <= 1, 9);
     const fragmentDef = doc.definitions[0];
-    invariant(fragmentDef.kind === "FragmentDefinition", 8);
+    invariant(fragmentDef.kind === "FragmentDefinition", 10);
     return fragmentDef;
 }
 //# sourceMappingURL=getFragmentDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isArray.js
 /**
 * A version of Array.isArray that works better with readonly arrays.
 *
@@ -78996,7 +79002,7 @@ function getFragmentDefinition(doc) {
 const isArray = Array.isArray;
 //# sourceMappingURL=isArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonEmptyArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isNonEmptyArray.js
 /**
 * @internal
 * 
@@ -79007,7 +79013,7 @@ function isNonEmptyArray(value) {
 }
 //# sourceMappingURL=isNonEmptyArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeDirectivesFromDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/removeDirectivesFromDocument.js
 
 
 
@@ -79042,7 +79048,7 @@ function removeDirectivesFromDocument(directives, doc) {
                 return getInUseByFragmentName(ancestor.name.value);
             }
         }
-        invariant.error(14);
+        invariant.error(16);
         return null;
     };
     let operationCount = 0;
@@ -79308,7 +79314,7 @@ function nullIfDocIsEmpty(doc) {
 }
 //# sourceMappingURL=removeDirectivesFromDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/valueToObjectRepresentation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/valueToObjectRepresentation.js
 
 
 /**
@@ -79346,12 +79352,12 @@ function valueToObjectRepresentation(argObj, name, value, variables) {
         argObj[name.value] = null;
     }
     else {
-        throw newInvariantError(19, name.value, value.kind);
+        throw newInvariantError(21, name.value, value.kind);
     }
 }
 //# sourceMappingURL=valueToObjectRepresentation.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getDefaultValues.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getDefaultValues.js
 
 /**
 * @internal
@@ -79372,7 +79378,7 @@ function getDefaultValues(definition) {
 }
 //# sourceMappingURL=getDefaultValues.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isDocumentNode.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isDocumentNode.js
 
 /**
 * @internal
@@ -79386,7 +79392,7 @@ function isDocumentNode(value) {
 }
 //# sourceMappingURL=isDocumentNode.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/constants.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/constants.js
 /**
 * @internal
 * Used to set `extensions` on the GraphQL result without exposing it
@@ -79409,58 +79415,28 @@ const streamInfoSymbol = Symbol.for("apollo.result.streamInfo");
 * @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
 */
 const variablesUnknownSymbol = Symbol.for("apollo.observableQuery.variablesUnknown");
+/**
+* @internal
+* Used to tell `ApolloCache.diff` whether to handle incremental results. This
+* changes the behavior of `returnPartialData: false` when handling incremental
+* queries with partial or empty data at a `@defer` or `@stream` boundary. This
+* also signals to the cache that it should return a data state.
+*
+* When `handleIncrementalSymbol` is not provided, the cache should behave as it
+* does today.
+*
+* 3rd party caches that want to implement this behavior should talk to the
+* Apollo Client team. Open a GitHub issue so we can chat with you on what is
+* required for this to work in Apollo Client version 4.x.
+*
+* Meant for cache implementers only. This should not be used in userland code.
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+const handleIncrementalSymbol = Symbol.for("apollo.cache.handleIncremental");
 //# sourceMappingURL=constants.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/networkStatus.js
-/**
- * The current status of a query’s execution in our system.
- */
-var NetworkStatus;
-(function (NetworkStatus) {
-    /**
-     * The query has never been run before and the query is now currently running. A query will still
-     * have this network status even if a partial data result was returned from the cache, but a
-     * query was dispatched anyway.
-     */
-    NetworkStatus[NetworkStatus["loading"] = 1] = "loading";
-    /**
-     * If `setVariables` was called and a query was fired because of that then the network status
-     * will be `setVariables` until the result of that query comes back.
-     */
-    NetworkStatus[NetworkStatus["setVariables"] = 2] = "setVariables";
-    /**
-     * Indicates that `fetchMore` was called on this query and that the query created is currently in
-     * flight.
-     */
-    NetworkStatus[NetworkStatus["fetchMore"] = 3] = "fetchMore";
-    /**
-     * Similar to the `setVariables` network status. It means that `refetch` was called on a query
-     * and the refetch request is currently in flight.
-     */
-    NetworkStatus[NetworkStatus["refetch"] = 4] = "refetch";
-    /**
-     * Indicates that a polling query is currently in flight. So for example if you are polling a
-     * query every 10 seconds then the network status will switch to `poll` every 10 seconds whenever
-     * a poll request has been sent but not resolved.
-     */
-    NetworkStatus[NetworkStatus["poll"] = 6] = "poll";
-    /**
-     * No request is in flight for this query, and no errors happened. Everything is OK.
-     */
-    NetworkStatus[NetworkStatus["ready"] = 7] = "ready";
-    /**
-     * No request is in flight for this query, but one or more errors were detected.
-     */
-    NetworkStatus[NetworkStatus["error"] = 8] = "error";
-    /**
-     * Indicates that a `@defer` query has received at least the first chunk of
-     * the result but the full result has not yet been fully streamed to the
-     * client.
-     */
-    NetworkStatus[NetworkStatus["streaming"] = 9] = "streaming";
-})(NetworkStatus || (NetworkStatus = {}));
-//# sourceMappingURL=networkStatus.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentFromSelection.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentFromSelection.js
 
 /**
 * @internal
@@ -79477,8 +79453,8 @@ function getFragmentFromSelection(selection, fragmentMap) {
                 return fragmentMap(fragmentName);
             }
             const fragment = fragmentMap && fragmentMap[fragmentName];
-            invariant(fragment, 9, fragmentName);
-            return fragment || null;
+            invariant(fragment, 11, fragmentName);
+            return fragment;
         }
         default:
             return null;
@@ -79486,7 +79462,7 @@ function getFragmentFromSelection(selection, fragmentMap) {
 }
 //# sourceMappingURL=getFragmentFromSelection.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMainDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getMainDefinition.js
 
 
 /**
@@ -79542,11 +79518,11 @@ function getMainDefinition(queryDoc) {
     if (fragmentDefinition) {
         return fragmentDefinition;
     }
-    throw newInvariantError(12);
+    throw newInvariantError(14);
 }
 //# sourceMappingURL=getMainDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isField.js
 /**
 * @internal
 * 
@@ -79557,7 +79533,185 @@ function isField(selection) {
 }
 //# sourceMappingURL=isField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/shouldInclude.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/matchScalarList.js
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function matchScalarList(scalarType) {
+    return scalarType.match(/^\[(.*)\]$/);
+}
+//# sourceMappingURL=matchScalarList.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/unwrapScalarType.js
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function unwrapScalarType(scalarType) {
+    return scalarType.replace(/[[\]]/g, "");
+}
+//# sourceMappingURL=unwrapScalarType.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/coerceScalarFieldsToParsed.js
+
+
+
+
+
+
+
+
+
+
+
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function coerceScalarFieldsToParsed(result, query, cache) {
+    const operationType = getOperationDefinition(query)?.operation;
+    const fragmentMap = createFragmentMap(getFragmentDefinitions(query));
+    invariant(operationType, 6);
+    function coerceFieldArray(field, fieldValue, typename, scalarType) {
+        let changed = false;
+        const items = fieldValue.map((item) => {
+            const coerced = coerceField(field, item, typename, scalarType);
+            changed ||= coerced !== item;
+            return coerced;
+        });
+        return changed ? items : fieldValue;
+    }
+    function coerceField(field, fieldValue, typename, scalarType) {
+        if (Array.isArray(fieldValue) && !scalarType) {
+            return coerceFieldArray(field, fieldValue, typename, scalarType);
+        }
+        if (field.selectionSet) {
+            return coerceSelectionSet(field.selectionSet, fieldValue);
+        }
+        if (fieldValue === null || !typename)
+            return fieldValue;
+        if (scalarType) {
+            const match = matchScalarList(scalarType);
+            if (match) {
+                if (Array.isArray(fieldValue)) {
+                    return coerceFieldArray(field, fieldValue, typename, match[1]);
+                }
+                else {
+                    if (index_production_DEV_) {
+                        index_production_DEV_ && invariant.warn(
+                            7,
+                            `${typename}.${field.name.value}`,
+                            scalarType,
+                            unwrapScalarType(scalarType)
+                        );
+                    }
+                }
+            }
+            const scalar = cache.getScalar(unwrapScalarType(scalarType));
+            if (scalar) {
+                return scalar.coerceToParsed(fieldValue);
+            }
+        }
+        return fieldValue;
+    }
+    function coerceSelectionSet(selectionSet, data, typename) {
+        if (data === null || typeof data !== "object")
+            return data;
+        const result = { ...data };
+        let changed = false;
+        if (Object.hasOwn(data, "__typename")) {
+            typename = data.__typename;
+        }
+        const workSet = new Set(selectionSet.selections);
+        workSet.forEach((selection) => {
+            if (isField(selection)) {
+                const resultName = resultKeyNameFromField(selection);
+                if (!Object.hasOwn(data, resultName))
+                    return;
+                const fieldValue = data[resultName];
+                const coerced = coerceField(selection, fieldValue, typename, typename ?
+                    cache.getScalarTypeForField(typename, selection.name.value)
+                    : undefined);
+                changed ||= coerced !== fieldValue;
+                result[resultName] = coerced;
+            }
+            else {
+                const fragment = getFragmentFromSelection(selection, fragmentMap);
+                if (fragment && typename && cache.fragmentMatches(fragment, typename)) {
+                    fragment.selectionSet.selections.forEach((s) => workSet.add(s));
+                }
+            }
+        });
+        return changed ? result : data;
+    }
+    return coerceSelectionSet(getMainDefinition(query).selectionSet, result, cache.getRootTypename(operationType));
+}
+//# sourceMappingURL=coerceScalarFieldsToParsed.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/dataStateErrorCache.js
+// When working with an incremental result, errors in `@defer` fragments might
+// bubble to the fragment boundary which leaves a hole in the data. When the
+// `errorPolicy` is `"none"` we `throw` the constructed error so that it moves
+// through the observable error flow. Because of this, we need a way to
+// communicate the known dataState returned by QueryInfo to ObservableQuery.
+// This ensures a "streaming" dataState can still be reported for errorPolicy:
+// "none" queries.
+const dataStateErrorCache = new WeakMap();
+//# sourceMappingURL=dataStateErrorCache.js.map
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/networkStatus.js
+/**
+ * The current status of a query’s execution in our system.
+ */
+var NetworkStatus;
+(function (NetworkStatus) {
+    /**
+     * The query has never been run before and the query is now currently running. A query will still
+     * have this network status even if a partial data result was returned from the cache, but a
+     * query was dispatched anyway.
+     */
+    NetworkStatus[NetworkStatus["loading"] = 1] = "loading";
+    /**
+     * If `setVariables` was called and a query was fired because of that then the network status
+     * will be `setVariables` until the result of that query comes back.
+     */
+    NetworkStatus[NetworkStatus["setVariables"] = 2] = "setVariables";
+    /**
+     * Indicates that `fetchMore` was called on this query and that the query created is currently in
+     * flight.
+     */
+    NetworkStatus[NetworkStatus["fetchMore"] = 3] = "fetchMore";
+    /**
+     * Similar to the `setVariables` network status. It means that `refetch` was called on a query
+     * and the refetch request is currently in flight.
+     */
+    NetworkStatus[NetworkStatus["refetch"] = 4] = "refetch";
+    /**
+     * Indicates that a polling query is currently in flight. So for example if you are polling a
+     * query every 10 seconds then the network status will switch to `poll` every 10 seconds whenever
+     * a poll request has been sent but not resolved.
+     */
+    NetworkStatus[NetworkStatus["poll"] = 6] = "poll";
+    /**
+     * No request is in flight for this query, and no errors happened. Everything is OK.
+     */
+    NetworkStatus[NetworkStatus["ready"] = 7] = "ready";
+    /**
+     * No request is in flight for this query, but one or more errors were detected.
+     */
+    NetworkStatus[NetworkStatus["error"] = 8] = "error";
+    /**
+     * Indicates that a `@defer` query has received at least the first chunk of
+     * the result but the full result has not yet been fully streamed to the
+     * client.
+     */
+    NetworkStatus[NetworkStatus["streaming"] = 9] = "streaming";
+})(NetworkStatus || (NetworkStatus = {}));
+//# sourceMappingURL=networkStatus.js.map
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/shouldInclude.js
 
 /**
 * @internal
@@ -79573,7 +79727,7 @@ function shouldInclude({ directives }, variables) {
         if (ifArgument.value.kind === "Variable") {
             evaledValue =
                 variables && variables[ifArgument.value.name.value];
-            invariant(evaledValue !== void 0, 15, directive.name.value);
+            invariant(evaledValue !== void 0, 17, directive.name.value);
         }
         else {
             evaledValue = ifArgument.value.value;
@@ -79592,13 +79746,13 @@ function getInclusionDirectives(directives) {
                 return;
             const directiveArguments = directive.arguments;
             const directiveName = directive.name.value;
-            invariant(directiveArguments && directiveArguments.length === 1, 16, directiveName);
+            invariant(directiveArguments && directiveArguments.length === 1, 18, directiveName);
             const ifArgument = directiveArguments[0];
-            invariant(ifArgument.name && ifArgument.name.value === "if", 17, directiveName);
+            invariant(ifArgument.name && ifArgument.name.value === "if", 19, directiveName);
             const ifValue = ifArgument.value;
             // means it has to be a variable value if this is a valid @skip or @include directive
             invariant(ifValue &&
-                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 18, directiveName);
+                (ifValue.kind === "Variable" || ifValue.kind === "BooleanValue"), 20, directiveName);
             result.push({ directive, ifArgument });
         });
     }
@@ -79606,7 +79760,7 @@ function getInclusionDirectives(directives) {
 }
 //# sourceMappingURL=shouldInclude.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/equalByQuery.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/equalByQuery.js
 
 
 
@@ -79697,7 +79851,26 @@ function directiveIsNonreactive(dir) {
     return dir.name.value === "nonreactive";
 }
 //# sourceMappingURL=equalByQuery.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getQueryDefinition.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/toDiffWithDataState.js
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function toDiffWithDataState(diff) {
+    if ("dataState" in diff) {
+        return diff;
+    }
+    return {
+        ...diff,
+        dataState: diff.complete ? "complete"
+            : diff.result === null ? "empty"
+                : "partial",
+    };
+}
+//# sourceMappingURL=toDiffWithDataState.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getQueryDefinition.js
 
 
 /**
@@ -79707,18 +79880,19 @@ function directiveIsNonreactive(dir) {
 */
 function getQueryDefinition(doc) {
     const queryDef = getOperationDefinition(doc);
-    invariant(queryDef && queryDef.operation === "query", 13);
+    invariant(queryDef && queryDef.operation === "query", 15);
     return queryDef;
 }
 //# sourceMappingURL=getQueryDefinition.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/preventUnhandledRejection.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/preventUnhandledRejection.js
 function preventUnhandledRejection(promise) {
     promise.catch(() => { });
     return promise;
 }
 //# sourceMappingURL=preventUnhandledRejection.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/ObservableQuery.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/ObservableQuery.js
+
 
 
 
@@ -79741,16 +79915,29 @@ const empty = {
     dataState: "empty",
     partial: true,
 };
+const destructiveMethodCounts = new WeakMap();
+function wrapDestructiveCacheMethod(cache, methodName) {
+    const original = cache[methodName];
+    if (typeof original === "function") {
+        // @ts-expect-error this is just too generic to be typed correctly
+        cache[methodName] = function () {
+            destructiveMethodCounts.set(cache, 
+            // The %1e15 allows the count to wrap around to 0 safely every
+            // quadrillion evictions, so there's no risk of overflow. To be
+            // clear, this is more of a pedantic principle than something
+            // that matters in any conceivable practical scenario.
+            (destructiveMethodCounts.get(cache) + 1) % 1e15);
+            // @ts-expect-error this is just too generic to be typed correctly
+            return original.apply(this, arguments);
+        };
+    }
+}
 class ObservableQuery {
     options;
     queryName;
     variablesUnknown = false;
-    /**
-    * @internal will be read and written from `QueryInfo`
-    * 
-    * @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
-    */
-    _lastWrite;
+    didWarnOnFeud = false;
+    lastMissing;
     // The `query` computed property will always reflect the document transformed
     // by the last run query. `this.options.query` will always reflect the raw
     // untransformed query to ensure document transforms with runtime conditionals
@@ -79787,6 +79974,18 @@ class ObservableQuery {
     }
     constructor({ queryManager, options, transformedQuery = queryManager.transform(options.query), }) {
         this.queryManager = queryManager;
+        // Track how often destructive cache methods are called, since we want
+        // eviction to override the feud-stopping logic in `shouldAutoRefetch`,
+        // by causing it to return true. Wrapping these cache methods is a bit of a
+        // hack, but it saves us from having to make eviction counting an official
+        // part of the ApolloCache API.
+        const { cache } = queryManager;
+        if (!destructiveMethodCounts.has(cache)) {
+            destructiveMethodCounts.set(cache, 0);
+            wrapDestructiveCacheMethod(cache, "evict");
+            wrapDestructiveCacheMethod(cache, "modify");
+            wrapDestructiveCacheMethod(cache, "reset");
+        }
         // active state
         this.waitForNetworkResult = options.fetchPolicy === "network-only";
         this.isTornDown = false;
@@ -79797,7 +79996,7 @@ class ObservableQuery {
         // Make sure we don't store "standby" as the initialFetchPolicy.
         initialFetchPolicy = fetchPolicy === "standby" ? defaultFetchPolicy : (fetchPolicy), } = options;
         if (options[variablesUnknownSymbol]) {
-            invariant(fetchPolicy === "standby", 82);
+            invariant(fetchPolicy === "standby", 84);
             this.variablesUnknown = true;
         }
         this.lastQuery = transformedQuery;
@@ -79926,12 +80125,13 @@ class ObservableQuery {
     * @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
     */
     getCacheDiff({ optimistic = true } = {}) {
-        return this.cache.diff({
+        return toDiffWithDataState(this.cache.diff({
             query: this.query,
             variables: this.variables,
             returnPartialData: true,
             optimistic,
-        });
+            [handleIncrementalSymbol]: undefined,
+        }));
     }
     getInitialResult(initialFetchPolicy) {
         let fetchPolicy = initialFetchPolicy || this.options.fetchPolicy;
@@ -79941,16 +80141,18 @@ class ObservableQuery {
         }
         const cacheResult = () => {
             const diff = this.getCacheDiff();
+            let { dataState } = diff;
             // TODO: queryInfo.getDiff should handle this since cache.diff returns a
             // null when returnPartialData is false
             const data = this.options.returnPartialData || diff.complete ?
                 diff.result ?? undefined
                 : undefined;
+            if (data === undefined) {
+                dataState = "empty";
+            }
             return this.maskResult({
                 data,
-                dataState: diff.complete ? "complete"
-                    : data === undefined ? "empty"
-                        : "partial",
+                dataState,
                 loading: !diff.complete,
                 networkStatus: diff.complete ? NetworkStatus.ready : NetworkStatus.loading,
                 partial: !diff.complete,
@@ -80103,7 +80305,7 @@ class ObservableQuery {
             const queryDef = getQueryDefinition(this.query);
             const vars = queryDef.variableDefinitions;
             if (!vars || !vars.some((v) => v.variable.name.value === "variables")) {
-                index_production_DEV_ && invariant.warn(83, variables, queryDef.name?.value || queryDef);
+                index_production_DEV_ && invariant.warn(85, variables, queryDef.name?.value || queryDef);
             }
         }
         if (variables && !(0,equality_lib_bundle/* equal */.LC)(this.variables, variables)) {
@@ -80111,7 +80313,6 @@ class ObservableQuery {
             reobserveOptions.variables = this.options.variables =
                 this.getVariablesWithDefaults({ ...this.variables, ...variables });
         }
-        this._lastWrite = undefined;
         return this._reobserve(reobserveOptions, {
             newNetworkStatus: NetworkStatus.refetch,
         });
@@ -80119,7 +80320,7 @@ class ObservableQuery {
     fetchMore({ query, variables, context, errorPolicy, updateQuery, }) {
         invariant(
             this.options.fetchPolicy !== "cache-only",
-            84,
+            86,
             getOperationName(this.query, "(anonymous)")
         );
         const combinedOptions = {
@@ -80153,7 +80354,7 @@ class ObservableQuery {
         let wasUpdated = false;
         const isCached = this.options.fetchPolicy !== "no-cache";
         if (!isCached) {
-            invariant(updateQuery, 85);
+            invariant(updateQuery, 87);
         }
         const { finalize, pushNotification } = this.pushOperation(NetworkStatus.fetchMore);
         pushNotification({
@@ -80230,9 +80431,7 @@ class ObservableQuery {
                                             // will be overwritten anyways, just here for types sake
                                             loading: false,
                                             data: diff.result,
-                                            dataState: fetchMoreResult.dataState === "streaming" ?
-                                                "streaming"
-                                                : "complete",
+                                            dataState: diff.complete ? "complete" : "streaming",
                                         },
                                     });
                                 }
@@ -80329,7 +80528,7 @@ class ObservableQuery {
                         onError(error);
                     }
                     else {
-                        invariant.error(86, error);
+                        invariant.error(88, error);
                     }
                     return;
                 }
@@ -80580,7 +80779,7 @@ class ObservableQuery {
                 if (!this.didWarnCacheOnlyPolling &&
                     pollInterval &&
                     fetchPolicy === "cache-only") {
-                    index_production_DEV_ && invariant.warn(87, getOperationName(this.query, "(anonymous)"));
+                    index_production_DEV_ && invariant.warn(89, getOperationName(this.query, "(anonymous)"));
                     this.didWarnCacheOnlyPolling = true;
                 }
             }
@@ -80646,7 +80845,10 @@ class ObservableQuery {
     }
     _reobserve(newOptions, internalOptions) {
         this.isTornDown = false;
-        let { newNetworkStatus } = internalOptions || {};
+        let { newNetworkStatus, keepLastMissing } = internalOptions || {};
+        if (!keepLastMissing) {
+            this.lastMissing = undefined;
+        }
         this.queryManager.obsQueries.add(this);
         const useDisposableObservable = 
         // Refetching uses a disposable Observable to allow refetches using different
@@ -80787,7 +80989,7 @@ class ObservableQuery {
         this.queryManager.obsQueries.delete(this);
         this.isTornDown = true;
         this.abortActiveOperations();
-        this._lastWrite = undefined;
+        this.lastMissing = undefined;
     }
     transformDocument(document) {
         return this.queryManager.transform(document);
@@ -80845,53 +81047,126 @@ class ObservableQuery {
                 return;
             }
         }
-        const { dirty } = this;
+        const { dirty, lastMissing } = this;
+        const { fetchPolicy } = this.options;
         this.resetNotifications();
-        if (dirty &&
-            (this.options.fetchPolicy === "cache-only" ||
-                this.options.fetchPolicy === "cache-and-network" ||
-                !this.activeOperations.size)) {
-            const diff = this.getCacheDiff();
-            if (
-            // `fromOptimisticTransaction` is not available through the `cache.diff`
-            // code path, so we need to check it this way
-            (0,equality_lib_bundle/* equal */.LC)(diff.result, this.getCacheDiff({ optimistic: false }).result)) {
-                //If this diff did not come from an optimistic transaction
-                // make the ObservableQuery "reobserve" the latest data
-                // using a temporary fetch policy of "cache-first", so complete cache
-                // results have a chance to be delivered without triggering additional
-                // network requests, even when options.fetchPolicy is "network-only"
-                // or "cache-and-network". All other fetch policies are preserved by
-                // this method, and are handled by calling oq.reobserve(). If this
-                // reobservation is spurious, distinctUntilChanged still has a
-                // chance to catch it before delivery to ObservableQuery subscribers.
-                this.reobserveCacheFirst();
-            }
-            else {
-                // If this diff came from an optimistic transaction, deliver the
-                // current cache data to the ObservableQuery, but don't perform a
-                // reobservation, since oq.reobserveCacheFirst might make a network
-                // request, and we never want to trigger network requests in the
-                // middle of optimistic updates.
-                this.input.next({
-                    kind: "N",
-                    value: {
-                        data: diff.result,
-                        dataState: diff.complete ? "complete"
-                            : diff.result ? "partial"
-                                : "empty",
-                        networkStatus: NetworkStatus.ready,
-                        loading: false,
-                        error: undefined,
-                        partial: !diff.complete,
-                    },
-                    source: "cache",
-                    query: this.query,
-                    variables: this.variables,
-                    meta: {},
-                });
-            }
+        if (!dirty ||
+            (fetchPolicy !== "cache-only" &&
+                fetchPolicy !== "cache-and-network" &&
+                this.activeOperations.size)) {
+            return;
         }
+        const diff = this.getCacheDiff();
+        const current = this.getCurrentResult();
+        // `fromOptimisticTransaction` is not available through the `cache.diff`
+        // code path, so we need to check whether the cache result is an optimistic
+        // result this way.
+        const isOptimistic = !(0,equality_lib_bundle/* equal */.LC)(diff.result, this.getCacheDiff({ optimistic: false }).result);
+        if (
+        // When this diff came from an optimistic transaction, deliver the
+        // current cache data to the ObservableQuery, but don't perform a
+        // reobservation, since oq.reobserveCacheFirst might make a network
+        // request, and we never want to trigger network requests in the
+        // middle of optimistic updates.
+        isOptimistic ||
+            // If we get a cache update in the middle of streaming (possible with
+            // cache-and-network fetch policy), just deliver the cache value without
+            // going through the full reobserve which would otherwise trigger another
+            // request (deduplication should kick in, but doing so replays any
+            // previous emits from the link chain, which get rewritten into the cache
+            // and might clobber this cache update)
+            (!diff.complete && current.networkStatus === NetworkStatus.streaming)) {
+            this.deliverCacheDiff(diff);
+            return;
+        }
+        if (diff.complete) {
+            this.lastMissing = undefined;
+        }
+        else if (!lastMissing ||
+            // If a destructive cache method has been called since the last recorded
+            // incomplete result, there's a chance fetching this data again will
+            // restore what was evicted, even though the cache result looks the same
+            // as before.
+            lastMissing.dmCount !== destructiveMethodCounts.get(this.cache) ||
+            !(0,equality_lib_bundle/* equal */.LC)(lastMissing.variables, this.variables) ||
+            !(0,equality_lib_bundle/* equal */.LC)(lastMissing.missing, diff.missing?.missing)) {
+            this.didWarnOnFeud = false;
+            this.lastMissing = {
+                variables: this.variables,
+                missing: diff.missing?.missing,
+                dmCount: destructiveMethodCounts.get(this.cache),
+            };
+        }
+        else if (
+        // reobserveCacheFirst with cache-only fetch policy only calls
+        // reobserve which never fetches from the network so we are ok
+        // allowing cache-only queries to fallthrough to reobserveCacheFirst.
+        // This also prevents the feud warning which would be confusing for a
+        // cache-only query anyways.
+        fetchPolicy !== "cache-only") {
+            // If we've fallen through to this case, a cache emit has returned the
+            // same missing fields which means at least one value on the fields we've
+            // already delivered have changed. We are ok delivering the updated
+            // partial result in this case to keep the result as fresh as possible. We
+            // NEVER want to downgrade this query from a complete query to a partial
+            // query though, so we also make sure we only deliver if the previous
+            // result was also partial.
+            if (current.dataState === "partial") {
+                this.deliverCacheDiff(diff);
+            }
+            // If the (partial) result is the same as the last partial result
+            // we recorded from a previous broadcast (and the variables match
+            // too), avoid calling reobserveCacheFirst to refetch this query
+            // again. If we allow refetching anytime this result becomes partial,
+            // we risk feuds between queries competing to update the same data in
+            // incompatible ways, which can lead to an endless cycle of cache
+            // broadcasts and useless network requests. As with any
+            // feud, eventually one side must step back from the brink,
+            // letting the other side(s) have the last word(s). There may
+            // be other points where we could break this cycle, such as
+            // silencing the broadcast for cache.writeQuery (not a good
+            // idea, since it just delays the feud a bit) or somehow
+            // avoiding the network request that just happened (also bad,
+            // because the server could return useful new data). All
+            // options considered, returning early and stopping the
+            // reobserveCacheFirst cycle seems to be the least damaging place to
+            // break the cycle because it allows read functions/custom scalars to
+            // be applied to the feuding query while avoiding the endless cycle of
+            // requests.
+            if (index_production_DEV_ && !this.didWarnOnFeud) {
+                this.didWarnOnFeud = true;
+                warnOnFeud(this.query, diff);
+            }
+            return;
+        }
+        //If this diff did not come from an optimistic transaction
+        // make the ObservableQuery "reobserve" the latest data
+        // using a temporary fetch policy of "cache-first", so complete cache
+        // results have a chance to be delivered without triggering additional
+        // network requests, even when options.fetchPolicy is "network-only"
+        // or "cache-and-network". All other fetch policies are preserved by
+        // this method, and are handled by calling oq.reobserve(). If this
+        // reobservation is spurious, distinctUntilChanged still has a
+        // chance to catch it before delivery to ObservableQuery subscribers.
+        this.reobserveCacheFirst();
+    }
+    deliverCacheDiff(diff) {
+        const current = this.getCurrentResult();
+        this.input.next({
+            kind: "N",
+            value: {
+                data: diff.result,
+                dataState: diff.dataState,
+                networkStatus: current.networkStatus,
+                loading: current.loading,
+                error: undefined,
+                partial: !diff.complete,
+            },
+            source: "cache",
+            query: this.query,
+            variables: this.variables,
+            meta: {},
+        });
     }
     activeOperations = new Set();
     pushOperation(networkStatus) {
@@ -80954,6 +81229,7 @@ class ObservableQuery {
         // exception for cache-only queries - we reset them into a "ready" state
         // as we won't trigger a refetch for them
         const resetToEmpty = this.options.fetchPolicy === "cache-only";
+        this.lastMissing = undefined;
         this.setResult(resetToEmpty ? empty : uninitialized, {
             shouldEmit: resetToEmpty ? 1 /* EmitBehavior.force */ : 2 /* EmitBehavior.never */,
         });
@@ -81023,7 +81299,7 @@ class ObservableQuery {
         if (notification.source === "cache") {
             result = notification.value;
             if (result.networkStatus === NetworkStatus.ready &&
-                result.partial &&
+                result.dataState === "partial" &&
                 (!this.options.returnPartialData ||
                     previous.result.networkStatus === NetworkStatus.error) &&
                 this.options.fetchPolicy !== "cache-only") {
@@ -81049,7 +81325,8 @@ class ObservableQuery {
                     }
                     : notification.value;
             if (notification.kind === "E" && result.dataState === "streaming") {
-                result.dataState = "complete";
+                result.dataState =
+                    dataStateErrorCache.get(notification.error) ?? "complete";
             }
             if (result.error) {
                 meta.shouldEmit = 1 /* EmitBehavior.force */;
@@ -81097,7 +81374,10 @@ class ObservableQuery {
     reobserveCacheFirst() {
         const { fetchPolicy, nextFetchPolicy } = this.options;
         if (fetchPolicy === "cache-and-network" || fetchPolicy === "network-only") {
-            this.reobserve({
+            // Preserve this.lastMissing so a cache update that triggers this
+            // reobserve doesn't reset feud detection. All user-initiated calls to
+            // reobserve (refetch/poll/reobserve, etc) should clear it.
+            this._reobserve({
                 fetchPolicy: "cache-first",
                 // Use a temporary nextFetchPolicy function that replaces itself with the
                 // previous nextFetchPolicy value and returns the original fetchPolicy.
@@ -81113,10 +81393,10 @@ class ObservableQuery {
                     // Otherwise go back to the original this.options.fetchPolicy.
                     return fetchPolicy;
                 },
-            });
+            }, { keepLastMissing: true });
         }
         else {
-            this.reobserve();
+            this._reobserve(undefined, { keepLastMissing: true });
         }
     }
     getVariablesWithDefaults(variables) {
@@ -81125,7 +81405,7 @@ class ObservableQuery {
 }
 function logMissingFieldErrors(missing) {
     if (index_production_DEV_ && missing) {
-        index_production_DEV_ && invariant.debug(88, missing);
+        index_production_DEV_ && invariant.debug(90, missing);
     }
 }
 function isEqualQuery(a, b) {
@@ -81168,31 +81448,18 @@ function getTrackingOperatorPromise(defaultValue) {
     });
     return { promise, operator };
 }
+function warnOnFeud(query, diff) {
+    index_production_DEV_ && invariant.warn(91, getOperationName(query, "(anonymous)"), diff.missing?.missing);
+}
 //# sourceMappingURL=ObservableQuery.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/QueryInfo.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/QueryInfo.js
+
 
 
 
 
 const IGNORE = {};
-const destructiveMethodCounts = new WeakMap();
-function wrapDestructiveCacheMethod(cache, methodName) {
-    const original = cache[methodName];
-    if (typeof original === "function") {
-        // @ts-expect-error this is just too generic to be typed correctly
-        cache[methodName] = function () {
-            destructiveMethodCounts.set(cache, 
-            // The %1e15 allows the count to wrap around to 0 safely every
-            // quadrillion evictions, so there's no risk of overflow. To be
-            // clear, this is more of a pedantic principle than something
-            // that matters in any conceivable practical scenario.
-            (destructiveMethodCounts.get(cache) + 1) % 1e15);
-            // @ts-expect-error this is just too generic to be typed correctly
-            return original.apply(this, arguments);
-        };
-    }
-}
 const queryInfoIds = new WeakMap();
 // A QueryInfo object represents a single network request, either initiated
 // from the QueryManager or from an ObservableQuery.
@@ -81206,182 +81473,155 @@ class QueryInfo {
     observableQuery;
     incremental;
     constructor(queryManager, observableQuery) {
-        const cache = (this.cache = queryManager.cache);
+        this.cache = queryManager.cache;
         const id = (queryInfoIds.get(queryManager) || 0) + 1;
         queryInfoIds.set(queryManager, id);
         this.id = id + "";
         this.observableQuery = observableQuery;
         this.queryManager = queryManager;
-        // Track how often cache.evict is called, since we want eviction to
-        // override the feud-stopping logic in the markQueryResult method, by
-        // causing shouldWrite to return true. Wrapping the cache.evict method
-        // is a bit of a hack, but it saves us from having to make eviction
-        // counting an official part of the ApolloCache API.
-        if (!destructiveMethodCounts.has(cache)) {
-            destructiveMethodCounts.set(cache, 0);
-            wrapDestructiveCacheMethod(cache, "evict");
-            wrapDestructiveCacheMethod(cache, "modify");
-            wrapDestructiveCacheMethod(cache, "reset");
-        }
-    }
-    /**
-    * @internal
-    * For feud-preventing behaviour, `lastWrite` should be shared by all `QueryInfo` instances of an `ObservableQuery`.
-    * In the case of a standalone `QueryInfo`, we will keep a local version.
-    * 
-    * @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
-    */
-    _lastWrite;
-    get lastWrite() {
-        return (this.observableQuery || this)._lastWrite;
-    }
-    set lastWrite(value) {
-        (this.observableQuery || this)._lastWrite = value;
-    }
-    resetLastWrite() {
-        this.lastWrite = void 0;
-    }
-    shouldWrite(result, variables) {
-        const { lastWrite } = this;
-        return !(lastWrite &&
-            // If cache.evict has been called since the last time we wrote this
-            // data into the cache, there's a chance writing this result into
-            // the cache will repair what was evicted.
-            lastWrite.dmCount === destructiveMethodCounts.get(this.cache) &&
-            (0,equality_lib_bundle/* equal */.LC)(variables, lastWrite.variables) &&
-            (0,equality_lib_bundle/* equal */.LC)(result.data, lastWrite.result.data) &&
-            // We have to compare these values because its possible the final chunk
-            // emitted in the incremental result is just `hasNext: false`. This
-            // ensures we trigger a cache write when we get `isLastChunk: true`.
-            result.extensions?.[streamInfoSymbol] ===
-                lastWrite.result.extensions?.[streamInfoSymbol]);
     }
     get hasNext() {
         return this.incremental ? this.incremental.hasNext : false;
     }
+    get incrementalHandler() {
+        return this.queryManager.incrementalHandler;
+    }
     maybeHandleIncrementalResult(cacheData, incoming, query) {
-        const { incrementalHandler } = this.queryManager;
-        if (incrementalHandler.isIncrementalResult(incoming)) {
-            this.incremental ||= incrementalHandler.startRequest({
+        if (this.incrementalHandler.isIncrementalResult(incoming)) {
+            this.incremental ||= this.incrementalHandler.startRequest({
                 query,
             });
             return this.incremental.handle(cacheData, incoming);
         }
         return incoming;
     }
-    markQueryResult(incoming, { document: query, variables, errorPolicy, cacheWriteBehavior, }) {
+    markQueryResult(incoming, { document: query, variables, errorPolicy, cacheWriteBehavior, returnPartialData, fetchPolicy, networkStatus, prunePendingDeferFragments: prune, }) {
         const diffOptions = {
             query,
             variables,
-            returnPartialData: true,
             optimistic: true,
         };
         // Cancel the pending notify timeout (if it exists) to prevent extraneous network
         // requests. To allow future notify timeouts, diff and dirty are reset as well.
         this.observableQuery?.["resetNotifications"]();
         const skipCache = cacheWriteBehavior === 0 /* CacheWriteBehavior.FORBID */;
-        const lastDiff = skipCache ? undefined : this.cache.diff(diffOptions);
-        let result = this.maybeHandleIncrementalResult(lastDiff?.result, incoming, query);
-        if (skipCache) {
+        const diff = skipCache ? undefined : (this.getDiff({
+            ...diffOptions,
+            // We usually request partial data to ensure the network incremental
+            // result is merged with all existing data (especially true to
+            // maintain @stream arrays with partial list items in the right order
+            // or when chunk might otherwise replace a partial non-normalized
+            // object), but if we are about to throw away the result anyways due
+            // to the error policy (which early returns below), prune any
+            // pending boundaries so that CombinedGraphQLErrors contains the
+            // right `data` value.
+            returnPartialData: errorPolicy !== "none" ||
+                !this.incrementalHandler.extractErrors(incoming)?.length,
+        }, this.getIncrementalInfo({ prune })));
+        const incrementalResult = this.maybeHandleIncrementalResult(diff?.result, incoming, query);
+        let result = {
+            ...incrementalResult,
+            dataState: incrementalResult.data == null ? "empty" : "complete",
+        };
+        const hasPendingDefer = this.incremental
+            ?.getPendingWithInfo?.()
+            .some((pending) => pending.type === "defer" && !pending.delivered);
+        if (hasPendingDefer ||
+            // The Defer20220824Handler cannot track pending/completed incremental
+            // chunks due to its data format so we naively set dataState to
+            // streaming if we are still processing chunks. The only case where
+            // streaming is incorrect and should actually be complete is when
+            // both a @defer and @stream boundary is present and the @defer chunk
+            // has completed before the `@stream` array.
+            //
+            // Assigning the naive "streaming" value avoids a much more expensive
+            // pass over `result.data` that would otherwise need to traverse the
+            // selection sets and evaluate the data object at each defer boundary
+            // to see if it fulfills the selection set. For such a narrow case where
+            // its incorrect on a format that is now outdated is not worth the
+            // fix so we are ok with reporting a `streaming` here.
+            (!this.incremental?.getPendingWithInfo &&
+                this.hasNext &&
+                hasDirectives(["defer"], query))) {
+            result.dataState = "streaming";
+        }
+        if (skipCache || !shouldWriteResult(result, errorPolicy)) {
             return result;
         }
-        if (shouldWriteResult(result, errorPolicy)) {
-            let written = false;
-            // Using a transaction here so we have a chance to read the result
-            // back from the cache before the watch callback fires as a result
-            // of writeQuery, so we can store the new diff quietly and ignore
-            // it when we receive it redundantly from the watch callback.
-            this.cache.batch({
-                onWatchUpdated: (
-                // all additional options on ObservableQuery.CacheWatchOptions are
-                // optional so we can use the type here
-                watch, diff) => {
-                    if (watch.watcher === this.observableQuery) {
-                        // see comment on `lastOwnDiff` for explanation
-                        watch.lastOwnDiff = diff;
-                    }
-                },
-                update: (cache) => {
-                    if (this.shouldWrite(result, variables)) {
-                        cache.writeQuery({
-                            query,
-                            data: result.data,
-                            variables,
-                            overwrite: cacheWriteBehavior === 1 /* CacheWriteBehavior.OVERWRITE */,
-                            extensions: result.extensions,
-                        });
-                        written = true;
-                        this.lastWrite = {
-                            result,
-                            variables,
-                            dmCount: destructiveMethodCounts.get(this.cache),
-                        };
-                    }
-                    else {
-                        // If result is the same as the last result we received from
-                        // the network (and the variables match too), avoid writing
-                        // result into the cache again. The wisdom of skipping this
-                        // cache write is far from obvious, since any cache write
-                        // could be the one that puts the cache back into a desired
-                        // state, fixing corruption or missing data. However, if we
-                        // always write every network result into the cache, we enable
-                        // feuds between queries competing to update the same data in
-                        // incompatible ways, which can lead to an endless cycle of
-                        // cache broadcasts and useless network requests. As with any
-                        // feud, eventually one side must step back from the brink,
-                        // letting the other side(s) have the last word(s). There may
-                        // be other points where we could break this cycle, such as
-                        // silencing the broadcast for cache.writeQuery (not a good
-                        // idea, since it just delays the feud a bit) or somehow
-                        // avoiding the network request that just happened (also bad,
-                        // because the server could return useful new data). All
-                        // options considered, skipping this cache write seems to be
-                        // the least damaging place to break the cycle, because it
-                        // reflects the intuition that we recently wrote this exact
-                        // result into the cache, so the cache *should* already/still
-                        // contain this data. If some other query has clobbered that
-                        // data in the meantime, that's too bad, but there will be no
-                        // winners if every query blindly reverts to its own version
-                        // of the data. This approach also gives the network a chance
-                        // to return new data, which will be written into the cache as
-                        // usual, notifying only those queries that are directly
-                        // affected by the cache updates, as usual. In the future, an
-                        // even more sophisticated cache could perhaps prevent or
-                        // mitigate the clobbering somehow, but that would make this
-                        // particular cache write even less important, and thus
-                        // skipping it would be even safer than it is today.
-                        if (lastDiff && lastDiff.complete) {
-                            // Reuse data from the last good (complete) diff that we
-                            // received, when possible.
-                            result = { ...result, data: lastDiff.result };
-                            return;
-                        }
-                        // If the previous this.diff was incomplete, fall through to
-                        // re-reading the latest data with cache.diff, below.
-                    }
-                    const diff = cache.diff(diffOptions);
-                    // If we're allowed to write to the cache, and we can read a
-                    // complete result from the cache, update result.data to be the
-                    // result from the cache, rather than the raw network result.
-                    // Set without setDiff to avoid triggering a notify call, since
-                    // we have other ways of notifying for this result.
-                    if (diff.complete) {
-                        result = { ...result, data: diff.result };
-                    }
-                    else if (index_production_DEV_ &&
-                        written &&
-                        // A result that is still streaming is expected to read back
-                        // incomplete until the remaining chunks arrive.
-                        !this.hasNext) {
-                        warnAboutPartialCacheResult(query, result.data, diff);
-                    }
-                },
-            });
-        }
-        else {
-            this.lastWrite = void 0;
-        }
+        // Using a transaction here so we have a chance to read the result
+        // back from the cache before the watch callback fires as a result
+        // of writeQuery, so we can store the new diff quietly and ignore
+        // it when we receive it redundantly from the watch callback.
+        this.cache.batch({
+            onWatchUpdated: (
+            // all additional options on ObservableQuery.CacheWatchOptions are
+            // optional so we can use the type here
+            watch, diff) => {
+                if (watch.watcher === this.observableQuery) {
+                    // see comment on `lastOwnDiff` for explanation
+                    watch.lastOwnDiff = diff;
+                }
+            },
+            update: (cache) => {
+                cache.writeQuery({
+                    query,
+                    data: result.data,
+                    variables,
+                    overwrite: cacheWriteBehavior === 1 /* CacheWriteBehavior.OVERWRITE */,
+                    extensions: result.extensions,
+                });
+                const { dataState, result: diffResult } = this.getDiff({
+                    ...diffOptions,
+                    returnPartialData: returnPartialData &&
+                        // Never deliver partial data for network-only requests
+                        (fetchPolicy !== "network-only" ||
+                            networkStatus === NetworkStatus.refetch),
+                }, this.getIncrementalInfo({ prune }));
+                if (dataState === "complete" ||
+                    dataState === "streaming" ||
+                    (returnPartialData && dataState === "partial")) {
+                    result = { ...result, data: diffResult, dataState };
+                }
+                else if (index_production_DEV_ &&
+                    // A result that is still streaming is expected to read back
+                    // incomplete until the remaining chunks arrive.
+                    !this.hasNext) {
+                    warnAboutPartialCacheResult(query, result.data, 
+                    // Always show the partial result for debugging, otherwise the user
+                    // sees `null` when `returnPartialData` is false which isn't helpful
+                    // for figuring out where the problem is.
+                    cache.diff({ ...diffOptions, returnPartialData: true }));
+                }
+            },
+        });
         return result;
+    }
+    getIncrementalInfo({ prune }) {
+        const pending = this.incremental?.getPendingWithInfo?.() ?? [];
+        const streamInfo = this.incremental?.streamInfo;
+        const incrementalInfo = { streamInfo };
+        // We don't want to deliver stream items or complete defer boundaries
+        // for a network-only request if they haven't yet streamed from the
+        // network. We record all the still-pending paths so that cache.diff
+        // can prune complete defer/stream boundaries at those paths.
+        if (prune) {
+            for (const item of pending) {
+                if (item.type === "defer" && !item.delivered) {
+                    incrementalInfo.deferInfo ||= new bundle.Trie(true, () => true);
+                    incrementalInfo.deferInfo.lookupArray(item.path.concat(item.label || []));
+                }
+                else if (streamInfo && item.type === "stream") {
+                    streamInfo.lookupArray(item.path).state.truncate = true;
+                }
+            }
+        }
+        return incrementalInfo;
+    }
+    getDiff(options, incrementalInfo) {
+        return toDiffWithDataState(this.cache.diff({
+            ...options,
+            [handleIncrementalSymbol]: incrementalInfo,
+        }));
     }
     markMutationResult(incoming, mutation, cache = this.cache) {
         const cacheWrites = [];
@@ -81470,37 +81710,33 @@ class QueryInfo {
                     const { update } = mutation;
                     // Determine whether result is a SingleExecutionResult,
                     // or the final ExecutionPatchResult.
-                    if (update) {
-                        if (!skipCache) {
-                            // Re-read the ROOT_MUTATION data we just wrote into the cache
-                            // (the first cache.write call in the cacheWrites.forEach loop
-                            // above), so field read functions have a chance to run for
-                            // fields within mutation result objects.
-                            const diff = cache.diff({
-                                id: "ROOT_MUTATION",
-                                // The cache complains if passed a mutation where it expects a
-                                // query, so we transform mutations and subscriptions to queries
-                                // (only once, thanks to this.transformCache).
-                                query: this.queryManager.getDocumentInfo(mutation.document)
-                                    .asQuery,
-                                variables: mutation.variables,
-                                optimistic: false,
-                                returnPartialData: true,
-                            });
-                            if (diff.complete) {
-                                result = {
-                                    ...result,
-                                    data: diff.result,
-                                };
-                            }
+                    // Re-read from the cache after writing to it to update `result`
+                    // with any parsed scalar values that might have been written.
+                    if (!skipCache) {
+                        const diff = cache.diff({
+                            id: "ROOT_MUTATION",
+                            // The cache complains if passed a mutation where it expects a
+                            // query, so we transform mutations and subscriptions to queries
+                            // (only once, thanks to this.transformCache).
+                            query: this.queryManager.getDocumentInfo(mutation.document)
+                                .asQuery,
+                            variables: mutation.variables,
+                            optimistic: false,
+                            returnPartialData: true,
+                        });
+                        if (diff.complete) {
+                            result = {
+                                ...result,
+                                data: diff.result,
+                            };
                         }
-                        // If we've received the whole response, call the update function.
-                        if (!this.hasNext) {
-                            update(cache, result, {
-                                context: mutation.context,
-                                variables: mutation.variables,
-                            });
-                        }
+                    }
+                    // If we've received the whole response, call the update function.
+                    if (update && !this.hasNext) {
+                        update(cache, result, {
+                            context: mutation.context,
+                            variables: mutation.variables,
+                        });
                     }
                     // TODO Do this with cache.evict({ id: 'ROOT_MUTATION' }) but make it
                     // shallow to allow rolling back optimistic evictions.
@@ -81562,6 +81798,20 @@ class QueryInfo {
                     variables: variables,
                     extensions: result.extensions,
                 });
+                // Re-read from the cache to get parsed scalar values
+                const diff = this.cache.diff({
+                    // The cache complains if passed a mutation where it expects a
+                    // query, so we transform mutations and subscriptions to queries
+                    // (only once, thanks to this.transformCache).
+                    query: this.queryManager.getDocumentInfo(document).asQuery,
+                    id: "ROOT_SUBSCRIPTION",
+                    variables,
+                    optimistic: false,
+                    returnPartialData: true,
+                });
+                if (diff.complete) {
+                    result.data = diff.result;
+                }
             }
             this.queryManager.broadcastQueries();
         }
@@ -81569,7 +81819,7 @@ class QueryInfo {
 }
 function warnAboutPartialCacheResult(query, networkResult, diff) {
     index_production_DEV_ && invariant.warn(
-        89,
+        92,
         getOperationName(query, "(anonymous)"),
         diff.missing?.missing,
         networkResult,
@@ -81586,7 +81836,8 @@ function shouldWriteResult(result, errorPolicy = "none") {
 }
 //# sourceMappingURL=QueryInfo.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/QueryManager.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/QueryManager.js
+
 
 
 
@@ -81664,6 +81915,12 @@ class QueryManager {
                     // selections and fragments from the fragment registry.
                     .concat(defaultDocumentTransform)
                 : defaultDocumentTransform;
+        // Put the incremental transform last so custom document transforms don't
+        // revert changes made to the document accidentally. Adding last also
+        // ensures `@defer` fragments added by the fragment registry are labeled.
+        if (this.incrementalHandler.documentTransform) {
+            this.documentTransform = this.documentTransform.concat(this.incrementalHandler.documentTransform);
+        }
         this.defaultContext = options.defaultContext || {};
         if ((this.onBroadcast = options.onBroadcast)) {
             this.mutationStore = {};
@@ -81681,7 +81938,7 @@ class QueryManager {
      */
     stop() {
         this.obsQueries.forEach((oq) => oq.stop());
-        this.cancelPendingFetches(newInvariantError(90));
+        this.cancelPendingFetches(newInvariantError(93));
     }
     cancelPendingFetches(error) {
         this.fetchCancelFns.forEach((cancel) => cancel(error));
@@ -81694,7 +81951,7 @@ class QueryManager {
         variables = this.getVariables(mutation, variables);
         if (hasClientExports) {
             if (index_production_DEV_) {
-                invariant(this.localState, 91, getOperationName(mutation, "(anonymous)"));
+                invariant(this.localState, 94, getOperationName(mutation, "(anonymous)"));
             }
             variables = await this.localState.getExportedVariables({
                 client: this.client,
@@ -81706,7 +81963,7 @@ class QueryManager {
         const mutationStoreValue = this.mutationStore &&
             (this.mutationStore[queryInfo.id] = {
                 mutation,
-                variables,
+                variables: this.cache.serializeVariables(mutation, variables),
                 loading: true,
                 error: null,
             });
@@ -81927,7 +82184,7 @@ class QueryManager {
         // depend on values that previously existed in the data portion of the
         // store. So, we cancel the promises and observers that we have issued
         // so far and not yet resolved (in the case of queries).
-        this.cancelPendingFetches(newInvariantError(92));
+        this.cancelPendingFetches(newInvariantError(95));
         this.obsQueries.forEach((observableQuery) => {
             // Set loading to true so listeners don't trigger unless they want
             // results with partial data.
@@ -81997,10 +82254,10 @@ class QueryManager {
                 if (!included) {
                     const queryName = queryNames.get(nameOrQueryString);
                     if (queryName) {
-                        index_production_DEV_ && invariant.warn(93, queryName);
+                        index_production_DEV_ && invariant.warn(96, queryName);
                     }
                     else {
-                        index_production_DEV_ && invariant.warn(94);
+                        index_production_DEV_ && invariant.warn(97);
                     }
                 }
             });
@@ -82029,7 +82286,7 @@ class QueryManager {
         if (index_production_DEV_) {
             invariant(
                 !this.getDocumentInfo(query).hasClientExports || this.localState,
-                95,
+                98,
                 getOperationName(query, "(anonymous)")
             );
         }
@@ -82104,6 +82361,7 @@ class QueryManager {
         const executeContext = {
             client: this.client,
         };
+        variables = this.cache.serializeVariables(query, variables);
         if (serverQuery) {
             const { inFlightLinkObservables, link } = this;
             try {
@@ -82173,14 +82431,14 @@ class QueryManager {
             if (index_production_DEV_) {
                 invariant(
                     this.localState,
-                    96,
+                    99,
                     operation[0].toUpperCase() + operation.slice(1),
                     operationName ?? "(anonymous)"
                 );
             }
             invariant(
                 !hasIncrementalDirective,
-                97,
+                100,
                 operation[0].toUpperCase() + operation.slice(1),
                 operationName ?? "(anonymous)"
             );
@@ -82204,7 +82462,7 @@ class QueryManager {
             })),
         };
     }
-    getResultsFromLink(options, { queryInfo, cacheWriteBehavior, observableQuery, exposeExtensions, }) {
+    getResultsFromLink(options, { queryInfo, cacheWriteBehavior, observableQuery, exposeExtensions, prunePendingDeferFragments, }) {
         const { errorPolicy } = options;
         // Performing transformForLink here gives this.cache a chance to fill in
         // missing fragment definitions (for example) before sending this document
@@ -82214,52 +82472,49 @@ class QueryManager {
             // Use linkDocument rather than queryInfo.document so the
             // operation/fragments used to write the result are the same as the
             // ones used to obtain it from the link.
-            const result = queryInfo.markQueryResult(incoming, {
+            const { dataState, ...result } = queryInfo.markQueryResult(incoming, {
                 ...options,
                 document: linkDocument,
                 cacheWriteBehavior,
+                returnPartialData: options.returnPartialData,
+                prunePendingDeferFragments,
             });
             const hasErrors = graphQLResultHasError(result);
             if (hasErrors && errorPolicy === "none") {
-                queryInfo.resetLastWrite();
                 observableQuery?.["resetNotifications"]();
-                throw new CombinedGraphQLErrors(removeStreamDetailsFromExtensions(result));
+                const error = new CombinedGraphQLErrors(removeStreamDetailsFromExtensions(result));
+                dataStateErrorCache.set(error, dataState);
+                throw error;
             }
+            const partial = dataState !== "complete";
             const aqr = {
                 data: result.data,
                 ...(queryInfo.hasNext ?
                     {
                         loading: true,
                         networkStatus: NetworkStatus.streaming,
-                        dataState: "streaming",
-                        partial: true,
+                        dataState,
+                        partial,
                     }
                     : {
-                        dataState: result.data ? "complete" : "empty",
+                        dataState,
                         loading: false,
                         networkStatus: NetworkStatus.ready,
-                        partial: !result.data,
+                        partial,
                     }),
             };
             if (exposeExtensions && "extensions" in result) {
                 aqr[extensionsSymbol] = result.extensions;
             }
-            if (hasErrors) {
-                if (errorPolicy === "none") {
-                    aqr.data = void 0;
-                    aqr.dataState = "empty";
-                }
-                if (errorPolicy !== "ignore") {
-                    aqr.error = new CombinedGraphQLErrors(removeStreamDetailsFromExtensions(result));
-                    if (aqr.dataState !== "streaming") {
-                        aqr.networkStatus = NetworkStatus.error;
-                    }
+            if (hasErrors && errorPolicy !== "ignore") {
+                aqr.error = new CombinedGraphQLErrors(removeStreamDetailsFromExtensions(result));
+                if (aqr.networkStatus !== NetworkStatus.streaming) {
+                    aqr.networkStatus = NetworkStatus.error;
                 }
             }
             return aqr;
         }), (0,cjs.catchError)((error) => {
             if (errorPolicy === "none") {
-                queryInfo.resetLastWrite();
                 observableQuery?.["resetNotifications"]();
                 throw error;
             }
@@ -82294,6 +82549,7 @@ class QueryManager {
             fetchPolicy,
             errorPolicy,
             returnPartialData,
+            networkStatus,
             notifyOnNetworkStatusChange,
             context,
         });
@@ -82350,7 +82606,7 @@ class QueryManager {
         // we deprecated and removed LocalState.
         if (this.getDocumentInfo(normalized.query).hasClientExports) {
             if (index_production_DEV_) {
-                invariant(this.localState, 98, getOperationName(normalized.query, "(anonymous)"));
+                invariant(this.localState, 101, getOperationName(normalized.query, "(anonymous)"));
             }
             observable = (0,cjs.from)(this.localState.getExportedVariables({
                 client: this.client,
@@ -82523,7 +82779,7 @@ class QueryManager {
                 !isFullyUnmaskedOperation(document) &&
                 !this.noCacheWarningsByCause.has(cause)) {
                 this.noCacheWarningsByCause.add(cause);
-                index_production_DEV_ && invariant.warn(99, getOperationName(document, `Unnamed ${operationType ?? "operation"}`));
+                index_production_DEV_ && invariant.warn(102, getOperationName(document, `Unnamed ${operationType ?? "operation"}`));
             }
         }
         return (this.dataMasking ?
@@ -82536,32 +82792,33 @@ class QueryManager {
             maskFragment(data, fragment, this.cache, fragmentName)
             : data;
     }
-    fetchQueryByPolicy({ query, variables, fetchPolicy, errorPolicy, returnPartialData, context, }, { cacheWriteBehavior, onCacheHit, queryInfo, observableQuery, exposeExtensions, }) {
-        const readCache = () => this.cache.diff({
-            query,
-            variables,
-            returnPartialData: true,
-            optimistic: true,
-        });
+    fetchQueryByPolicy({ query, variables, fetchPolicy, errorPolicy, returnPartialData, context, networkStatus, }, { cacheWriteBehavior, onCacheHit, queryInfo, observableQuery, exposeExtensions, }) {
+        const readCache = () => {
+            return queryInfo.getDiff({
+                query,
+                variables,
+                returnPartialData: true,
+                optimistic: true,
+            });
+        };
         const resultsFromCache = (diff, networkStatus) => {
             const data = diff.result;
             if (index_production_DEV_ && !returnPartialData && data !== null) {
                 logMissingFieldErrors(diff.missing);
             }
-            const toResult = (data) => {
+            const toResult = (data, dataState = diff.dataState) => {
                 // TODO: Eventually we should move this handling into
                 // queryInfo.getDiff() directly. Since getDiff is updated to return null
                 // on returnPartialData: false, we should take advantage of that instead
                 // of having to patch it elsewhere.
                 if (!diff.complete && !returnPartialData) {
                     data = undefined;
+                    dataState = "empty";
                 }
                 return {
                     // TODO: Handle partial data
                     data: data,
-                    dataState: diff.complete ? "complete"
-                        : data ? "partial"
-                            : "empty",
+                    dataState,
                     loading: isNetworkRequestInFlight(networkStatus),
                     networkStatus,
                     partial: !diff.complete,
@@ -82585,7 +82842,7 @@ class QueryManager {
             (diff.complete || returnPartialData) &&
                 this.getDocumentInfo(query).hasForcedResolvers) {
                 if (index_production_DEV_) {
-                    invariant(this.localState, 100, getOperationName(query, "(anonymous)"));
+                    invariant(this.localState, 103, getOperationName(query, "(anonymous)"));
                 }
                 onCacheHit();
                 return (0,cjs.from)(this.localState.execute({
@@ -82599,7 +82856,9 @@ class QueryManager {
                     fetchPolicy,
                 }).then((resolved) => ({
                     kind: "N",
-                    value: toResult(resolved.data || void 0),
+                    value: toResult(resolved.data || void 0, diff.complete ? "complete"
+                        : resolved.data ? "partial"
+                            : "empty"),
                     // Always attach the variables used for this fetch so @export
                     // resolution can update ObservableQuery.options.variables and
                     // resubscribe the cache watch under the correct variable set.
@@ -82618,17 +82877,20 @@ class QueryManager {
             }
             return fromData(data || undefined);
         };
-        const resultsFromLink = () => this.getResultsFromLink({
+        const resultsFromLink = ({ prunePendingDeferFragments = true, } = {}) => this.getResultsFromLink({
             query,
             variables,
             context,
             fetchPolicy,
             errorPolicy,
+            returnPartialData,
+            networkStatus,
         }, {
             cacheWriteBehavior,
             queryInfo,
             observableQuery,
             exposeExtensions,
+            prunePendingDeferFragments,
         }).pipe(validateDidEmitValue(), (0,cjs.materialize)(), (0,cjs.map)((result) => ({
             ...result,
             // Always attach the variables used for this fetch so @export
@@ -82660,7 +82922,7 @@ class QueryManager {
                 if (diff.complete || returnPartialData) {
                     return {
                         fromLink: true,
-                        observable: (0,cjs.concat)(resultsFromCache(diff, NetworkStatus.loading), resultsFromLink()),
+                        observable: (0,cjs.concat)(resultsFromCache(diff, NetworkStatus.loading), resultsFromLink({ prunePendingDeferFragments: false })),
                     };
                 }
                 return { fromLink: true, observable: resultsFromLink() };
@@ -82671,9 +82933,24 @@ class QueryManager {
                     observable: (0,cjs.concat)(resultsFromCache(readCache(), NetworkStatus.ready)),
                 };
             case "network-only":
-                return { fromLink: true, observable: resultsFromLink() };
+                return {
+                    fromLink: true,
+                    observable: resultsFromLink({
+                        prunePendingDeferFragments: networkStatus !== NetworkStatus.refetch,
+                    }),
+                };
             case "no-cache":
-                return { fromLink: true, observable: resultsFromLink() };
+                return {
+                    fromLink: true,
+                    observable: resultsFromLink().pipe((0,cjs.map)((notification) => {
+                        if (notification.kind === "N" &&
+                            notification.value.data != null &&
+                            this.cache.configuresScalars()) {
+                            notification.value.data = coerceScalarFieldsToParsed(notification.value.data, query, this.cache);
+                        }
+                        return notification;
+                    })),
+                };
             case "standby":
                 return { fromLink: false, observable: cjs.EMPTY };
         }
@@ -82686,7 +82963,7 @@ function validateDidEmitValue() {
             didEmitValue = true;
         },
         complete() {
-            invariant(didEmitValue, 101);
+            invariant(didEmitValue, 104);
         },
     });
 }
@@ -82737,7 +83014,7 @@ function removeStreamDetailsFromExtensions(original) {
 }
 //# sourceMappingURL=QueryManager.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/ApolloClient.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/core/ApolloClient.js
 
 
 
@@ -82811,8 +83088,8 @@ class ApolloClient {
      */
     constructor(options) {
         if (index_production_DEV_) {
-            invariant(options.cache, 68);
-            invariant(options.link, 69);
+            invariant(options.cache, 70);
+            invariant(options.link, 71);
         }
         const { cache, documentTransform, ssrMode = false, ssrForceFetchDelay = 0, queryDeduplication = true, defaultOptions, defaultContext, assumeImmutableResults = cache.assumeImmutableResults, localState, devtools, dataMasking, link, incrementalHandler = new NotImplementedHandler(), experiments = [], refetchEventManager, } = options;
         this.link = link;
@@ -83000,12 +83277,12 @@ class ApolloClient {
             if (refetchOn) {
                 const operationName = getOperationName(query, "(anonymous)");
                 if (!refetchEventManager) {
-                    index_production_DEV_ && invariant.warn(70, operationName);
+                    index_production_DEV_ && invariant.warn(72, operationName);
                 }
                 else if (typeof refetchOn === "object") {
                     Object.keys(refetchOn).forEach((source) => {
                         if (!refetchEventManager.hasSource(source)) {
-                            index_production_DEV_ && invariant.warn(71, source, operationName);
+                            index_production_DEV_ && invariant.warn(73, source, operationName);
                         }
                     });
                 }
@@ -83027,13 +83304,13 @@ class ApolloClient {
             options = mergeOptions(this.defaultOptions.query, options);
         }
         if (index_production_DEV_) {
-            invariant(options.fetchPolicy !== "cache-and-network", 72);
-            invariant(options.fetchPolicy !== "standby", 73);
-            invariant(options.query, 74);
-            invariant(options.query.kind === "Document", 75);
-            invariant(!options.returnPartialData, 76);
-            invariant(!options.pollInterval, 77);
-            invariant(!options.notifyOnNetworkStatusChange, 78);
+            invariant(options.fetchPolicy !== "cache-and-network", 74);
+            invariant(options.fetchPolicy !== "standby", 75);
+            invariant(options.query, 76);
+            invariant(options.query.kind === "Document", 77);
+            invariant(!options.returnPartialData, 78);
+            invariant(!options.pollInterval, 79);
+            invariant(!options.notifyOnNetworkStatusChange, 80);
         }
         return this.queryManager.query(options);
     };
@@ -83051,9 +83328,9 @@ class ApolloClient {
             errorPolicy: "none",
         }, this.defaultOptions.mutate), options);
         if (index_production_DEV_) {
-            invariant(optionsWithDefaults.mutation, 79);
+            invariant(optionsWithDefaults.mutation, 81);
             invariant(optionsWithDefaults.fetchPolicy === "network-only" ||
-                optionsWithDefaults.fetchPolicy === "no-cache", 80);
+                optionsWithDefaults.fetchPolicy === "no-cache", 82);
         }
         checkDocument(optionsWithDefaults.mutation, graphql/* OperationTypeNode */.cEU.MUTATION);
         return this.queryManager.mutate(optionsWithDefaults);
@@ -83259,7 +83536,7 @@ class ApolloClient {
         // result.queries and result.results instead, you shouldn't have to worry
         // about preventing uncaught rejections for the Promise.all result.
         result.catch((error) => {
-            index_production_DEV_ && invariant.debug(81, error);
+            index_production_DEV_ && invariant.debug(83, error);
         });
         return result;
     }
@@ -83325,7 +83602,7 @@ if (index_production_DEV_) {
 }
 //# sourceMappingURL=ApolloClient.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/client-awareness/ClientAwarenessLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/client-awareness/ClientAwarenessLink.js
 
 
 /**
@@ -83412,7 +83689,7 @@ class ClientAwarenessLink extends ApolloLink {
     }
 }
 //# sourceMappingURL=ClientAwarenessLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/utils/filterOperationVariables.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/utils/filterOperationVariables.js
 
 function filterOperationVariables(variables, query) {
     const result = { ...variables };
@@ -83435,7 +83712,7 @@ function filterOperationVariables(variables, query) {
     return result;
 }
 //# sourceMappingURL=filterOperationVariables.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/operations.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/operations.js
 
 function isOperation(document, operation) {
     return getOperationDefinition(document)?.operation === operation;
@@ -83522,14 +83799,14 @@ function isSubscriptionOperation(document) {
     return isOperation(document, "subscription");
 }
 //# sourceMappingURL=operations.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/checkFetcher.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/checkFetcher.js
 
 const checkFetcher = (fetcher) => {
-    invariant(fetcher || typeof fetch !== "undefined", 61);
+    invariant(fetcher || typeof fetch !== "undefined", 63);
 };
 //# sourceMappingURL=checkFetcher.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerError.js
 
 /**
  * Represents an error when a non-200 HTTP status code is returned from the
@@ -83606,7 +83883,7 @@ class ServerError extends Error {
 }
 //# sourceMappingURL=ServerError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerParseError.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/errors/ServerParseError.js
 
 /**
  * Represents a failure to parse the response as JSON from the server. This
@@ -83680,7 +83957,7 @@ class ServerParseError extends Error {
 }
 //# sourceMappingURL=ServerParseError.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/parseAndCheckHttpResponse.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/parseAndCheckHttpResponse.js
 
 
 
@@ -83716,7 +83993,7 @@ async function* consumeMultipartBody(response) {
     /;\s*boundary=(?:'([^']+)'|"([^"]+)"|([^"'].+?))\s*(?:;|$)/i);
     const boundary = "\r\n--" + (match ? match[1] ?? match[2] ?? match[3] ?? "-" : "-");
     let buffer = "";
-    invariant(response.body && typeof response.body.getReader === "function", 62);
+    invariant(response.body && typeof response.body.getReader === "function", 64);
     const stream = response.body;
     const reader = stream.getReader();
     let done = false;
@@ -83841,7 +84118,7 @@ function parseAndCheckHttpResponse(operations) {
 }
 //# sourceMappingURL=parseAndCheckHttpResponse.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/rewriteURIForGET.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/rewriteURIForGET.js
 // For GET operations, returns the given URI rewritten with parameters, or a
 // parse error.
 function rewriteURIForGET(chosenURI, body) {
@@ -83894,7 +84171,7 @@ function rewriteURIForGET(chosenURI, body) {
     return { newURI };
 }
 //# sourceMappingURL=rewriteURIForGET.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectHttpOptionsAndBody.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectHttpOptionsAndBody.js
 
 const defaultHttpOptions = {
     includeQuery: true,
@@ -83998,7 +84275,7 @@ function removeDuplicateHeaders(headers, preserveHeaderCase) {
     return normalizedHeaders;
 }
 //# sourceMappingURL=selectHttpOptionsAndBody.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectURI.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/selectURI.js
 const selectURI = (operation, fallbackURI) => {
     const context = operation.getContext();
     const contextURI = context.uri;
@@ -84013,7 +84290,7 @@ const selectURI = (operation, fallbackURI) => {
     }
 };
 //# sourceMappingURL=selectURI.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/BaseHttpLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/BaseHttpLink.js
 
 
 
@@ -84171,7 +84448,7 @@ class BaseHttpLink extends ApolloLink {
     }
 }
 //# sourceMappingURL=BaseHttpLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/HttpLink.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/link/http/HttpLink.js
 
 
 
@@ -84213,7 +84490,7 @@ class HttpLink extends ApolloLink {
  */
 const createHttpLink = (options = {}) => new HttpLink(options);
 //# sourceMappingURL=HttpLink.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/transform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/transform.js
 
 const TYPENAME_FIELD = {
     kind: graphql/* Kind */.b8C.FIELD,
@@ -84285,7 +84562,7 @@ const addTypenameToDocument = Object.assign(function (doc) {
     },
 });
 //# sourceMappingURL=transform.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/storeUtils.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/graphql/storeUtils.js
 /**
  * Determines if a given object is a reference object.
  *
@@ -84304,7 +84581,32 @@ function isReference(obj) {
     return Boolean(obj && typeof obj === "object" && typeof obj.__ref === "string");
 }
 //# sourceMappingURL=storeUtils.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/combineLatestBatched.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isPlainObject.js
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function isPlainObject(obj) {
+    return (obj !== null &&
+        typeof obj === "object" &&
+        (Object.getPrototypeOf(obj) === Object.prototype ||
+            Object.getPrototypeOf(obj) === null));
+}
+//# sourceMappingURL=isPlainObject.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/capitalize.js
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function capitalize(str) {
+    return str[0].toUpperCase() + str.slice(1);
+}
+//# sourceMappingURL=capitalize.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/combineLatestBatched.js
 
 /**
  * Like `combineLatest` but with some differences:
@@ -84373,7 +84675,7 @@ function combineLatestBatched(observables) {
     });
 }
 //# sourceMappingURL=combineLatestBatched.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentQueryDocument.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getFragmentQueryDocument.js
 
 /**
 * Returns a query document which adds a single query operation that only
@@ -84422,7 +84724,7 @@ function getFragmentQueryDocument(document, fragmentName) {
         // define our own operation definition later on.
         if (definition.kind === "OperationDefinition") {
             throw newInvariantError(
-                10,
+                12,
                 definition.operation,
                 definition.name ? ` named '${definition.name.value}'` : ""
             );
@@ -84436,7 +84738,7 @@ function getFragmentQueryDocument(document, fragmentName) {
     // If the user did not give us a fragment name then let us try to get a
     // name from a single fragment in the definition.
     if (typeof actualFragmentName === "undefined") {
-        invariant(fragments.length === 1, 11, fragments.length);
+        invariant(fragments.length === 1, 13, fragments.length);
         actualFragmentName = fragments[0].name.value;
     }
     // Generate a query document with an operation that simply spreads the
@@ -84468,7 +84770,7 @@ function getFragmentQueryDocument(document, fragmentName) {
 }
 //# sourceMappingURL=getFragmentQueryDocument.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/bindCacheKey.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/bindCacheKey.js
 
 /**
  * A variant of `optimism`'s `defaultMakeCacheKey` function that allows us to
@@ -84487,7 +84789,7 @@ function bindCacheKey(...prebound) {
     return optimism_lib_bundle/* defaultMakeCacheKey */.NS.bind(null, ...prebound);
 }
 //# sourceMappingURL=bindCacheKey.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/core/cache.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/core/cache.js
 
 
 
@@ -84504,6 +84806,37 @@ class ApolloCache {
     // that register fragments ahead of time so they can be referenced by name.
     lookupFragment(fragmentName) {
         return null;
+    }
+    /**
+     * Get the root typename value for an operation type.
+     *
+     * @defaultValue Query, Mutation, or Subscription
+     */
+    getRootTypename(operation) {
+        return capitalize(operation);
+    }
+    // Custom scalars API
+    getScalar(key) {
+        return;
+    }
+    /** Get the configured scalar type for a field */
+    getScalarTypeForField(typename, fieldName) {
+        return;
+    }
+    /**
+     * Determines whether the cache configures custom scalars or not. This allows
+     * Apollo Client to skip processing results unnecessarily when there is
+     * nothing to transform into a scalar value.
+     *
+     * @remarks
+     * 3rd party caches should override this method if they have the ability to
+     * configure scalar implementations.
+     */
+    configuresScalars() {
+        return false;
+    }
+    serializeVariables(document, variables) {
+        return variables;
     }
     // Transactional API
     /**
@@ -84623,7 +84956,7 @@ class ApolloCache {
             if (index_production_DEV_) {
                 const actualFragmentName = fragmentName || getFragmentDefinition(fragment).name.value;
                 if (id === undefined) {
-                    index_production_DEV_ && invariant.warn(119, actualFragmentName);
+                    index_production_DEV_ && invariant.warn(126, actualFragmentName);
                 }
             }
             return id;
@@ -84843,7 +85176,7 @@ const emptyArrayObservable = Object.assign(new cjs.Observable((observer) => {
 }), { getCurrentResult: () => emptyArrayResult });
 //# sourceMappingURL=cache.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/DeepMerger.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/DeepMerger.js
 
 const { hasOwnProperty: DeepMerger_hasOwnProperty } = Object.prototype;
 const defaultReconciler = function (target, source, property) {
@@ -84940,7 +85273,7 @@ class DeepMerger {
 }
 //# sourceMappingURL=DeepMerger.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeReference.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/makeReference.js
 /**
 * @internal
 * 
@@ -84951,7 +85284,8 @@ function makeReference(id) {
 }
 //# sourceMappingURL=makeReference.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/helpers.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/helpers.js
+
 
 
 const { hasOwnProperty: hasOwn } = Object.prototype;
@@ -85033,8 +85367,18 @@ function extractFragmentContext(document, fragments) {
         },
     };
 }
+function getScalarTypeFromTypeNode(node) {
+    switch (node.kind) {
+        case graphql/* Kind */.b8C.NAMED_TYPE:
+            return node.name.value;
+        case graphql/* Kind */.b8C.LIST_TYPE:
+            return `[${getScalarTypeFromTypeNode(node.type)}]`;
+        case graphql/* Kind */.b8C.NON_NULL_TYPE:
+            return getScalarTypeFromTypeNode(node.type);
+    }
+}
 //# sourceMappingURL=helpers.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/entityStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/entityStore.js
 
 
 
@@ -85105,12 +85449,17 @@ class EntityStore {
         if (isReference(newer))
             newer = newer.__ref;
         const existing = typeof older === "string" ? this.lookup((dataId = older)) : older;
-        const incoming = typeof newer === "string" ? this.lookup((dataId = newer)) : newer;
+        let incoming = typeof newer === "string" ? this.lookup((dataId = newer)) : newer;
         // If newer was a string ID, but that ID was not defined in this store,
         // then there are no fields to be merged, so we're done.
         if (!incoming)
             return;
-        invariant(typeof dataId === "string", 105);
+        invariant(typeof dataId === "string", 108);
+        // Parse all scalars before merging so that the storeObjectReconciler can
+        // deep compare the parsed value with the existing value
+        incoming = this.coerceStoreObject(incoming, (scalar, value) => scalar.coerceToParsed(value), incoming.__typename ||
+            existing?.__typename ||
+            this.policies.rootTypenamesById[dataId]);
         const merged = new DeepMerger({
             reconciler: storeObjectReconciler,
         }).merge(existing, incoming);
@@ -85212,7 +85561,7 @@ class EntityStore {
                             if (index_production_DEV_) {
                                 const checkReference = (ref) => {
                                     if (this.lookup(ref.__ref) === undefined) {
-                                        index_production_DEV_ && invariant.warn(106, ref);
+                                        index_production_DEV_ && invariant.warn(109, ref);
                                         return true;
                                     }
                                 };
@@ -85241,7 +85590,7 @@ class EntityStore {
                                             }
                                         }
                                         if (seenReference && someNonReference !== undefined) {
-                                            index_production_DEV_ && invariant.warn(107, someNonReference);
+                                            index_production_DEV_ && invariant.warn(110, someNonReference);
                                             break;
                                         }
                                     }
@@ -85314,7 +85663,14 @@ class EntityStore {
         this.replace(null);
     }
     extract() {
-        const obj = this.toObject();
+        let obj = this.toObject();
+        if (this.hasScalarConfig()) {
+            obj = Object.fromEntries(Object.entries(obj).map(([dataId, storeObject]) => [
+                dataId,
+                storeObject &&
+                    this.coerceStoreObject(storeObject, (scalar, value) => scalar.coerceToSerialized(value), storeObject?.__typename || this.policies.rootTypenamesById[dataId]),
+            ]));
+        }
         const extraRootIds = [];
         this.getRootIdSet().forEach((id) => {
             if (!hasOwn.call(this.policies.rootTypenamesById, id)) {
@@ -85325,6 +85681,52 @@ class EntityStore {
             obj.__META = { extraRootIds: extraRootIds.sort() };
         }
         return obj;
+    }
+    hasScalarConfig() {
+        return !!this.policies.cache["config"].scalars;
+    }
+    coerceStoreObject(obj, coerce, typename = obj.__typename) {
+        if (!typename || !this.hasScalarConfig()) {
+            return obj;
+        }
+        let changed = false;
+        const entries = Object.entries(obj).map(([storeFieldName, value]) => {
+            const fieldName = fieldNameFromStoreName(storeFieldName);
+            const scalarType = this.policies.getScalarTypeForField(typename, fieldName);
+            const newValue = this.coerceValue(value, coerce, scalarType, `${typename}.${fieldName}`);
+            changed ||= newValue !== value;
+            return [storeFieldName, newValue];
+        });
+        return changed ? Object.fromEntries(entries) : obj;
+    }
+    coerceValue(value, coerce, scalarType, coordinate) {
+        if (value == null) {
+            return value;
+        }
+        if (scalarType) {
+            const match = matchScalarList(scalarType);
+            if (match) {
+                if (Array.isArray(value)) {
+                    return value.map((item) => this.coerceValue(item, coerce, match[1], coordinate));
+                }
+                else {
+                    if (index_production_DEV_) {
+                        index_production_DEV_ && invariant.warn(111, coordinate, scalarType, unwrapScalarType(scalarType));
+                    }
+                }
+            }
+            const scalar = this.policies.cache.getScalar(unwrapScalarType(scalarType));
+            if (scalar) {
+                return coerce(scalar, value);
+            }
+        }
+        if (Array.isArray(value)) {
+            return value.map((item) => this.coerceValue(item, coerce, scalarType, coordinate));
+        }
+        if (isPlainObject(value) && "__typename" in value) {
+            return this.coerceStoreObject(value, coerce);
+        }
+        return value;
     }
     replace(newData) {
         Object.keys(this.data).forEach((dataId) => {
@@ -85705,7 +86107,7 @@ function supportsResultCaching(store) {
 }
 //# sourceMappingURL=entityStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/argumentsObjectFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/argumentsObjectFromField.js
 
 /**
 * @internal
@@ -85722,7 +86124,7 @@ function argumentsObjectFromField(field, variables) {
 }
 //# sourceMappingURL=argumentsObjectFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getStoreKeyName.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getStoreKeyName.js
 
 const KNOWN_DIRECTIVES = [
     "connection",
@@ -85797,7 +86199,7 @@ const getStoreKeyName = Object.assign(function (fieldName, args, directives) {
 });
 //# sourceMappingURL=getStoreKeyName.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/storeKeyNameFromField.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/storeKeyNameFromField.js
 
 
 /**
@@ -85825,7 +86227,7 @@ function storeKeyNameFromField(field, variables) {
 }
 //# sourceMappingURL=storeKeyNameFromField.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/key-extractor.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/key-extractor.js
 
 
 
@@ -85862,7 +86264,7 @@ function keyFieldsFnFromSpecifier(specifier) {
                     // context.readField for this extraction.
                     extracted = extractKeyPath(object, schemaKeyPath, extractKey);
                 }
-                invariant(extracted !== void 0, 108, schemaKeyPath.join("."), object);
+                invariant(extracted !== void 0, 113, schemaKeyPath.join("."), object);
                 return extracted;
             }));
             return `${context.typename}:${JSON.stringify(keyObject)}`;
@@ -86012,7 +86414,7 @@ function normalize(value) {
 }
 //# sourceMappingURL=key-extractor.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/reactiveVars.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/reactiveVars.js
 
 // Contextual Slot that acquires its value when custom read functions are
 // called in Policies#readField.
@@ -86096,7 +86498,7 @@ function broadcast(cache) {
     }
 }
 //# sourceMappingURL=reactiveVars.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/policies.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/policies.js
 
 
 
@@ -86284,10 +86686,32 @@ class Policies {
                 }
                 const incoming = fields[fieldName];
                 if (typeof incoming === "function") {
-                    existing.read = incoming;
+                    if (existing.scalar) {
+                        if (index_production_DEV_) {
+                            warnAboutScalarConfig(typename, fieldName, existing.scalar, "read");
+                        }
+                    }
+                    else {
+                        existing.read = incoming;
+                    }
                 }
                 else {
-                    const { keyArgs, read, merge } = incoming;
+                    let { keyArgs, read, merge, scalar } = incoming;
+                    if (scalar) {
+                        existing.scalar = scalar;
+                    }
+                    if (existing.scalar) {
+                        if (index_production_DEV_) {
+                            if (read !== undefined || existing.read !== undefined) {
+                                warnAboutScalarConfig(typename, fieldName, existing.scalar, "read");
+                            }
+                            if (merge !== undefined || existing.merge !== undefined) {
+                                warnAboutScalarConfig(typename, fieldName, existing.scalar, "merge");
+                            }
+                        }
+                        existing.read = read = undefined;
+                        existing.merge = merge = undefined;
+                    }
                     existing.keyFn =
                         // Pass false to disable argument-based differentiation of
                         // field identities.
@@ -86319,7 +86743,7 @@ class Policies {
         const rootId = "ROOT_" + which.toUpperCase();
         const old = this.rootTypenamesById[rootId];
         if (typename !== old) {
-            invariant(!old || old === which, 109, which);
+            invariant(!old || old === which, 114, which);
             // First, delete any old __typename associated with this rootId from
             // rootIdsByTypename.
             if (old)
@@ -86462,7 +86886,7 @@ class Policies {
                 if (supertypeSet.has(supertype)) {
                     if (!typenameSupertypeSet.has(supertype)) {
                         if (checkingFuzzySubtypes) {
-                            index_production_DEV_ && invariant.warn(110, typename, supertype);
+                            index_production_DEV_ && invariant.warn(115, typename, supertype);
                         }
                         // Record positive results for faster future lookup.
                         // Unfortunately, we cannot safely cache negative results,
@@ -86548,6 +86972,9 @@ class Policies {
         // StoreObject correspond to which original field names.
         return fieldName === fieldNameFromStoreName(storeFieldName) ? storeFieldName
             : fieldName + ":" + storeFieldName;
+    }
+    getScalarTypeForField(typename, fieldName) {
+        return this.getFieldPolicy(typename, fieldName)?.scalar;
     }
     readField(options, context) {
         const objectOrReference = options.from;
@@ -86714,7 +87141,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
         }
     }
     if (index_production_DEV_ && options.from === void 0) {
-        index_production_DEV_ && invariant.warn(111, stringifyForDisplay(Array.from(readFieldArgs)));
+        index_production_DEV_ && invariant.warn(116, stringifyForDisplay(Array.from(readFieldArgs)));
     }
     if (void 0 === options.variables) {
         options.variables = variables;
@@ -86724,7 +87151,7 @@ function normalizeReadFieldOptions(readFieldArgs, objectOrReference, variables) 
 function makeMergeObjectsFunction(store) {
     return function mergeObjects(existing, incoming) {
         if (isArray(existing) || isArray(incoming)) {
-            throw newInvariantError(112);
+            throw newInvariantError(117);
         }
         // These dynamic checks are necessary because the parameters of a
         // custom merge function can easily have the any type, so the type
@@ -86760,9 +87187,85 @@ function makeMergeObjectsFunction(store) {
         return incoming;
     };
 }
+function warnAboutScalarConfig(typename, fieldName, scalar, kind) {
+    index_production_DEV_ && invariant.warn(118, `${typename}.${fieldName}`, scalar, kind);
+}
 //# sourceMappingURL=policies.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeDeepArray.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isStreamField.js
+
+
+
+
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+const isStreamField = memoize(function isStreamField(field, variables) {
+    return !!field.directives?.some((directive) => {
+        if (directive.name.value !== "stream") {
+            return false;
+        }
+        for (const arg of directive.arguments ?? []) {
+            if (arg.name.value === "if") {
+                switch (arg.value.kind) {
+                    case graphql/* Kind */.b8C.BOOLEAN:
+                        return arg.value.value;
+                    case graphql/* Kind */.b8C.VARIABLE:
+                        return !!variables?.[arg.value.name.value];
+                }
+            }
+        }
+        return true;
+    });
+}, {
+    max: sizes_cacheSizes["isStreamField"] || 2000 /* defaultCacheSizes["isStreamField"] */,
+    makeCacheKey: ([selection, variables]) => [
+        selection,
+        canonicalStringify(variables),
+    ],
+});
+//# sourceMappingURL=isStreamField.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/isDeferredFragment.js
+
+
+
+
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+const isDeferredFragment = memoize(function isDeferredFragment(fragmentSelection, variables) {
+    return !!fragmentSelection.directives?.some((directive) => {
+        if (directive.name.value !== "defer") {
+            return false;
+        }
+        for (const arg of directive.arguments ?? []) {
+            if (arg.name.value === "if") {
+                switch (arg.value.kind) {
+                    case graphql/* Kind */.b8C.BOOLEAN:
+                        return arg.value.value;
+                    case graphql/* Kind */.b8C.VARIABLE:
+                        return !!variables?.[arg.value.name.value];
+                }
+            }
+        }
+        return true;
+    });
+}, {
+    max: sizes_cacheSizes["isDeferredFragment"] ||
+        2000 /* defaultCacheSizes["isDeferredFragment"] */,
+    makeCacheKey: ([selection, variables]) => [
+        selection,
+        canonicalStringify(variables),
+    ],
+});
+//# sourceMappingURL=isDeferredFragment.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/mergeDeepArray.js
 
 // In almost any situation where you could succeed in getting the
 // TypeScript compiler to infer a tuple type for the sources array, you
@@ -86788,7 +87291,25 @@ function mergeDeepArray(sources) {
 }
 //# sourceMappingURL=mergeDeepArray.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/core/types/common.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/getDirectiveArgValue.js
+
+/**
+* @internal
+* 
+* @deprecated This is an internal API and should not be used directly. This can be removed or changed at any time.
+*/
+function getDirectiveArgValue(directive, name, kind) {
+    const arg = directive.arguments?.find((arg) => arg.name.value === name);
+    if (!arg || arg.value.kind !== kind)
+        return;
+    switch (arg.value.kind) {
+        case graphql/* Kind */.b8C.STRING:
+            return arg.value.value;
+    }
+}
+//# sourceMappingURL=getDirectiveArgValue.js.map
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/core/types/common.js
 class MissingFieldError extends Error {
     message;
     path;
@@ -86818,7 +87339,9 @@ class MissingFieldError extends Error {
     missing;
 }
 //# sourceMappingURL=common.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/readFromStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/readFromStore.js
+
+
 
 
 
@@ -86836,8 +87359,11 @@ class StoreReader {
     executeSelectionSet;
     // cached version of executeSubSelectedArray
     executeSubSelectedArray;
+    prunePartialStreamArray;
+    prunePartialBoundaries;
     config;
     knownResults = new WeakMap();
+    keyMaker = new bundle.Trie();
     constructor(config) {
         this.config = config;
         // memoized functions in this class will be "garbage-collected"
@@ -86880,44 +87406,124 @@ class StoreReader {
                 }
             },
         });
+        this.prunePartialBoundaries = (0,optimism_lib_bundle/* wrap */.LV)((options) => this.prunePartialBoundariesImpl(options), {
+            max: sizes_cacheSizes["inMemoryCache.prunePartialBoundaries"] ||
+                20000 /* defaultCacheSizes["inMemoryCache.prunePartialBoundaries"] */,
+            makeCacheKey: ({ boundaries, context, selectionSet }) => {
+                if (supportsResultCaching(context.store)) {
+                    return this.keyMaker.lookup(selectionSet, boundaries, context.streamInfo, context.deferInfo);
+                }
+            },
+        });
+        this.prunePartialStreamArray = (0,optimism_lib_bundle/* wrap */.LV)((options) => {
+            const { field, context, path } = options;
+            if (isStreamField(field, context.variables)) {
+                context.streamInfo?.lookupArray(path).state.depend();
+            }
+            return this.prunePartialStreamArrayImpl(options);
+        }, {
+            max: sizes_cacheSizes["inMemoryCache.prunePartialStreamArray"] ||
+                20000 /* defaultCacheSizes["inMemoryCache.prunePartialStreamArray"] */,
+            makeCacheKey: ({ field, context, boundaries }) => {
+                if (supportsResultCaching(context.store)) {
+                    return this.keyMaker.lookup(field, boundaries, context.streamInfo, context.deferInfo);
+                }
+            },
+        });
     }
-    /**
-     * Given a store and a query, return as much of the result as possible and
-     * identify if any data was missing from the store.
-     */
-    diffQueryAgainstStore({ store, query, rootId = "ROOT_QUERY", variables, returnPartialData = true, }) {
+    diffQueryAgainstStore({ store, query, rootId = "ROOT_QUERY", variables, returnPartialData = true, ...options }) {
+        const returnIncremental = Object.hasOwn(options, handleIncrementalSymbol);
         const policies = this.config.cache.policies;
         variables = compact(getDefaultValues(getQueryDefinition(query)), variables);
         const rootRef = makeReference(rootId);
-        const execResult = this.executeSelectionSet({
+        const context = {
+            store,
+            query,
+            policies,
+            variables,
+            varString: canonicalStringify(variables),
+            ...extractFragmentContext(query, this.config.fragments),
+            ...options[handleIncrementalSymbol],
+        };
+        let execResult = this.executeSelectionSet({
             selectionSet: getMainDefinition(query).selectionSet,
             objectOrReference: rootRef,
             enclosingRef: rootRef,
-            context: {
-                store,
-                query,
-                policies,
-                variables,
-                varString: canonicalStringify(variables),
-                ...extractFragmentContext(query, this.config.fragments),
-            },
+            context,
         });
-        let missing;
-        if (execResult.missing) {
-            missing = new MissingFieldError(firstMissing(execResult.missing), execResult.missing, query, variables);
+        // Since executeSelectionSet doesn't know about returnPartialData, we need
+        // to perform a 2nd pass over the result to prune any fields inside
+        // partial defer boundaries. The "deferPartial" data state tells us that the
+        // only part of the result that contributed to its partiality is data inside
+        // a defer boundary.
+        if (returnIncremental && shouldPrune(execResult, context)) {
+            const pruned = this.prunePartialBoundaries({
+                selectionSet: getMainDefinition(query).selectionSet,
+                data: execResult.result,
+                boundaries: execResult.partialBoundaries,
+                context,
+                path: [],
+            });
+            const changed = execResult.result !== pruned.result;
+            // It's possible that pruning didn't actually change the result which can
+            // happen if a defer boundary is misclassified as "deferPartial" instead
+            // of "streaming" (sibling defer boundaries with overlapping selection
+            // sets, one of which is complete). In this case, pruning corrects the
+            // dataState to streaming instead of leaving it as partial. If we tolerate
+            // partial results and pruning changed the result by dropping fields, then
+            // we want to keep the original execResult which contains the partial
+            // data.
+            if (!changed || !returnPartialData) {
+                // Omit `missing` property since pruning puts it in a state that doesn't
+                // report missing fields.
+                execResult = {
+                    result: pruned.result,
+                    partialBoundaries: execResult.partialBoundaries,
+                    dataState: pruned.dataState,
+                };
+            }
         }
-        const complete = !missing;
-        const { result } = execResult;
-        return {
-            result: complete ? result
-                : returnPartialData ?
-                    Object.keys(result).length === 0 ?
-                        null
-                        : result
-                    : null,
+        let { result, dataState, missing } = execResult;
+        // Evaluate this condition before we start mucking with dataState for the
+        // publicly returned value
+        const includeMissing = !!missing &&
+            // We don't need to report missing fields inside defer boundaries since
+            // the "streaming" dataState tells us that the only missing fields in
+            // the object is inside a defer boundary.
+            (dataState !== "streaming" || !returnIncremental);
+        // If we get all root @defer boundaries with an empty result, report it as
+        // empty instead of streaming.
+        if (dataState === "streaming" && Object.keys(result).length === 0) {
+            dataState = "empty";
+        }
+        let missingError;
+        if (dataState === "deferPartial" ||
+            dataState === "streamPartial" ||
+            (dataState === "streaming" && !returnIncremental)) {
+            dataState = "partial";
+        }
+        if (dataState === "partial" && !returnPartialData) {
+            dataState = "empty";
+        }
+        const complete = dataState === "complete";
+        const keepResult = complete ||
+            dataState === "streaming" ||
+            (returnPartialData && Object.keys(result).length);
+        const diffResult = {
+            result: keepResult ? result : null,
             complete,
-            missing,
+            get missing() {
+                if (includeMissing) {
+                    missingError ||= new MissingFieldError(firstMissing(missing), missing, query, variables);
+                }
+                return missingError;
+            },
         };
+        if (returnIncremental) {
+            diffResult.dataState =
+                dataState;
+        }
+        return diffResult;
     }
     isFresh(result, parent, selectionSet, context) {
         if (supportsResultCaching(context.store) &&
@@ -86936,14 +87542,18 @@ class StoreReader {
             !context.store.has(objectOrReference.__ref)) {
             return {
                 result: {},
+                dataState: "empty",
                 missing: `Dangling reference to missing ${objectOrReference.__ref} object`,
+                partialBoundaries: new PartialBoundaries(),
             };
         }
         const { variables, policies, store } = context;
         const typename = store.getFieldValue(objectOrReference, "__typename");
         const objectsToMerge = [];
+        let dataState;
         let missing;
         const missingMerger = new DeepMerger();
+        const partialBoundaries = new PartialBoundaries();
         if (typeof typename === "string" && !policies.rootIdsByTypename[typename]) {
             // Ensure we always include a default value for the __typename
             // field, if we have one. Note that this field can be overridden by other
@@ -86956,7 +87566,7 @@ class StoreReader {
                     [resultName]: result.missing,
                 });
             }
-            return result.result;
+            return result;
         }
         const workSet = new Set(selectionSet.selections);
         workSet.forEach((selection) => {
@@ -86974,36 +87584,75 @@ class StoreReader {
                 const resultName = resultKeyNameFromField(selection);
                 if (fieldValue === void 0) {
                     if (!addTypenameToDocument.added(selection)) {
+                        const id = isReference(objectOrReference) ? objectOrReference.__ref
+                            : objectOrReference ? policies.identify(objectOrReference)[0]
+                                : undefined;
                         missing = missingMerger.merge(missing, {
-                            [resultName]: `Can't find field '${selection.name.value}' on ${isReference(objectOrReference) ?
-                                objectOrReference.__ref + " object"
-                                : "object " + JSON.stringify(objectOrReference, null, 2)}`,
+                            [resultName]: `Can't find field '${selection.name.value}' on ${id ?
+                                `${id} object`
+                                : `object ${JSON.stringify(objectOrReference || {}, null, 2)}`}`,
                         });
+                        dataState = mergeDataState(dataState, "empty");
                     }
                 }
                 else if (isArray(fieldValue)) {
                     if (fieldValue.length > 0) {
-                        fieldValue = handleMissing(this.executeSubSelectedArray({
+                        const execResult = handleMissing(this.executeSubSelectedArray({
                             field: selection,
                             array: fieldValue,
                             enclosingRef,
                             context,
                         }), resultName);
+                        fieldValue = execResult.result;
+                        dataState = mergeDataState(dataState, execResult.dataState);
+                        partialBoundaries.set(resultName, execResult.partialBoundaries);
+                    }
+                    else {
+                        dataState = mergeDataState(dataState, "complete");
                     }
                 }
                 else if (!selection.selectionSet) {
-                    // do nothing
+                    // Auto-inserted __typename should not affect dataState (see empty
+                    // @defer boundaries, which must stay "empty" → parent "streaming").
+                    if (!addTypenameToDocument.added(selection)) {
+                        dataState = mergeDataState(dataState, "complete");
+                    }
                 }
                 else if (fieldValue != null) {
+                    if (index_production_DEV_) {
+                        const fieldName = selection.name.value;
+                        if (typename) {
+                            const policy = policies["getFieldPolicy"](typename, fieldName);
+                            if (policy?.scalar) {
+                                index_production_DEV_ && invariant.warn(119, `${typename}.${fieldName}`, policy.scalar);
+                            }
+                        }
+                    }
                     // In this case, because we know the field has a selection set,
                     // it must be trying to query a GraphQLObjectType, which is why
                     // fieldValue must be != null.
-                    fieldValue = handleMissing(this.executeSelectionSet({
+                    const execResult = handleMissing(this.executeSelectionSet({
                         selectionSet: selection.selectionSet,
                         objectOrReference: fieldValue,
                         enclosingRef: isReference(fieldValue) ? fieldValue : enclosingRef,
                         context,
                     }), resultName);
+                    fieldValue = execResult.result;
+                    partialBoundaries.set(resultName, execResult.partialBoundaries);
+                    // If the object's fields resolved to an "empty" dataState (e.g. no
+                    // field resolved with a non-undefined value), but the fieldValue
+                    // object itself is present, this object should be considered
+                    // partial instead of empty. This also ensures defer boundaries that
+                    // select this object remain as partial defer boundaries rather than
+                    // mistakenly get reported as streaming. This is especially necessary
+                    // when combined with GraphQL Codegen which generates its type and
+                    // relies on the outer object to be absent when its fields haven't
+                    // streamed in. Reporting the defer boundary as "streaming" instead of
+                    // "partial" would otherwise have the potential to cause runtime
+                    // crashes since the runtime values and types would not line up
+                    // properly (types expect object to be undefined, but its instead
+                    // present without its fields)
+                    dataState = mergeDataState(dataState, execResult.dataState === "empty" ? "partial" : execResult.dataState);
                 }
                 if (fieldValue !== void 0) {
                     objectsToMerge.push({ [resultName]: fieldValue });
@@ -87012,15 +87661,60 @@ class StoreReader {
             else {
                 const fragment = getFragmentFromSelection(selection, context.lookupFragment);
                 if (!fragment && selection.kind === graphql/* Kind */.b8C.FRAGMENT_SPREAD) {
-                    throw newInvariantError(113, selection.name.value);
+                    throw newInvariantError(120, selection.name.value);
                 }
                 if (fragment && policies.fragmentMatches(fragment, typename)) {
-                    fragment.selectionSet.selections.forEach(workSet.add, workSet);
+                    const isDeferBoundary = isDeferredFragment(selection, context.variables);
+                    // Prior to 4.3, this branch just flattened the fragment's
+                    // selectionSet into the existing workSet so that it continued
+                    // iterating as if the fragment didn't exist. The cache is
+                    // incremental aware as of 4.3 and as such, we need to resolve the
+                    // per-fragment selection set so that we can properly strip partial
+                    // defer fragment data when returnPartialData is false. We need to
+                    // call execSelectionSetImpl directly (non-cached version) so that we
+                    // scope the dataState correctly for its fields. Using the cached
+                    // executeSelectionSet can result in cache poisoning when combined
+                    // with the fragment registry where it might cache either a) an error
+                    // thrown when a registered fragment references a named fragment that
+                    // the query is expected to supply and doesn't or b) resolve to the
+                    // wrong data result when combined with queries that provide different
+                    // implementations of the same fragment (see inmemory/fragmentRegistry and
+                    // cache.diff/incremental tests which provide guards against this
+                    // behavior).
+                    const execResult = this.execSelectionSetImpl({
+                        selectionSet: fragment.selectionSet,
+                        objectOrReference,
+                        enclosingRef,
+                        context,
+                    });
+                    const { result, dataState: nextDataState } = execResult;
+                    partialBoundaries.merge(execResult.partialBoundaries);
+                    if (result !== void 0) {
+                        objectsToMerge.push(result);
+                    }
+                    if (execResult.missing) {
+                        missing = missingMerger.merge(missing, execResult.missing);
+                    }
+                    if (isDeferBoundary &&
+                        (nextDataState === "partial" || nextDataState === "empty")) {
+                        partialBoundaries.add(selection);
+                    }
+                    dataState = mergeDataState(dataState, isDeferBoundary ?
+                        nextDataState === "empty" ? "streaming"
+                            : nextDataState === "partial" ? "deferPartial"
+                                : nextDataState
+                        : nextDataState);
                 }
             }
         });
+        dataState ||= "complete";
         const result = mergeDeepArray(objectsToMerge);
-        const finalResult = { result, missing };
+        const finalResult = {
+            result,
+            missing,
+            dataState,
+            partialBoundaries,
+        };
         const frozen = maybeDeepFreeze(finalResult);
         // Store this result with its selection set so that we can quickly
         // recognize it again in the StoreReader#isFresh method.
@@ -87031,8 +87725,11 @@ class StoreReader {
     }
     // Uncached version of executeSubSelectedArray.
     execSubSelectedArrayImpl({ field, array, enclosingRef, context, }) {
+        let dataState = "complete";
         let missing;
         let missingMerger = new DeepMerger();
+        const partialBoundaries = new PartialBoundaries();
+        const isStreamed = isStreamField(field, context.variables);
         function handleMissing(childResult, i) {
             if (childResult.missing) {
                 missing = missingMerger.merge(missing, { [i]: childResult.missing });
@@ -87047,23 +87744,36 @@ class StoreReader {
             if (item === null) {
                 return null;
             }
+            let execResult;
             // This is a nested array, recurse
             if (isArray(item)) {
-                return handleMissing(this.executeSubSelectedArray({
+                execResult = this.executeSubSelectedArray({
                     field,
                     array: item,
                     enclosingRef,
                     context,
-                }), i);
+                });
             }
-            // This is an object, run the selection set on it
-            if (field.selectionSet) {
-                return handleMissing(this.executeSelectionSet({
+            else if (field.selectionSet) {
+                execResult = this.executeSelectionSet({
                     selectionSet: field.selectionSet,
                     objectOrReference: item,
                     enclosingRef: isReference(item) ? item : enclosingRef,
                     context,
-                }), i);
+                });
+            }
+            if (execResult) {
+                const { dataState: nextDataState } = execResult;
+                partialBoundaries.set(i, nextDataState === "partial" ?
+                    // avoid mutating the execResult partialBoundaries object
+                    execResult.partialBoundaries.clone().add(field)
+                    : execResult.partialBoundaries);
+                dataState = mergeDataState(dataState, isStreamed ?
+                    nextDataState === "partial" ?
+                        "streamPartial"
+                        : nextDataState
+                    : nextDataState);
+                return handleMissing(execResult, i);
             }
             if (index_production_DEV_) {
                 assertSelectionSetForIdValue(context.store, field, item);
@@ -87072,8 +87782,161 @@ class StoreReader {
         });
         return {
             result: array,
+            dataState,
             missing,
+            partialBoundaries,
         };
+    }
+    prunePartialBoundariesImpl({ boundaries, context, data, path, selectionSet, }) {
+        const { variables, lookupFragment, policies } = context;
+        if (data == null || !boundaries) {
+            return { result: data, dataState: "complete" };
+        }
+        const merger = new DeepMerger();
+        let changed = false;
+        let dataState = "complete";
+        const result = {};
+        // __typename might not be part of the selection set, so preserve it when
+        // available, otherwise it gets removed since it's never visited when
+        // iterating the selection set.
+        if (Object.hasOwn(data, "__typename")) {
+            result.__typename = data.__typename;
+        }
+        const workSet = new Set(selectionSet.selections);
+        workSet.forEach((selection) => {
+            if (!shouldInclude(selection, variables))
+                return;
+            if (isField(selection)) {
+                const resultName = resultKeyNameFromField(selection);
+                if (!Object.hasOwn(data, resultName)) {
+                    return;
+                }
+                const fieldValue = data[resultName];
+                if (Array.isArray(fieldValue)) {
+                    const pruned = this.prunePartialStreamArray({
+                        field: selection,
+                        array: fieldValue,
+                        boundaries: boundaries.getChild(resultName),
+                        context,
+                        path: path.concat(resultName),
+                    });
+                    changed ||= pruned.result !== fieldValue;
+                    result[resultName] = pruned.result;
+                    dataState = mergeDataState(dataState, pruned.dataState);
+                }
+                else if (!selection.selectionSet) {
+                    result[resultName] = fieldValue;
+                }
+                else {
+                    const pruned = this.prunePartialBoundaries({
+                        data: fieldValue,
+                        selectionSet: selection.selectionSet,
+                        boundaries: boundaries.getChild(resultName),
+                        context,
+                        path: path.concat(resultName),
+                    });
+                    changed ||= pruned.result !== fieldValue;
+                    dataState = mergeDataState(dataState, pruned.dataState);
+                    // A response key can be selected by more than one selection (e.g. a
+                    // field and an overlapping fragment), so merge their kept fields.
+                    result[resultName] =
+                        Object.hasOwn(result, resultName) ?
+                            merger.merge(result[resultName], pruned.result)
+                            : pruned.result;
+                }
+                return;
+            }
+            // Note: we do NOT set `changed` to true anywhere in this branch of the
+            // conditional, despite the fact that we might have encountered a
+            // partial @defer boundary. Dropping a fragment does not guarantee keys
+            // are actually dropped which can happen when overlapping sibling
+            // selections contribute to the construction of the object. The final
+            // Object.keys(result).length check actually detects whether keys were
+            // dropped or not.
+            const fragment = getFragmentFromSelection(selection, lookupFragment);
+            let prune = false;
+            if (context.deferInfo && isDeferredFragment(selection, variables)) {
+                const directive = selection.directives?.find((d) => d.name.value === "defer");
+                const label = directive && getDirectiveArgValue(directive, "label", graphql/* Kind */.b8C.STRING);
+                prune = !!context.deferInfo.peekArray(path.concat(label || []));
+            }
+            if (fragment && policies.fragmentMatches(fragment, data.__typename)) {
+                if (boundaries.has(selection) || prune) {
+                    dataState = mergeDataState(dataState, "streaming");
+                }
+                else {
+                    fragment.selectionSet.selections.forEach(workSet.add, workSet);
+                }
+            }
+        });
+        if (Object.keys(result).length !== Object.keys(data).length) {
+            changed = true;
+        }
+        else if (changed && boundaries.hasSelections()) {
+            // Overlapping siblings may rebuild the same fields under a new object
+            // identity (e.g. changed === true) after a partial @defer is skipped.
+            // We perform a deep equality check to verify whether anything was
+            // actually dropped by the partial @defer fragment.
+            changed = !(0,equality_lib_bundle/* equal */.LC)(result, data);
+        }
+        return { result: changed ? result : data, dataState };
+    }
+    prunePartialStreamArrayImpl({ field, array, boundaries, context, path, }) {
+        if (!boundaries)
+            return { result: array, dataState: "complete" };
+        let changed = false;
+        let dataState = "complete";
+        let pruned = [];
+        const state = context.streamInfo?.peekArray(path)?.state;
+        const length = Math.min(array.length, state?.truncate ? state.streamPosition : Number.MAX_SAFE_INTEGER);
+        for (let i = 0; i < length; i++) {
+            const item = array[i];
+            let prunedResult = {
+                result: item,
+                dataState: "complete",
+            };
+            const boundary = boundaries.getChild(i);
+            if (boundary?.has(field)) {
+                // The presence of streamInfo determines how we truncate partial
+                // stream arrays. Stream info is only given to cache.diff during
+                // in-flight requests so we want keep items in the array equal to the
+                // total that have streamed in (this is represented by streamPosition
+                // above). For all other cache reads, partial stream boundaries are
+                // pruned back to an empty array.
+                if (state) {
+                    state.truncate = true;
+                    pruned = pruned.slice(0, state.streamPosition);
+                }
+                else {
+                    pruned = [];
+                    dataState = "complete";
+                }
+                break;
+            }
+            if (Array.isArray(item)) {
+                prunedResult = this.prunePartialStreamArray({
+                    field,
+                    array: item,
+                    boundaries: boundaries.getChild(i),
+                    context,
+                    path: path.concat(i),
+                });
+            }
+            else if (field.selectionSet) {
+                prunedResult = this.prunePartialBoundaries({
+                    data: item,
+                    selectionSet: field.selectionSet,
+                    boundaries: boundaries.getChild(i),
+                    context,
+                    path: path.concat(i),
+                });
+            }
+            pruned.push(prunedResult.result);
+            changed ||= prunedResult.result !== item;
+            dataState = mergeDataState(dataState, prunedResult.dataState);
+        }
+        changed ||= pruned.length !== array.length;
+        return { result: changed ? pruned : array, dataState };
     }
 }
 function firstMissing(tree) {
@@ -87095,7 +87958,7 @@ function assertSelectionSetForIdValue(store, field, fieldValue) {
             if (isNonNullObject(value)) {
                 invariant(
                     !isReference(value),
-                    114,
+                    121,
                     getTypenameFromStoreObject(store, value),
                     field.name.value
                 );
@@ -87104,9 +87967,107 @@ function assertSelectionSetForIdValue(store, field, fieldValue) {
         });
     }
 }
+// We deliberately leave `returnPartialData` out of `executeSelectionSet`'s
+// cache key. `isFresh` runs during writes and cannot provide a reliable value
+// for this option, so including it would prevent a reliable cache hit.
+//
+// When `returnPartialData` is false, `diffQueryAgainstStore` prunes data from
+// partial @defer boundaries after reading the cached result. `PartialBoundaries`
+// records the selection paths needed for that pass, including empty nodes along
+// a path. Overlapping non-deferred selections must still be rebuilt so fields
+// contributed only by a partial deferred sibling are removed. The prune pass
+// can then skip unrelated result branches.
+class PartialBoundaries {
+    selections = new Set();
+    children = new Map();
+    add(selection) {
+        this.selections.add(selection);
+        return this;
+    }
+    has(selection) {
+        return this.selections.has(selection);
+    }
+    hasSelections() {
+        return this.selections.size > 0;
+    }
+    getChild(key) {
+        return this.children.get(key);
+    }
+    clone() {
+        return new PartialBoundaries().merge(this);
+    }
+    set(key, boundary) {
+        const child = this.getChild(key);
+        this.children.set(key, 
+        // Create a new PartialBoundaries instance to avoid mutating any cached
+        // execResult partialBoundaries objects
+        child ? child.clone().merge(boundary) : boundary);
+    }
+    merge(boundaries) {
+        boundaries.selections.forEach((selection) => this.add(selection));
+        boundaries.children.forEach((child, key) => this.set(key, child));
+        return this;
+    }
+}
+function shouldPrune({ dataState }, context) {
+    if (dataState === "deferPartial" || dataState === "streamPartial") {
+        return true;
+    }
+    if (dataState === "complete" || dataState === "streaming") {
+        return !!(
+        // If the last cache write repaired a partial @stream array to a
+        // complete array, the stream array might contain stale entries after
+        // the last written value. We only want to deliver the results up to
+        // the index the network wrote so we need to prune it too.
+        (context.streamInfo ||
+            // The network hasn't delivered these @defer boundaries yet, so prune
+            // the (possibly complete) cached data sitting at them.
+            context.deferInfo));
+    }
+    return false;
+}
+// Describes the data state transitions that change the running state when it's
+// combined with the next data state. Omitted object values represent
+// "impossible" merges where the data state should remain the same.
+const DATA_STATE_MERGES = {
+    empty: {
+        complete: "partial",
+        deferPartial: "partial",
+        streaming: "partial",
+        streamPartial: "partial",
+    },
+    deferPartial: {
+        empty: "partial",
+    },
+    streamPartial: {
+        deferPartial: "deferPartial",
+        empty: "partial",
+    },
+    streaming: {
+        deferPartial: "deferPartial",
+        empty: "partial",
+        streamPartial: "streamPartial",
+    },
+    complete: {
+        deferPartial: "deferPartial",
+        streaming: "streaming",
+        streamPartial: "streamPartial",
+        empty: "partial",
+    },
+    partial: {},
+};
+function mergeDataState(current, next) {
+    if (next === "partial") {
+        return "partial";
+    }
+    if (!current || current === next) {
+        return next;
+    }
+    return DATA_STATE_MERGES[current][next] || current;
+}
 //# sourceMappingURL=readFromStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/cloneDeep.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/utilities/internal/cloneDeep.js
 const { toString: cloneDeep_toString } = Object.prototype;
 /**
 * Deeply clones a value to create a new instance.
@@ -87150,7 +88111,7 @@ function __cloneDeep(val, seen) {
 }
 //# sourceMappingURL=cloneDeep.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/writeToStore.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/writeToStore.js
 
 
 
@@ -87221,7 +88182,7 @@ class StoreWriter {
             path: [],
         });
         if (!isReference(ref)) {
-            throw newInvariantError(115, result);
+            throw newInvariantError(122, result);
         }
         // So far, the store has not been modified, so now it's time to process
         // context.incomingById and merge those incoming fields into context.store.
@@ -87360,7 +88321,7 @@ class StoreWriter {
                 }
                 else if (context.extensions?.[streamInfoSymbol] &&
                     Array.isArray(incomingValue) &&
-                    hasStreamDirective(field)) {
+                    isStreamField(field, context.variables)) {
                     childTree.info = {
                         field,
                         typename,
@@ -87383,7 +88344,7 @@ class StoreWriter {
                 // provide a default value, so its absence from the written data should
                 // not be cause for alarm.
                 !policies.getReadFunction(typename, field.name.value)) {
-                invariant.error(116, resultKeyNameFromField(field), result);
+                invariant.error(123, resultKeyNameFromField(field), result);
             }
         });
         // Identify the result object, even if dataId was already provided,
@@ -87531,7 +88492,7 @@ class StoreWriter {
                 else {
                     const fragment = getFragmentFromSelection(selection, context.lookupFragment);
                     if (!fragment && selection.kind === graphql/* Kind */.b8C.FRAGMENT_SPREAD) {
-                        throw newInvariantError(117, selection.name.value);
+                        throw newInvariantError(124, selection.name.value);
                     }
                     if (fragment &&
                         policies.fragmentMatches(fragment, typename, result, context.variables)) {
@@ -87646,10 +88607,6 @@ function mergeMergeTrees(left, right) {
     }
     return merged;
 }
-function hasStreamDirective(field) {
-    return (!!field.directives &&
-        field.directives.some((directive) => directive.name.value === "stream"));
-}
 function mergeTreeIsEmpty(tree) {
     return !tree || !(tree.info || tree.map.size);
 }
@@ -87707,7 +88664,7 @@ function warnAboutDataLoss(existingRef, incomingObj, storeFieldName, store) {
             }
         });
     }
-    index_production_DEV_ && invariant.warn(118, fieldName, parentType, childTypenames.length ?
+    index_production_DEV_ && invariant.warn(125, fieldName, parentType, childTypenames.length ?
         "either ensure all objects of type " +
             childTypenames.join(" and ") +
             " have an ID or a custom merge function, or "
@@ -87742,7 +88699,7 @@ function getTypenameFromResult(result, selectionSet, fragmentMap) {
 }
 //# sourceMappingURL=writeToStore.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.2.12_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/inMemoryCache.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@apollo+client@4.3.0_graphql-ws@6.2.1_graphql@16.14.2_ws@8.21.3__graphql@16.14.2_react@19.3.0_rxjs@7.8.2/node_modules/@apollo/client/cache/inmemory/inMemoryCache.js
 
 
 
@@ -87773,9 +88730,9 @@ class InMemoryCache extends ApolloCache {
     // cache.policies.addPossibletypes.
     policies;
     makeVar = makeVar;
-    constructor(config = {}) {
+    constructor(...args) {
         super();
-        this.config = normalizeConfig(config);
+        this.config = normalizeConfig(args[0] ?? {});
         this.policies = new Policies({
             cache: this,
             dataIdFromObject: this.config.dataIdFromObject,
@@ -87835,6 +88792,90 @@ class InMemoryCache extends ApolloCache {
         // all CacheGroup dependency information.
         new Set([this.data.group, this.optimisticData.group]).forEach((group) => group.resetCaching());
     }
+    getRootTypename(operation) {
+        return this.policies.rootTypenamesById[`ROOT_${operation.toUpperCase()}`];
+    }
+    getScalar(key) {
+        return this.config.scalars?.[key];
+    }
+    /** Get the configured scalar type for a field */
+    getScalarTypeForField(typename, fieldName) {
+        return this.policies.getScalarTypeForField(typename, fieldName);
+    }
+    configuresScalars() {
+        return !!this.config.scalars;
+    }
+    serializeVariables(document, variables) {
+        if (!variables ||
+            Object.keys(variables).length === 0 ||
+            (!this.config.scalars && !this.config.inputObjects)) {
+            return variables;
+        }
+        const variableTypes = getOperationDefinition(document)?.variableDefinitions?.reduce((memo, node) => {
+            memo[node.variable.name.value] = getScalarTypeFromTypeNode(node.type);
+            return memo;
+        }, {});
+        if (!variableTypes || Object.keys(variableTypes).length === 0) {
+            return variables;
+        }
+        return this.serializeVariablesValue(variables, variableTypes);
+    }
+    serializeVariablesValue(value, variableTypes, scalarType, coordinate) {
+        if (value == null) {
+            return value;
+        }
+        if (scalarType) {
+            const match = matchScalarList(scalarType);
+            if (match) {
+                if (Array.isArray(value)) {
+                    return this.serializeInputArray(value, variableTypes, match[1], coordinate);
+                }
+                else if (index_production_DEV_) {
+                    index_production_DEV_ && invariant.warn(112, coordinate, scalarType, unwrapScalarType(scalarType));
+                }
+            }
+            const scalar = this.getScalar(unwrapScalarType(scalarType));
+            if (scalar) {
+                return scalar.coerceToSerialized(value);
+            }
+        }
+        if (Array.isArray(value)) {
+            return this.serializeInputArray(value, variableTypes, undefined, coordinate);
+        }
+        if (isPlainObject(value)) {
+            return this.serializeInputObject(value, variableTypes, coordinate);
+        }
+        return value;
+    }
+    serializeInputArray(value, variableTypes, scalarType, coordinate) {
+        let changed = false;
+        const newValue = value.map((item) => {
+            const newItem = this.serializeVariablesValue(item, variableTypes, scalarType, coordinate);
+            changed ||= newItem !== item;
+            return newItem;
+        });
+        return changed ? newValue : value;
+    }
+    serializeInputObject(value, variableTypes, coordinate) {
+        let changed = false;
+        const entries = Object.entries(value).map(([name, value]) => {
+            const type = variableTypes[name];
+            const fieldCoordinate = coordinate ? `${coordinate}.${name}` : name;
+            if (!type) {
+                return [name, value];
+            }
+            const inputObject = this.config.inputObjects?.[unwrapScalarType(type)];
+            if (inputObject) {
+                const newValue = this.serializeVariablesValue(value, inputObject.fields, undefined, fieldCoordinate);
+                changed ||= newValue !== value;
+                return [name, newValue];
+            }
+            const newValue = this.serializeVariablesValue(value, variableTypes, type, fieldCoordinate);
+            changed ||= newValue !== value;
+            return [name, newValue];
+        });
+        return changed ? Object.fromEntries(entries) : value;
+    }
     restore(data) {
         this.init();
         // Since calling this.init() discards/replaces the entire StoreReader, along
@@ -87848,7 +88889,7 @@ class InMemoryCache extends ApolloCache {
         return (optimistic ? this.optimisticData : this.data).extract();
     }
     read(options) {
-        const { 
+        const { query, variables, 
         // Since read returns data or null, without any additional metadata
         // about whether/where there might have been missing fields, the
         // default behavior cannot be returnPartialData = true (like it is
@@ -87859,15 +88900,20 @@ class InMemoryCache extends ApolloCache {
         returnPartialData = false, } = options;
         return this.storeReader.diffQueryAgainstStore({
             ...options,
+            variables: this.serializeVariables(query, variables),
             store: options.optimistic ? this.optimisticData : this.data,
             config: this.config,
             returnPartialData,
         }).result;
     }
     write(options) {
+        const { query, variables } = options;
         try {
             ++this.txCount;
-            return this.storeWriter.writeToStore(this.data, options);
+            return this.storeWriter.writeToStore(this.data, {
+                ...options,
+                variables: this.serializeVariables(query, variables),
+            });
         }
         finally {
             if (!--this.txCount && options.broadcast !== false) {
@@ -87903,8 +88949,10 @@ class InMemoryCache extends ApolloCache {
         }
     }
     diff(options) {
+        const { variables } = options;
         return this.storeReader.diffQueryAgainstStore({
             ...options,
+            variables: this.serializeVariables(options.query, variables),
             store: options.optimistic ? this.optimisticData : this.data,
             rootId: options.id || "ROOT_QUERY",
             config: this.config,
