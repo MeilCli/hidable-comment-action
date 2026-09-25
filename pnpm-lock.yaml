@@ -88,8 +88,8 @@ importers:
         specifier: 30.5.1
         version: 30.5.1
       jest-environment-node:
-        specifier: 30.5.1
-        version: 30.5.1
+        specifier: 30.5.2
+        version: 30.5.2
       jest-mock:
         specifier: 30.5.2
         version: 30.5.2
@@ -2281,10 +2281,6 @@ packages:
 
   jest-each@30.5.2:
     resolution: {integrity: sha512-GRrW+7fmmgmkvyfEBqc1QFdWnF1Ex5yG6Y6AWL4TTxnkWlKIT98dsKh3P3UuWm6v4XsQwVE6DEzXIPMzWJ3ZbA==}
-    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
-
-  jest-environment-node@30.5.1:
-    resolution: {integrity: sha512-LrPj3sPMjsQoOB3jrb8p/sa+XkSFNKo60TTsyc+EB2kxQJHgbwElpXnx1yX25fdFn5958FIObRtcLSHyV8VIAw==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
   jest-environment-node@30.5.2:
@@ -5721,16 +5717,6 @@ snapshots:
       jest-regex-util: 30.5.0
       jest-util: 30.5.1
       pretty-format: 30.5.1
-
-  jest-environment-node@30.5.1:
-    dependencies:
-      '@jest/environment': 30.5.1
-      '@jest/fake-timers': 30.5.1
-      '@jest/types': 30.5.1
-      '@types/node': 25.9.7
-      jest-mock: 30.5.1
-      jest-util: 30.5.1
-      jest-validate: 30.5.1
 
   jest-environment-node@30.5.2:
     dependencies:
